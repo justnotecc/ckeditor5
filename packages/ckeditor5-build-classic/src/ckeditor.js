@@ -17,7 +17,6 @@ import Superscript from '@ckeditor/ckeditor5-basic-styles/src/superscript';
 import Subscript from '@ckeditor/ckeditor5-basic-styles/src/subscript';
 
 import List from '@ckeditor/ckeditor5-list/src/list';
-import ListStyle from '@ckeditor/ckeditor5-list/src/liststyle';
 
 import FontSize from '@ckeditor/ckeditor5-font/src/fontsize';
 import FontColor from '@ckeditor/ckeditor5-font/src/fontcolor';
@@ -53,7 +52,6 @@ ClassicEditor.builtinPlugins = [
   Superscript,
   Subscript,
   List,
-  ListStyle,
   FontSize,
   FontColor,
   FontBackgroundColor,
@@ -76,25 +74,17 @@ ClassicEditor.defaultConfig = {
   toolbar: {
     items: [
       'bold',
-      'italic',
       'underline',
       'strikethrough',
-      'superscript',
-      'subscript',
-      '|',
-      'bulletedList',
-      'numberedList',
-      '|',
       'fontsize',
       'fontColor',
       'fontBackgroundColor',
-      '|',
       'RemoveFormat',
       '|',
-      'link',
       'uploadImage',
-      'insertTable',
-      'mediaEmbed',
+      '|',
+      'bulletedList',
+      'numberedList',
       '|',
       'undo',
       'redo',
@@ -110,12 +100,6 @@ ClassicEditor.defaultConfig = {
       'imageStyle:alignLeft',
       'imageStyle:full',
       'imageStyle:alignRight',
-    ]
-  },
-  table: {
-    contentToolbar: [
-      'tableColumn',
-      'tableRow',
     ]
   },
   // This value must be kept in sync with the language defined in webpack.config.js.
