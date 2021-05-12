@@ -7,133 +7,101 @@
 import DecoupledEditorBase from '@ckeditor/ckeditor5-editor-decoupled/src/decouplededitor';
 
 import Essentials from '@ckeditor/ckeditor5-essentials/src/essentials';
-import Alignment from '@ckeditor/ckeditor5-alignment/src/alignment';
-import FontSize from '@ckeditor/ckeditor5-font/src/fontsize';
-import FontFamily from '@ckeditor/ckeditor5-font/src/fontfamily';
-import FontColor from '@ckeditor/ckeditor5-font/src/fontcolor';
-import FontBackgroundColor from '@ckeditor/ckeditor5-font/src/fontbackgroundcolor';
-import UploadAdapter from '@ckeditor/ckeditor5-adapter-ckfinder/src/uploadadapter';
-import Autoformat from '@ckeditor/ckeditor5-autoformat/src/autoformat';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
+
 import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold';
 import Italic from '@ckeditor/ckeditor5-basic-styles/src/italic';
-import Strikethrough from '@ckeditor/ckeditor5-basic-styles/src/strikethrough';
 import Underline from '@ckeditor/ckeditor5-basic-styles/src/underline';
-import BlockQuote from '@ckeditor/ckeditor5-block-quote/src/blockquote';
-import CKFinder from '@ckeditor/ckeditor5-ckfinder/src/ckfinder';
-import EasyImage from '@ckeditor/ckeditor5-easy-image/src/easyimage';
-import Heading from '@ckeditor/ckeditor5-heading/src/heading';
+import Strikethrough from '@ckeditor/ckeditor5-basic-styles/src/strikethrough';
+import Superscript from '@ckeditor/ckeditor5-basic-styles/src/superscript';
+import Subscript from '@ckeditor/ckeditor5-basic-styles/src/subscript';
+
+import List from '@ckeditor/ckeditor5-list/src/list';
+
+import FontSize from '@ckeditor/ckeditor5-font/src/fontsize';
+import FontColor from '@ckeditor/ckeditor5-font/src/fontcolor';
+import FontBackgroundColor from '@ckeditor/ckeditor5-font/src/fontbackgroundcolor';
+
+import Autoformat from '@ckeditor/ckeditor5-autoformat/src/autoformat';
+import TextTransformation from '@ckeditor/ckeditor5-typing/src/texttransformation';
+import RemoveFormat from '@ckeditor/ckeditor5-remove-format/src/removeformat';
+
+import Link from '@ckeditor/ckeditor5-link/src/link';
+
 import Image from '@ckeditor/ckeditor5-image/src/image';
-import ImageCaption from '@ckeditor/ckeditor5-image/src/imagecaption';
 import ImageStyle from '@ckeditor/ckeditor5-image/src/imagestyle';
 import ImageToolbar from '@ckeditor/ckeditor5-image/src/imagetoolbar';
 import ImageUpload from '@ckeditor/ckeditor5-image/src/imageupload';
-import Indent from '@ckeditor/ckeditor5-indent/src/indent';
-import IndentBlock from '@ckeditor/ckeditor5-indent/src/indentblock';
-import Link from '@ckeditor/ckeditor5-link/src/link';
-import List from '@ckeditor/ckeditor5-list/src/list';
-import ListStyle from '@ckeditor/ckeditor5-list/src/liststyle';
-import MediaEmbed from '@ckeditor/ckeditor5-media-embed/src/mediaembed';
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
-import PasteFromOffice from '@ckeditor/ckeditor5-paste-from-office/src/pastefromoffice';
+import ImageUploadAdapter from '@ckeditor/ckeditor5-upload/src/adapters/base64uploadadapter';
+
 import Table from '@ckeditor/ckeditor5-table/src/table';
 import TableToolbar from '@ckeditor/ckeditor5-table/src/tabletoolbar';
-import TextTransformation from '@ckeditor/ckeditor5-typing/src/texttransformation';
-import CloudServices from '@ckeditor/ckeditor5-cloud-services/src/cloudservices';
 
-export default class DecoupledEditor extends DecoupledEditorBase {}
+import MediaEmbed from '@ckeditor/ckeditor5-media-embed/src/mediaembed';
+
+export default class DecoupledEditor extends DecoupledEditorBase { }
 
 // Plugins to include in the build.
 DecoupledEditor.builtinPlugins = [
-	Essentials,
-	Alignment,
-	FontSize,
-	FontFamily,
-	FontColor,
-	FontBackgroundColor,
-	UploadAdapter,
-	Autoformat,
-	Bold,
-	Italic,
-	Strikethrough,
-	Underline,
-	BlockQuote,
-	CKFinder,
-	CloudServices,
-	EasyImage,
-	Heading,
-	Image,
-	ImageCaption,
-	ImageStyle,
-	ImageToolbar,
-	ImageUpload,
-	Indent,
-	IndentBlock,
-	Link,
-	List,
-	ListStyle,
-	MediaEmbed,
-	Paragraph,
-	PasteFromOffice,
-	Table,
-	TableToolbar,
-	TextTransformation
+  Essentials,
+  Paragraph,
+  Bold,
+  Italic,
+  Underline,
+  Strikethrough,
+  Superscript,
+  Subscript,
+  List,
+  FontSize,
+  FontColor,
+  FontBackgroundColor,
+  Autoformat,
+  TextTransformation,
+  RemoveFormat,
+  Link,
+  Image,
+  ImageStyle,
+  ImageToolbar,
+  ImageUpload,
+  ImageUploadAdapter,
+  Table,
+  TableToolbar,
+  MediaEmbed,
 ];
 
 // Editor configuration.
 DecoupledEditor.defaultConfig = {
-	toolbar: {
-		items: [
-			'heading',
-			'|',
-			'fontfamily',
-			'fontsize',
-			'fontColor',
-			'fontBackgroundColor',
-			'|',
-			'bold',
-			'italic',
-			'underline',
-			'strikethrough',
-			'|',
-			'alignment',
-			'|',
-			'numberedList',
-			'bulletedList',
-			'|',
-			'outdent',
-			'indent',
-			'|',
-			'link',
-			'blockquote',
-			'uploadImage',
-			'insertTable',
-			'mediaEmbed',
-			'|',
-			'undo',
-			'redo'
-		]
-	},
-	image: {
-		styles: [
-			'full',
-			'alignLeft',
-			'alignRight'
-		],
-		toolbar: [
-			'imageStyle:alignLeft',
-			'imageStyle:full',
-			'imageStyle:alignRight',
-			'|',
-			'imageTextAlternative'
-		]
-	},
-	table: {
-		contentToolbar: [
-			'tableColumn',
-			'tableRow',
-			'mergeTableCells'
-		]
-	},
-	// This value must be kept in sync with the language defined in webpack.config.js.
-	language: 'en'
+  toolbar: {
+    items: [
+      'bold',
+      'underline',
+      'strikethrough',
+      'fontsize',
+      'fontColor',
+      'fontBackgroundColor',
+      'RemoveFormat',
+      '|',
+      'uploadImage',
+      '|',
+      'bulletedList',
+      'numberedList',
+      '|',
+      'undo',
+      'redo',
+    ]
+  },
+  image: {
+    styles: [
+      'full',
+      'alignLeft',
+      'alignRight',
+    ],
+    toolbar: [
+      'imageStyle:alignLeft',
+      'imageStyle:full',
+      'imageStyle:alignRight',
+    ]
+  },
+  // This value must be kept in sync with the language defined in webpack.config.js.
+  language: 'en'
 };
