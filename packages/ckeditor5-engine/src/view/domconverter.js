@@ -87,7 +87,12 @@ export default class DomConverter {
 		 * @readonly
 		 * @member {Array.<String>} module:engine/view/domconverter~DomConverter#blockElements
 		 */
-		this.blockElements = [ 'p', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'dd', 'dt', 'figcaption', 'td', 'th' ];
+		this.blockElements = [
+			'address', 'article', 'aside', 'blockquote', 'caption', 'center', 'dd', 'details', 'dir', 'div',
+			'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header',
+			'hgroup', 'legend', 'li', 'main', 'menu', 'nav', 'ol', 'p', 'pre', 'section', 'summary', 'table', 'tbody',
+			'td', 'tfoot', 'th', 'thead', 'tr', 'ul'
+		];
 
 		/**
 		 * The DOM-to-view mapping.
@@ -950,7 +955,7 @@ export default class DomConverter {
 	}
 
 	/**
-	 * Returns block {@link module:engine/view/filler filler} node based on current {@link #blockFillerMode} setting.
+	 * Returns the block {@link module:engine/view/filler filler} node based on the current {@link #blockFillerMode} setting.
 	 *
 	 * @private
 	 * @params {Document} domDocument
@@ -1329,6 +1334,7 @@ function forEachDomNodeAncestor( node, callback ) {
 // A &nbsp; is a block filler only if it is a single child of a block element.
 //
 // @param {Node} domNode DOM node.
+// @param {Array.<String>} blockElements
 // @returns {Boolean}
 function isNbspBlockFiller( domNode, blockElements ) {
 	const isNBSP = domNode.isEqualNode( NBSP_FILLER_REF );
@@ -1339,6 +1345,7 @@ function isNbspBlockFiller( domNode, blockElements ) {
 // Checks if domNode has block parent.
 //
 // @param {Node} domNode DOM node.
+// @param {Array.<String>} blockElements
 // @returns {Boolean}
 function hasBlockParent( domNode, blockElements ) {
 	const parent = domNode.parentNode;
@@ -1347,13 +1354,14 @@ function hasBlockParent( domNode, blockElements ) {
 }
 
 /**
- * Enum representing type of the block filler.
+ * Enum representing the type of the block filler.
  *
  * Possible values:
  *
- * * `br` - for `<br data-cke-filler="true">` block filler used in the editing view,
- * * `nbsp` - for `&nbsp;` block fillers used in the data,
- * * `markedNbsp` - for nbsp block fillers wrapped in a span: `<span data-cke-filler="true">&nbsp;</span>` used in the data.
+ * * `br` &ndash; For the `<br data-cke-filler="true">` block filler used in the editing view.
+ * * `nbsp` &ndash; For the `&nbsp;` block fillers used in the data.
+ * * `markedNbsp` &ndash; For the `&nbsp;` block fillers wrapped in `<span>` elements: `<span data-cke-filler="true">&nbsp;</span>`
+ * used in the data.
  *
  * @typedef {String} module:engine/view/filler~BlockFillerMode
  */
