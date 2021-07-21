@@ -27,8 +27,8 @@ class Adapter {
       try {
         const objectUrl = URL.createObjectURL(file);
 
-        if (!window.CKEditorUploadedObjectUrls) window.CKEditorUploadedObjectUrls = {};
-        window.CKEditorUploadedObjectUrls[objectUrl] = file;
+        if (!window.CKEditorObjectUrlFiles) window.CKEditorObjectUrlFiles = {};
+        window.CKEditorObjectUrlFiles[objectUrl] = file;
 
         resolve({ default: objectUrl });
       } catch (e) {
