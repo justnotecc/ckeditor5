@@ -24,18 +24,36 @@ class Adapter {
 
   upload() {
     return this.loader.file.then(file => new Promise((resolve, reject) => {
-      try {
-        const objectUrl = URL.createObjectURL(file);
+      const reader = this.reader = new window.FileReader();
 
-        if (!window.CKEditorObjectUrlFiles) window.CKEditorObjectUrlFiles = {};
-        window.CKEditorObjectUrlFiles[objectUrl] = file;
+      reader.addEventListener('load', () => {
+        try {
+          const objectUrl = URL.createObjectURL(file);
 
-        resolve({ default: objectUrl });
-      } catch (e) {
-        reject(e);
-      }
+          if (!window.CKEditorObjectUrlContents) window.CKEditorObjectUrlContents = {};
+          window.CKEditorObjectUrlContents[objectUrl] = {
+            fname: file.name, content: reader.result
+          };
+
+          resolve({ default: objectUrl });
+        } catch (e) {
+          reject(e);
+        }
+      });
+
+      reader.addEventListener('error', err => {
+        reject(err);
+      });
+
+      reader.addEventListener('abort', () => {
+        reject();
+      });
+
+      reader.readAsDataURL(file);
     }));
   }
 
-  abort() { }
+  abort() {
+    if (this.reader) this.reader.abort();
+  }
 }
