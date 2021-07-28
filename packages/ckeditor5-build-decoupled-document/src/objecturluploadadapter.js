@@ -1,5 +1,6 @@
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import FileRepository from '@ckeditor/ckeditor5-upload/src/filerepository';
+import loadImage from 'blueimp-load-image';
 
 export default class ObjectUrlUploadAdapter extends Plugin {
 
@@ -24,36 +25,29 @@ class Adapter {
 
   upload() {
     return this.loader.file.then(file => new Promise((resolve, reject) => {
-      const reader = this.reader = new window.FileReader();
-
-      reader.addEventListener('load', () => {
+      loadImage(
+        file,
+        { maxWidth: 1688, maxHeight: 1688, orientation: true, meta: true, canvas: true }
+      ).then(data => {
         try {
-          const objectUrl = URL.createObjectURL(file);
+          data.image.toBlob((blob) => {
+            const objectUrl = URL.createObjectURL(blob);
 
-          if (!window.CKEditorObjectUrlContents) window.CKEditorObjectUrlContents = {};
-          window.CKEditorObjectUrlContents[objectUrl] = {
-            fname: file.name, content: reader.result
-          };
+            if (!window.CKEditorObjectUrlContents) window.CKEditorObjectUrlContents = {};
+            window.CKEditorObjectUrlContents[objectUrl] = {
+              fname: file.name, content: data.image.toDataURL(),
+            };
 
-          resolve({ default: objectUrl });
+            resolve({ default: objectUrl });
+          }, file.type)
         } catch (e) {
           reject(e);
         }
+      }).catch(e => {
+        reject(e);
       });
-
-      reader.addEventListener('error', err => {
-        reject(err);
-      });
-
-      reader.addEventListener('abort', () => {
-        reject();
-      });
-
-      reader.readAsDataURL(file);
     }));
   }
 
-  abort() {
-    if (this.reader) this.reader.abort();
-  }
+  abort() { }
 }
