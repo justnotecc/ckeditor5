@@ -33,9 +33,19 @@ class Adapter {
           data.image.toBlob((blob) => {
             const objectUrl = URL.createObjectURL(blob);
 
-            if (!window.CKEditorObjectUrlContents) window.CKEditorObjectUrlContents = {};
-            window.CKEditorObjectUrlContents[objectUrl] = {
-              fname: file.name, content: data.image.toDataURL(),
+            if (window.CKEditorObjectUrlContents) {
+              window.CKEditorObjectUrlContents[objectUrl] = {
+                fname: file.name, content: blob,
+              };
+            }
+
+            if (window.ReactNativeWebView) {
+              const SEP = '_jUSTnOTE-sEpArAtOr_';
+
+              const content = data.image.toDataURL();
+              window.ReactNativeWebView.postMessage(
+                'add:objectUrlFiles:' + objectUrl + SEP + file.name + SEP + content
+              );
             };
 
             resolve({ default: objectUrl });
