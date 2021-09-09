@@ -33,8 +33,8 @@ class Adapter {
           data.image.toBlob((blob) => {
             const objectUrl = URL.createObjectURL(blob);
 
-            if (window.CKEditorObjectUrlContents) {
-              window.CKEditorObjectUrlContents[objectUrl] = {
+            if (window.CKEditorObjectUrlFiles) {
+              window.CKEditorObjectUrlFiles[objectUrl] = {
                 fname: file.name, content: blob,
               };
             }
