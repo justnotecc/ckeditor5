@@ -33,10 +33,8 @@ class Adapter {
           data.image.toBlob((blob) => {
             const objectUrl = URL.createObjectURL(blob);
 
-            if (window.CKEditorObjectUrlFiles) {
-              window.CKEditorObjectUrlFiles[objectUrl] = {
-                fname: file.name, content: blob,
-              };
+            if (window.JustnoteReactWebApp) {
+              window.JustnoteReactWebApp.addObjectUrlFiles(objectUrl, file.name, blob);
             }
 
             if (window.ReactNativeWebView) {
