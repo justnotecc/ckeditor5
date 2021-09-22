@@ -44,10 +44,10 @@ class Adapter {
               window.ReactNativeWebView.postMessage(
                 'add:objectUrlFiles:' + objectUrl + SEP + file.name + SEP + content
               );
-            };
+            }
 
             resolve({ default: objectUrl });
-          }, file.type)
+          }, file.type);
         } catch (e) {
           reject(e);
         }
