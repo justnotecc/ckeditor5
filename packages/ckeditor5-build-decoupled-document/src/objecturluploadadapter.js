@@ -35,18 +35,24 @@ class Adapter {
 
             if (window.JustnoteReactWebApp) {
               window.JustnoteReactWebApp.addObjectUrlFiles(objectUrl, file.name, blob);
+              resolve({ default: objectUrl });
+              return;
             }
 
             if (window.ReactNativeWebView) {
-              const SEP = '_jUSTnOTE-sEpArAtOr_';
-
-              const content = data.image.toDataURL();
-              window.ReactNativeWebView.postMessage(
-                'add:objectUrlFiles:' + objectUrl + SEP + file.name + SEP + content
-              );
+              const reader = new FileReader();
+              reader.onerror = e => reject(e);
+              reader.onload = () => {
+                const SEP = '_jUSTnOTE-sEpArAtOr_';
+                const content = reader.result;
+                window.ReactNativeWebView.postMessage(
+                  'add:objectUrlFiles:' + objectUrl + SEP + file.name + SEP + content
+                );
+                resolve({ default: objectUrl });
+              };
+              reader.readAsDataURL(blob);
+              return;
             }
-
-            resolve({ default: objectUrl });
           }, file.type);
         } catch (e) {
           reject(e);
