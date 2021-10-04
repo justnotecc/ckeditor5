@@ -17,6 +17,7 @@ import Superscript from '@ckeditor/ckeditor5-basic-styles/src/superscript';
 import Subscript from '@ckeditor/ckeditor5-basic-styles/src/subscript';
 
 import List from '@ckeditor/ckeditor5-list/src/list';
+import TodoList from '@ckeditor/ckeditor5-list/src/todolist';
 
 import FontSize from '@ckeditor/ckeditor5-font/src/fontsize';
 import FontColor from '@ckeditor/ckeditor5-font/src/fontcolor';
@@ -53,6 +54,7 @@ DecoupledEditor.builtinPlugins = [
   Superscript,
   Subscript,
   List,
+  TodoList,
   FontSize,
   FontColor,
   FontBackgroundColor,
@@ -87,6 +89,7 @@ DecoupledEditor.defaultConfig = {
       '|',
       'bulletedList',
       'numberedList',
+      'todoList',
       '|',
       'undo',
       'redo',
