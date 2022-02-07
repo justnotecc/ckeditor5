@@ -27,6 +27,10 @@ import Autoformat from '@ckeditor/ckeditor5-autoformat/src/autoformat';
 import TextTransformation from '@ckeditor/ckeditor5-typing/src/texttransformation';
 import RemoveFormat from '@ckeditor/ckeditor5-remove-format/src/removeformat';
 
+import Indent from '@ckeditor/ckeditor5-indent/src/indent';
+import IndentBlock from '@ckeditor/ckeditor5-indent/src/indentblock';
+import Alignment from '@ckeditor/ckeditor5-alignment/src/alignment';
+
 import Link from '@ckeditor/ckeditor5-link/src/link';
 
 import Image from '@ckeditor/ckeditor5-image/src/image';
@@ -61,6 +65,9 @@ DecoupledEditor.builtinPlugins = [
   Autoformat,
   TextTransformation,
   RemoveFormat,
+  Indent,
+  IndentBlock,
+  Alignment,
   Link,
   Image,
   ImageStyle,
@@ -79,10 +86,12 @@ DecoupledEditor.defaultConfig = {
     items: [
       'bold',
       'underline',
-      'strikethrough',
       'fontsize',
       'fontColor',
       'fontBackgroundColor',
+      'alignment',
+      'strikethrough',
+      'italic',
       'RemoveFormat',
       '|',
       'uploadImage',
@@ -90,6 +99,9 @@ DecoupledEditor.defaultConfig = {
       'bulletedList',
       'numberedList',
       'todoList',
+      '|',
+      'outdent',
+      'indent',
       '|',
       'undo',
       'redo',
