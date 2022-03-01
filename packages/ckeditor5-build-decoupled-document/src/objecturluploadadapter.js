@@ -24,6 +24,13 @@ class Adapter {
   }
 
   upload() {
+    if (window.JustnoteReactWebApp) {
+      window.JustnoteReactWebApp.updateIsUploading(true);
+    }
+    if (window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage('update:isUploading:true');
+    }
+
     return this.loader.file.then(file => new Promise((resolve, reject) => {
       loadImage(
         file,
@@ -55,12 +62,32 @@ class Adapter {
             }
           }, file.type);
         } catch (e) {
+          if (window.JustnoteReactWebApp) {
+            window.JustnoteReactWebApp.updateIsUploading(false);
+          }
+          if (window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage('update:isUploading:false');
+          }
           reject(e);
         }
       }).catch(e => {
+        if (window.JustnoteReactWebApp) {
+          window.JustnoteReactWebApp.updateIsUploading(false);
+        }
+        if (window.ReactNativeWebView) {
+          window.ReactNativeWebView.postMessage('update:isUploading:false');
+        }
         reject(e);
       });
-    }));
+    })).catch(e => {
+      if (window.JustnoteReactWebApp) {
+        window.JustnoteReactWebApp.updateIsUploading(false);
+      }
+      if (window.ReactNativeWebView) {
+        window.ReactNativeWebView.postMessage('update:isUploading:false');
+      }
+      reject(e);
+    });
   }
 
   abort() { }
