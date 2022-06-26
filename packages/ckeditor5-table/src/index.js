@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2021, CKSource - Frederico Knabben. All rights reserved.
+ * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -7,6 +7,7 @@
  * @module table
  */
 
+export { default as PlainTableOutput } from './plaintableoutput';
 export { default as Table } from './table';
 export { default as TableEditing } from './tableediting';
 export { default as TableUI } from './tableui';
@@ -25,3 +26,5 @@ export { default as TableMouse } from './tablemouse';
 export { default as TableKeyboard } from './tablekeyboard';
 export { default as TableSelection } from './tableselection';
 export { default as TableUtils } from './tableutils';
+export { default as TableColumnResize } from './tablecolumnresize';
+export { default as TableColumnResizeEditing } from './tablecolumnresize/tablecolumnresizeediting';

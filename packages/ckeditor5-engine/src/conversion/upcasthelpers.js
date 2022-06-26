@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2021, CKSource - Frederico Knabben. All rights reserved.
+ * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -7,13 +7,12 @@ import Matcher from '../view/matcher';
 import ConversionHelpers from './conversionhelpers';
 
 import { cloneDeep } from 'lodash-es';
-import { logWarning } from '@ckeditor/ckeditor5-utils/src/ckeditorerror';
 
 import priorities from '@ckeditor/ckeditor5-utils/src/priorities';
 import { isParagraphable, wrapInParagraph } from '../model/utils/autoparagraphing';
 
 /**
- * Contains {@link module:engine/view/view view} to {@link module:engine/model/model model} converters for
+ * Contains the {@link module:engine/view/view view} to {@link module:engine/model/model model} converters for
  * {@link module:engine/conversion/upcastdispatcher~UpcastDispatcher}.
  *
  * @module engine/conversion/upcasthelpers
@@ -21,6 +20,8 @@ import { isParagraphable, wrapInParagraph } from '../model/utils/autoparagraphin
 
 /**
  * Upcast conversion helper functions.
+ *
+ * Learn more about {@glink framework/guides/deep-dive/conversion/upcast upcast helpers}.
  *
  * @extends module:engine/conversion/conversionhelpers~ConversionHelpers
  */
@@ -294,12 +295,16 @@ export default class UpcastHelpers extends ConversionHelpers {
 	/**
 	 * View element to model marker conversion helper.
 	 *
-	 * **Note**: This method was deprecated. Please use {@link #dataToMarker} instead.
-	 *
 	 * This conversion results in creating a model marker. For example, if the marker was stored in a view as an element:
 	 * `<p>Fo<span data-marker="comment" data-comment-id="7"></span>o</p><p>B<span data-marker="comment" data-comment-id="7"></span>ar</p>`,
 	 * after the conversion is done, the marker will be available in
 	 * {@link module:engine/model/model~Model#markers model document markers}.
+	 *
+	 * **Note**: When this helper is used in the data upcast in combination with
+	 * {@link module:engine/conversion/downcasthelpers~DowncastHelpers#markerToData `#markerToData()`} in the data downcast,
+	 * then invalid HTML code (e.g. a span between table cells) may be produced by the latter converter.
+	 *
+	 * In most of the cases, the {@link #dataToMarker} should be used instead.
 	 *
 	 *		editor.conversion.for( 'upcast' ).elementToMarker( {
 	 *			view: 'marker-search',
@@ -330,7 +335,6 @@ export default class UpcastHelpers extends ConversionHelpers {
 	 * See {@link module:engine/conversion/conversion~Conversion#for `conversion.for()`} to learn how to add a converter
 	 * to the conversion process.
 	 *
-	 * @deprecated
 	 * @method #elementToMarker
 	 * @param {Object} config Conversion configuration.
 	 * @param {module:engine/view/matcher~MatcherPattern} config.view Pattern matching all view elements which should be converted.
@@ -340,15 +344,6 @@ export default class UpcastHelpers extends ConversionHelpers {
 	 * @returns {module:engine/conversion/upcasthelpers~UpcastHelpers}
 	 */
 	elementToMarker( config ) {
-		/**
-		 * The {@link module:engine/conversion/upcasthelpers~UpcastHelpers#elementToMarker `UpcastHelpers#elementToMarker()`}
-		 * method was deprecated and will be removed in the near future.
-		 * Please use {@link module:engine/conversion/upcasthelpers~UpcastHelpers#dataToMarker `UpcastHelpers#dataToMarker()`} instead.
-		 *
-		 * @error upcast-helpers-element-to-marker-deprecated
-		 */
-		logWarning( 'upcast-helpers-element-to-marker-deprecated' );
-
 		return this.add( upcastElementToMarker( config ) );
 	}
 
@@ -872,6 +867,13 @@ function prepareToAttributeConverter( config, shallow ) {
 	const matcher = new Matcher( config.view );
 
 	return ( evt, data, conversionApi ) => {
+		// Converting an attribute of an element that has not been converted to anything does not make sense
+		// because there will be nowhere to set that attribute on. At this stage, the element should've already
+		// been converted (https://github.com/ckeditor/ckeditor5/issues/11000).
+		if ( !data.modelRange && shallow ) {
+			return;
+		}
+
 		const match = matcher.match( data.viewItem );
 
 		// If there is no match, this callback should not do anything.
@@ -882,7 +884,8 @@ function prepareToAttributeConverter( config, shallow ) {
 		if ( onlyViewNameIsDefined( config.view, data.viewItem ) ) {
 			match.match.name = true;
 		} else {
-			// Do not test or consume `name` consumable.
+			// Do not test `name` consumable because it could get consumed already while upcasting some other attribute
+			// on the same element (for example <span class="big" style="color: red">foo</span>).
 			delete match.match.name;
 		}
 
@@ -913,6 +916,15 @@ function prepareToAttributeConverter( config, shallow ) {
 		// It may happen that a converter will try to set an attribute that is not allowed in the given context.
 		// In such a situation we cannot consume the attribute. See: https://github.com/ckeditor/ckeditor5/pull/9249#issuecomment-815658459.
 		if ( attributeWasSet ) {
+			// Verify if the element itself wasn't consumed yet. It could be consumed already while upcasting some other attribute
+			// on the same element (for example <span class="big" style="color: red">foo</span>).
+			// We need to consume it so other features (especially GHS) won't try to convert it.
+			// Note that it's not tested by the other element-to-attribute converters whether an element was consumed before
+			// (in case of converters that the element itself is just a context and not the primary information to convert).
+			if ( conversionApi.consumable.test( data.viewItem, { name: true } ) ) {
+				match.match.name = true;
+			}
+
 			conversionApi.consumable.consume( data.viewItem, match.match );
 		}
 	};

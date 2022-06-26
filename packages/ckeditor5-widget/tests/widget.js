@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2021, CKSource - Frederico Knabben. All rights reserved.
+ * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -91,7 +91,7 @@ describe( 'Widget', () => {
 
 				editor.conversion.for( 'downcast' )
 					.elementToElement( { model: 'inline', view: ( modelItem, { writer } ) => {
-						return writer.createContainerElement( 'figure', null, { isAllowedInsideAttributeElement: true } );
+						return writer.createContainerElement( 'figure' );
 					} } )
 					.elementToElement( { model: 'imageBlock', view: 'img' } )
 					.elementToElement( { model: 'blockQuote', view: 'blockquote' } )
@@ -109,7 +109,7 @@ describe( 'Widget', () => {
 					.elementToElement( {
 						model: 'inline-widget',
 						view: ( modelItem, { writer } ) => {
-							const span = writer.createContainerElement( 'span', null, { isAllowedInsideAttributeElement: true } );
+							const span = writer.createContainerElement( 'span' );
 
 							return toWidget( span, writer );
 						}
@@ -554,6 +554,48 @@ describe( 'Widget', () => {
 				// Note: The first step is handled by the WidgetTypeAround plugin.
 				[ keyCodes.arrowup, keyCodes.arrowup ],
 				'[<widget></widget>]<paragraph>foo</paragraph>'
+			);
+
+			test(
+				'should not move selection if there is no correct location after an inline widget - right arrow',
+				'<paragraph>foo<inline-widget></inline-widget>[]</paragraph>',
+				[ keyCodes.arrowright ],
+				'<paragraph>foo<inline-widget></inline-widget>[]</paragraph>'
+			);
+
+			test(
+				'should not move selection if there is no correct location after an inline widget - down arrow',
+				'<paragraph>foo<inline-widget></inline-widget>[]</paragraph>',
+				[ keyCodes.arrowdown ],
+				'<paragraph>foo<inline-widget></inline-widget>[]</paragraph>'
+			);
+
+			test(
+				'should not move selection if there is no correct location before an inline widget - left arrow',
+				'<paragraph>[]<inline-widget></inline-widget>foo</paragraph>',
+				[ keyCodes.arrowleft ],
+				'<paragraph>[]<inline-widget></inline-widget>foo</paragraph>'
+			);
+
+			test(
+				'should not move selection if there is no correct location before an inline widget - up arrow',
+				'<paragraph>[]<inline-widget></inline-widget>foo</paragraph>',
+				[ keyCodes.arrowup ],
+				'<paragraph>[]<inline-widget></inline-widget>foo</paragraph>'
+			);
+
+			test(
+				'should not move selection if there is an inline widget after caret - down arrow',
+				'<paragraph>[]<inline-widget></inline-widget>foo</paragraph>',
+				[ keyCodes.arrowdown ],
+				'<paragraph>[]<inline-widget></inline-widget>foo</paragraph>'
+			);
+
+			test(
+				'should not move selection if there is an inline widget before caret - up arrow',
+				'<paragraph>foo<inline-widget></inline-widget>[]</paragraph>',
+				[ keyCodes.arrowup ],
+				'<paragraph>foo<inline-widget></inline-widget>[]</paragraph>'
 			);
 
 			test(
@@ -1349,7 +1391,7 @@ describe( 'Widget', () => {
 				'<paragraph>foo</paragraph>'
 			);
 
-			editor.isReadOnly = true;
+			editor.enableReadOnlyMode( 'unit-test' );
 
 			const domEventDataMock = { target: document.createElement( 'div' ), preventDefault: sinon.spy() };
 
@@ -1377,7 +1419,7 @@ describe( 'Widget', () => {
 				'<paragraph>foo</paragraph>'
 			);
 
-			editor.isReadOnly = true;
+			editor.enableReadOnlyMode( 'unit-test' );
 
 			const domEventDataMock = { target: document.createElement( 'div' ), preventDefault: sinon.spy() };
 

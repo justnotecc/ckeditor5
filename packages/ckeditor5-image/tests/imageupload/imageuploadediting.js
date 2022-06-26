@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2021, CKSource - Frederico Knabben. All rights reserved.
+ * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -26,7 +26,7 @@ import { setData as setModelData, getData as getModelData } from '@ckeditor/cked
 import { getData as getViewData, stringify as stringifyView } from '@ckeditor/ckeditor5-engine/src/dev-utils/view';
 
 import Notification from '@ckeditor/ckeditor5-ui/src/notification/notification';
-import { modelToViewAttributeConverter } from '../../src/image/converters';
+import { downcastImageAttribute } from '../../src/image/converters';
 
 describe( 'ImageUploadEditing', () => {
 	// eslint-disable-next-line max-len
@@ -270,7 +270,7 @@ describe( 'ImageUploadEditing', () => {
 				const targetRange = editor.model.document.selection.getFirstRange();
 				const targetViewRange = editor.editing.mapper.toViewRange( targetRange );
 
-				editor.isReadOnly = true;
+				editor.enableReadOnlyMode( 'unit-test' );
 
 				editor.editing.view.document.fire( 'clipboardInput', { dataTransfer, targetRanges: [ targetViewRange ] } );
 
@@ -835,7 +835,7 @@ describe( 'ImageUploadEditing', () => {
 			editor.model.schema.extend( 'imageBlock', { allowAttributes: 'data-original' } );
 
 			editor.conversion.for( 'downcast' )
-				.add( modelToViewAttributeConverter( editor.plugins.get( 'ImageUtils' ), 'data-original' ) );
+				.add( downcastImageAttribute( editor.plugins.get( 'ImageUtils' ), 'data-original' ) );
 
 			editor.conversion.for( 'upcast' )
 				.attributeToAttribute( {
@@ -868,8 +868,8 @@ describe( 'ImageUploadEditing', () => {
 				loader.file.then( () => adapterMocks[ 0 ].mockSuccess( { originalUrl: 'original.jpg', default: 'image.jpg' } ) );
 			} );
 
-			// Make sure the custom attribute was set in the same transparent batch as the default handling (setting src and status).
-			expect( batch.type ).to.equal( 'transparent' );
+			// Make sure the custom attribute was set in the same non-undoable batch as the default handling (setting src and status).
+			expect( batch.isUndoable ).to.be.false;
 			expect( batch.operations.length ).to.equal( 3 );
 
 			expect( batch.operations[ 0 ].type ).to.equal( 'changeAttribute' );
@@ -923,8 +923,8 @@ describe( 'ImageUploadEditing', () => {
 				) );
 			} );
 
-			// Make sure the custom attribute was set in the same transparent batch as the default handling (setting src and status).
-			expect( batch.type ).to.equal( 'transparent' );
+			// Make sure the custom attribute was set in the non-undoable batch as the default handling (setting src and status).
+			expect( batch.isUndoable ).to.be.false;
 			expect( batch.operations.length ).to.equal( 2 );
 
 			expect( batch.operations[ 0 ].type ).to.equal( 'changeAttribute' );

@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2021, CKSource - Frederico Knabben. All rights reserved.
+ * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -32,8 +32,6 @@ import { StylesProcessor } from '../../src/view/stylesmap';
 import Writer from '../../src/model/writer';
 
 import toArray from '@ckeditor/ckeditor5-utils/src/toarray';
-
-/* globals console */
 
 describe( 'UpcastHelpers', () => {
 	let upcastDispatcher, model, schema, upcastHelpers, viewDocument;
@@ -335,7 +333,7 @@ describe( 'UpcastHelpers', () => {
 			);
 		} );
 
-		it( 'should consume element only when only is name specified', () => {
+		it( 'should allow to convert an attribute if an element was already consumed', () => {
 			upcastHelpers.elementToAttribute( {
 				model: 'bold',
 				view: { name: 'strong' }
@@ -354,6 +352,29 @@ describe( 'UpcastHelpers', () => {
 			expectResult(
 				new ViewAttributeElement( viewDocument, 'strong', { class: 'foo' }, new ViewText( viewDocument, 'foo' ) ),
 				'<$text attribB="true" bold="true">foo</$text>'
+			);
+		} );
+
+		it( 'should consume an element even if only attributes were converted', () => {
+			upcastHelpers.elementToAttribute( {
+				model: 'attribA',
+				view: { name: 'strong', classes: 'foo' }
+			} );
+
+			upcastHelpers.elementToAttribute( {
+				model: 'attribB',
+				view: { name: 'strong', classes: 'bar' }
+			} );
+
+			// This one should not get converted because element itself is already consumed.
+			upcastHelpers.elementToAttribute( {
+				model: 'bold',
+				view: { name: 'strong' }
+			} );
+
+			expectResult(
+				new ViewAttributeElement( viewDocument, 'strong', { class: 'foo bar' }, new ViewText( viewDocument, 'foo' ) ),
+				'<$text attribA="true" attribB="true">foo</$text>'
 			);
 		} );
 
@@ -714,6 +735,30 @@ describe( 'UpcastHelpers', () => {
 			);
 		} );
 
+		// https://github.com/ckeditor/ckeditor5/issues/11000
+		it( 'should not set an attribute on child nodes if parent was not converted', () => {
+			upcastHelpers.elementToElement( { view: 'p', model: 'paragraph' } );
+			upcastHelpers.attributeToAttribute( { view: { key: 'foo' }, model: 'foo' } );
+
+			schema.extend( 'paragraph', {
+				allowAttributes: [ 'foo' ]
+			} );
+
+			schema.extend( '$text', {
+				allowAttributes: [ 'foo' ]
+			} );
+
+			const viewElement = viewParse(
+				'<div foo="foo-value">abc</div>' +
+				'<p foo="foo-value">def</p>'
+			);
+
+			expectResult(
+				viewElement,
+				'abc<paragraph foo="foo-value">def</paragraph>'
+			);
+		} );
+
 		// #9536.
 		describe( 'calling the `model.value()` callback', () => {
 			it( 'should not call the `model.view()` callback if the attribute was already consumed', () => {
@@ -751,16 +796,6 @@ describe( 'UpcastHelpers', () => {
 	} );
 
 	describe( 'elementToMarker()', () => {
-		beforeEach( () => {
-			// Silence warning about deprecated method.
-			// This whole suite will be removed when the deprecated method is removed.
-			sinon.stub( console, 'warn' );
-		} );
-
-		afterEach( () => {
-			console.warn.restore();
-		} );
-
 		it( 'should be chainable', () => {
 			expect( upcastHelpers.elementToMarker( { view: 'marker-search', model: 'search' } ) ).to.equal( upcastHelpers );
 		} );

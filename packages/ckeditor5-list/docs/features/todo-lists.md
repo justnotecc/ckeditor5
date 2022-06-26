@@ -45,7 +45,7 @@ ClassicEditor
 ```
 
 <info-box info>
-	Read more about {@link builds/guides/integration/installing-plugins installing plugins}.
+	Read more about {@link installation/getting-started/installing-plugins installing plugins}.
 </info-box>
 
 ## HTML structure
@@ -98,7 +98,7 @@ From the technical point of view, to-do lists are built on top of the {@link mod
 
 ## Ordered and unordered lists
 
-You can read more about these features in the {@link features/lists Lists} feature guide.
+You can read more about these features in the {@link features/lists lists feature guide}.
 
 ## Contribute
 

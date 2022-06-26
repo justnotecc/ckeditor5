@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2021, CKSource - Frederico Knabben. All rights reserved.
+ * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -103,18 +103,15 @@ export default class ImageUtils extends Plugin {
 		return model.change( writer => {
 			const imageElement = writer.createElement( imageType, attributes );
 
-			// If we want to insert a block image (for whatever reason) then we don't want to split text blocks.
-			// This applies only when we don't have the selectable specified (i.e., we insert multiple block images at once).
-			if ( !selectable && imageType != 'imageInline' ) {
-				selectable = findOptimalInsertionRange( selection, model );
-			}
-
-			model.insertContent( imageElement, selectable );
+			model.insertObject( imageElement, selectable, null, {
+				setSelection: 'on',
+				// If we want to insert a block image (for whatever reason) then we don't want to split text blocks.
+				// This applies only when we don't have the selectable specified (i.e., we insert multiple block images at once).
+				findOptimalPosition: !selectable && imageType != 'imageInline'
+			} );
 
 			// Inserting an image might've failed due to schema regulations.
 			if ( imageElement.parent ) {
-				writer.setSelection( imageElement, 'on' );
-
 				return imageElement;
 			}
 
@@ -190,7 +187,7 @@ export default class ImageUtils extends Plugin {
 		writer.setCustomProperty( 'image', true, viewElement );
 
 		const labelCreator = () => {
-			const imgElement = this.getViewImageFromWidget( viewElement );
+			const imgElement = this.findViewImgElement( viewElement );
 			const altText = imgElement.getAttribute( 'alt' );
 
 			return altText ? `${ altText } ${ label }` : label;
@@ -231,33 +228,25 @@ export default class ImageUtils extends Plugin {
 	}
 
 	/**
-	 * Get view `<img>` element from the view widget (`<figure>`).
+	 * Get the view `<img>` from another view element, e.g. a widget (`<figure class="image">`), a link (`<a>`).
 	 *
-	 * Assuming that image is always a first child of a widget (ie. `figureView.getChild( 0 )`) is unsafe as other features might
-	 * inject their own elements to the widget.
+	 * The `<img>` can be located deep in other elements, so this helper performs a deep tree search.
 	 *
-	 * The `<img>` can be wrapped to other elements, e.g. `<a>`. Nested check required.
-	 *
-	 * @protected
 	 * @param {module:engine/view/element~Element} figureView
 	 * @returns {module:engine/view/element~Element}
 	 */
-	getViewImageFromWidget( figureView ) {
+	findViewImgElement( figureView ) {
 		if ( this.isInlineImageView( figureView ) ) {
 			return figureView;
 		}
 
-		const figureChildren = [];
+		const editingView = this.editor.editing.view;
 
-		for ( const figureChild of figureView.getChildren() ) {
-			figureChildren.push( figureChild );
-
-			if ( figureChild.is( 'element' ) ) {
-				figureChildren.push( ...figureChild.getChildren() );
+		for ( const { item } of editingView.createRangeIn( figureView ) ) {
+			if ( this.isInlineImageView( item ) ) {
+				return item;
 			}
 		}
-
-		return figureChildren.find( this.isInlineImageView );
 	}
 }
 

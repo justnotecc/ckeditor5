@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2021, CKSource - Frederico Knabben. All rights reserved.
+ * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -14,8 +14,6 @@ import { Matcher } from 'ckeditor5/src/engine';
 import { priorities, CKEditorError } from 'ckeditor5/src/utils';
 import { Widget } from 'ckeditor5/src/widget';
 import {
-	disallowedAttributesConverter,
-
 	viewToModelObjectConverter,
 	toObjectWidgetConverter,
 	createObjectView,
@@ -54,6 +52,9 @@ import '../theme/datafilter.css';
  *				color: /[\s\S]+/
  *			}
  *		} );
+ *
+ * To apply the information about allowed and disallowed attributes in custom integration plugin,
+ * use the {@link module:html-support/datafilter~DataFilter#processViewAttributes `processViewAttributes()`} method.
  *
  * @extends module:core/plugin~Plugin
  */
@@ -108,8 +109,18 @@ export default class DataFilter extends Plugin {
 		*/
 		this._dataInitialized = false;
 
+		/**
+		 * Cached map of coupled attributes. Keys are the feature attributes names
+		 * and values are arrays with coupled GHS attributes names.
+		 *
+		 * @private
+		 * @member {Map.<String,Array>}
+		 */
+		this._coupledAttributes = null;
+
 		this._registerElementsAfterInit();
 		this._registerElementHandlers();
+		this._registerModelPostFixer();
 	}
 
 	/**
@@ -169,6 +180,9 @@ export default class DataFilter extends Plugin {
 			if ( this._dataInitialized ) {
 				this._fireRegisterEvent( definition );
 			}
+
+			// Reset cached map to recalculate it on the next usage.
+			this._coupledAttributes = null;
 		}
 	}
 
@@ -210,33 +224,35 @@ export default class DataFilter extends Plugin {
 	}
 
 	/**
-	 * Matches and consumes allowed view attributes.
+	 * Processes all allowed and disallowed attributes on the view element by consuming them and returning the allowed ones.
 	 *
-	 * @protected
+	 * This method applies the configuration set up by {@link #allowAttributes `allowAttributes()`}
+	 * and {@link #disallowAttributes `disallowAttributes()`} over the given view element by consuming relevant attributes.
+	 * It returns the allowed attributes that were found on the given view element for further processing by integration code.
+	 *
+	 *		dispatcher.on( 'element:myElement', ( evt, data, conversionApi ) => {
+	 *			// Get rid of disallowed and extract all allowed attributes from a viewElement.
+	 *			const viewAttributes = dataFilter.processViewAttributes( data.viewItem, conversionApi );
+	 *			// Do something with them, i.e. store inside a model as a dictionary.
+	 *			if ( viewAttributes ) {
+	 *				conversionApi.writer.setAttribute( 'htmlAttributesOfMyElement', viewAttributes, data.modelRange );
+	 *			}
+	 *		} );
+	 *
+	 * @see module:engine/conversion/viewconsumable~ViewConsumable#consume
 	 * @param {module:engine/view/element~Element} viewElement
-	 * @param {module:engine/conversion/downcastdispatcher~DowncastConversionApi} conversionApi
+	 * @param {module:engine/conversion/upcastdispatcher~UpcastConversionApi} conversionApi
 	 * @returns {Object} [result]
 	 * @returns {Object} result.attributes Set with matched attribute names.
 	 * @returns {Object} result.styles Set with matched style names.
 	 * @returns {Array.<String>} result.classes Set with matched class names.
 	 */
-	_consumeAllowedAttributes( viewElement, conversionApi ) {
-		return consumeAttributes( viewElement, conversionApi, this._allowedAttributes );
-	}
+	processViewAttributes( viewElement, conversionApi ) {
+		// Make sure that the disabled attributes are handled before the allowed attributes are called.
+		// For example, for block images the <figure> converter triggers conversion for <img> first and then for other elements, i.e. <a>.
+		consumeAttributes( viewElement, conversionApi, this._disallowedAttributes );
 
-	/**
-	 * Matches and consumes disallowed view attributes.
-	 *
-	 * @protected
-	 * @param {module:engine/view/element~Element} viewElement
-	 * @param {module:engine/conversion/downcastdispatcher~DowncastConversionApi} conversionApi
-	 * @returns {Object} [result]
-	 * @returns {Object} result.attributes Set with matched attribute names.
-	 * @returns {Object} result.styles Set with matched style names.
-	 * @returns {Array.<String>} result.classes Set with matched class names.
-	 */
-	_consumeDisallowedAttributes( viewElement, conversionApi ) {
-		return consumeAttributes( viewElement, conversionApi, this._disallowedAttributes );
+		return consumeAttributes( viewElement, conversionApi, this._allowedAttributes );
 	}
 
 	/**
@@ -253,10 +269,14 @@ export default class DataFilter extends Plugin {
 				this._fireRegisterEvent( definition );
 			}
 		}, {
-			// With high priority listener we are able to register elements right before
-			// running data conversion. Make also sure that priority is higher than the one
-			// used by `RealTimeCollaborationClient`, as RTC is stopping event propagation.
-			priority: priorities.get( 'high' ) + 1
+			// With highest priority listener we are able to register elements right before
+			// running data conversion. Also:
+			// * Make sure that priority is higher than the one used by `RealTimeCollaborationClient`,
+			// as RTC is stopping event propagation.
+			// * Make sure no other features hook into this event before GHS because otherwise the
+			// downcast conversion (for these features) could run before GHS registered its converters
+			// (https://github.com/ckeditor/ckeditor5/issues/11356).
+			priority: priorities.get( 'highest' ) + 1
 		} );
 	}
 
@@ -298,6 +318,91 @@ export default class DataFilter extends Plugin {
 	}
 
 	/**
+	 * Registers a model post-fixer that is removing coupled GHS attributes of inline elements. Those attributes
+	 * are removed if a coupled feature attribute is removed.
+	 *
+	 * For example, consider following HTML:
+	 *
+	 *		<a href="foo.html" id="myId">bar</a>
+	 *
+	 * Which would be upcasted to following text node in the model:
+	 *
+	 *		<$text linkHref="foo.html" htmlA="{ attributes: { id: 'myId' } }">bar</$text>
+	 *
+	 * When the user removes the link from that text (using UI), only `linkHref` attribute would be removed:
+	 *
+	 *		<$text htmlA="{ attributes: { id: 'myId' } }">bar</$text>
+	 *
+	 * The `htmlA` attribute would stay in the model and would cause GHS to generate an `<a>` element.
+	 * This is incorrect from UX point of view, as the user wanted to remove the whole link (not only `href`).
+	 *
+	 * @private
+	 */
+	_registerModelPostFixer() {
+		const model = this.editor.model;
+
+		model.document.registerPostFixer( writer => {
+			const changes = model.document.differ.getChanges();
+			let changed = false;
+
+			const coupledAttributes = this._getCoupledAttributesMap();
+
+			for ( const change of changes ) {
+				// Handle only attribute removals.
+				if ( change.type != 'attribute' || change.attributeNewValue !== null ) {
+					continue;
+				}
+
+				// Find a list of coupled GHS attributes.
+				const attributeKeys = coupledAttributes.get( change.attributeKey );
+
+				if ( !attributeKeys ) {
+					continue;
+				}
+
+				// Remove the coupled GHS attributes on the same range as the feature attribute was removed.
+				for ( const { item } of change.range.getWalker( { shallow: true } ) ) {
+					for ( const attributeKey of attributeKeys ) {
+						if ( item.hasAttribute( attributeKey ) ) {
+							writer.removeAttribute( attributeKey, item );
+							changed = true;
+						}
+					}
+				}
+			}
+
+			return changed;
+		} );
+	}
+
+	/**
+	 * Collects the map of coupled attributes. The returned map is keyed by the feature attribute name
+	 * and coupled GHS attribute names are stored in the value array .
+	 *
+	 * @private
+	 * @returns {Map.<String,Array>}
+	 */
+	_getCoupledAttributesMap() {
+		if ( this._coupledAttributes ) {
+			return this._coupledAttributes;
+		}
+
+		this._coupledAttributes = new Map();
+
+		for ( const definition of this._allowedElements ) {
+			if ( definition.coupledAttribute && definition.model ) {
+				const attributeNames = this._coupledAttributes.get( definition.coupledAttribute );
+
+				if ( attributeNames ) {
+					attributeNames.push( definition.model );
+				} else {
+					this._coupledAttributes.set( definition.coupledAttribute, [ definition.model ] );
+				}
+			}
+		}
+	}
+
+	/**
 	 * Fires `register` event for the given element definition.
 	 *
 	 * @private
@@ -321,6 +426,7 @@ export default class DataFilter extends Plugin {
 
 		schema.register( modelName, definition.modelSchema );
 
+		/* istanbul ignore next: paranoid check */
 		if ( !viewName ) {
 			return;
 		}
@@ -335,7 +441,6 @@ export default class DataFilter extends Plugin {
 			name: viewName
 		} );
 
-		conversion.for( 'upcast' ).add( disallowedAttributesConverter( definition, this ) );
 		conversion.for( 'upcast' ).elementToElement( {
 			view: viewName,
 			model: viewToModelObjectConverter( definition ),
@@ -345,8 +450,13 @@ export default class DataFilter extends Plugin {
 		} );
 		conversion.for( 'upcast' ).add( viewToModelBlockAttributeConverter( definition, this ) );
 
-		conversion.for( 'editingDowncast' ).elementToElement( {
-			model: modelName,
+		conversion.for( 'editingDowncast' ).elementToStructure( {
+			model: {
+				name: modelName,
+				attributes: [
+					'htmlAttributes'
+				]
+			},
 			view: toObjectWidgetConverter( editor, definition )
 		} );
 
@@ -400,7 +510,6 @@ export default class DataFilter extends Plugin {
 			allowAttributes: 'htmlAttributes'
 		} );
 
-		conversion.for( 'upcast' ).add( disallowedAttributesConverter( definition, this ) );
 		conversion.for( 'upcast' ).add( viewToModelBlockAttributeConverter( definition, this ) );
 		conversion.for( 'downcast' ).add( modelToViewBlockAttributeConverter( definition ) );
 	}
@@ -427,7 +536,6 @@ export default class DataFilter extends Plugin {
 			schema.setAttributeProperties( attributeKey, definition.attributeProperties );
 		}
 
-		conversion.for( 'upcast' ).add( disallowedAttributesConverter( definition, this ) );
 		conversion.for( 'upcast' ).add( viewToAttributeInlineConverter( definition, this ) );
 
 		conversion.for( 'downcast' ).attributeToElement( {
@@ -468,7 +576,7 @@ export default class DataFilter extends Plugin {
 //
 // @private
 // @param {module:engine/view/element~Element} viewElement
-// @param {module:engine/conversion/downcastdispatcher~DowncastConversionApi} conversionApi
+// @param {module:engine/conversion/upcastdispatcher~UpcastConversionApi} conversionApi
 // @param {module:engine/view/matcher~Matcher Matcher} matcher
 // @returns {Object} [result]
 // @returns {Object} result.attributes
@@ -502,7 +610,7 @@ function consumeAttributes( viewElement, conversionApi, matcher ) {
 //
 // @private
 // @param {module:engine/view/element~Element} viewElement
-// @param {module:engine/conversion/downcastdispatcher~DowncastConversionApi} conversionApi
+// @param {module:engine/conversion/upcastdispatcher~UpcastConversionApi} conversionApi
 // @param {module:engine/view/matcher~Matcher Matcher} matcher
 // @returns {Array.<Object>} Array with match information about found attributes.
 function consumeAttributeMatches( viewElement, { consumable }, matcher ) {
@@ -515,9 +623,8 @@ function consumeAttributeMatches( viewElement, { consumable }, matcher ) {
 		// We only want to consume attributes, so element can be still processed by other converters.
 		delete match.match.name;
 
-		if ( consumable.consume( viewElement, match.match ) ) {
-			consumedMatches.push( match );
-		}
+		consumable.consume( viewElement, match.match );
+		consumedMatches.push( match );
 	}
 
 	return consumedMatches;
@@ -527,7 +634,7 @@ function consumeAttributeMatches( viewElement, { consumable }, matcher ) {
 //
 // @private
 // @param {module:engine/view/element~Element} viewElement
-// @param {module:engine/conversion/modelconsumable~ModelConsumable} consumable
+// @param {module:engine/conversion/viewconsumable~ViewConsumable} consumable
 // @param {Object} match
 function removeConsumedAttributes( consumable, viewElement, match ) {
 	for ( const key of [ 'attributes', 'classes', 'styles' ] ) {
@@ -537,7 +644,8 @@ function removeConsumedAttributes( consumable, viewElement, match ) {
 			continue;
 		}
 
-		for ( const value of attributes ) {
+		// Iterating over a copy of an array so removing items doesn't influence iteration.
+		for ( const value of Array.from( attributes ) ) {
 			if ( !consumable.test( viewElement, ( { [ key ]: [ value ] } ) ) ) {
 				removeItemFromArray( attributes, value );
 			}

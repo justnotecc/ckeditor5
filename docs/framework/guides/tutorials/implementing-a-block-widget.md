@@ -33,11 +33,12 @@ First, install packages needed to build and set up a basic CKEditor 5 instance.
 
 ```bash
 npm install --save \
-	postcss-loader@3 \
-	raw-loader@3 \
-	style-loader@1 \
-	webpack@4 \
-	webpack-cli@3 \
+	css-loader@5 \
+	postcss-loader@4 \
+	raw-loader@4 \
+	style-loader@2 \
+	webpack@5 \
+	webpack-cli@4 \
 	@ckeditor/ckeditor5-dev-utils \
 	@ckeditor/ckeditor5-editor-classic \
 	@ckeditor/ckeditor5-essentials \
@@ -84,15 +85,18 @@ module.exports = {
 							}
 						}
 					},
+					'css-loader',
 					{
 						loader: 'postcss-loader',
-						options: styles.getPostCssConfig( {
-							themeImporter: {
-								themePath: require.resolve( '@ckeditor/ckeditor5-theme-lark' )
-							},
-							minify: true
-						} )
-					},
+						options: {
+							postcssOptions: styles.getPostCssConfig( {
+								themeImporter: {
+									themePath: require.resolve( '@ckeditor/ckeditor5-theme-lark' )
+								},
+								minify: true
+							} )
+						}
+					}
 				]
 			}
 		]
@@ -364,7 +368,7 @@ For the simple box plugin to start doing anything you need to define model-view 
 Converters tell the editor how to convert the view to the model (e.g. when loading the data to the editor or handling pasted content) and how to render the model to the view (for editing purposes, or when retrieving the editor data).
 
 <info-box>
-	Read more about the {@link framework/guides/architecture/editing-engine#conversion model-view conversion}.
+	Read more about the {@link framework/guides/deep-dive/conversion/downcast conversion in the editor}.
 </info-box>
 
 This is the moment when you need to think about how you want to render the `<simpleBox>` element and its children to the DOM (what the user will see) and to the data. CKEditor 5 allows converting the model to a different structure for editing purposes and a different one to be stored as "data" or exchanged with other applications when copy-pasting the content. However, for simplicity, use the same representation in both pipelines for now.
@@ -979,11 +983,11 @@ Refresh the web page and try it yourself:
 
 ## Demo
 
-You can see the block widget implementation in action in the editor below. You can also check out the full [source code](#full-source-code) of this tutorial if you want to develop your own block widgets.
+You can see the block widget implementation in action in the editor below. You can also check out the full [source code](#final-solution) of this tutorial if you want to develop your own block widgets.
 
 {@snippet framework/tutorials/block-widget}
 
-## Full source code
+## Final solution
 
 The following code contains a complete implementation of the `SimpleBox` plugin (and all its dependencies) and the code to run the editor. You can paste it into the [`app.js`](#plugin-structure) file and it will run out–of–the–box:
 

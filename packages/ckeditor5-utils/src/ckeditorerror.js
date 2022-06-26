@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2021, CKSource - Frederico Knabben. All rights reserved.
+ * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -12,8 +12,7 @@
 /**
  * URL to the documentation with error codes.
  */
-export const DOCUMENTATION_URL =
-	'https://ckeditor.com/docs/ckeditor5/latest/framework/guides/support/error-codes.html';
+export const DOCUMENTATION_URL = 'https://ckeditor.com/docs/ckeditor5/latest/support/error-codes.html';
 
 /**
  * The CKEditor error class.
@@ -59,9 +58,7 @@ export default class CKEditorError extends Error {
 	 * data object will also be later available under the {@link #data} property.
 	 */
 	constructor( errorName, context, data ) {
-		const message = `${ errorName }${ ( data ? ` ${ JSON.stringify( data ) }` : '' ) }${ getLinkToDocumentationMessage( errorName ) }`;
-
-		super( message );
+		super( getErrorMessage( errorName, data ) );
 
 		/**
 		 * @type {String}
@@ -85,6 +82,7 @@ export default class CKEditorError extends Error {
 
 	/**
 	 * Checks if the error is of the `CKEditorError` type.
+	 * @returns {Boolean}
 	 */
 	is( type ) {
 		return type === 'CKEditorError';
@@ -142,7 +140,6 @@ export default class CKEditorError extends Error {
  *
  * @param {String} errorName The error name to be logged.
  * @param {Object} [data] Additional data to be logged.
- * @returns {String}
  */
 export function logWarning( errorName, data ) {
 	console.warn( ...formatConsoleArguments( errorName, data ) );
@@ -167,16 +164,52 @@ export function logWarning( errorName, data ) {
  *
  * @param {String} errorName The error name to be logged.
  * @param {Object} [data] Additional data to be logged.
- * @returns {String}
  */
 export function logError( errorName, data ) {
 	console.error( ...formatConsoleArguments( errorName, data ) );
 }
 
+// Returns formatted link to documentation message.
+//
+// @private
+// @param {String} errorName
+// @returns {string}
 function getLinkToDocumentationMessage( errorName ) {
 	return `\nRead more: ${ DOCUMENTATION_URL }#error-${ errorName }`;
 }
 
+// Returns formatted error message.
+//
+// @private
+// @param {String} errorName
+// @param {Object} [data]
+// @returns {string}
+function getErrorMessage( errorName, data ) {
+	const processedObjects = new WeakSet();
+	const circularReferencesReplacer = ( key, value ) => {
+		if ( typeof value === 'object' && value !== null ) {
+			if ( processedObjects.has( value ) ) {
+				return `[object ${ value.constructor.name }]`;
+			}
+
+			processedObjects.add( value );
+		}
+
+		return value;
+	};
+
+	const stringifiedData = data ? ` ${ JSON.stringify( data, circularReferencesReplacer ) }` : '';
+	const documentationLink = getLinkToDocumentationMessage( errorName );
+
+	return errorName + stringifiedData + documentationLink;
+}
+
+// Returns formatted console error arguments.
+//
+// @private
+// @param {String} errorName
+// @param {Object} [data]
+// @returns {Array}
 function formatConsoleArguments( errorName, data ) {
 	const documentationMessage = getLinkToDocumentationMessage( errorName );
 
