@@ -261,6 +261,12 @@ describe( 'ButtonView', () => {
 				expect( view.element.attributes[ 'aria-disabled' ].value ).to.equal( 'true' );
 			} );
 
+			it( '-pressed has correct default value for toggleable button', () => {
+				view.isToggleable = true;
+				view.isOn = undefined;
+				expect( view.element.attributes[ 'aria-pressed' ].value ).to.equal( 'false' );
+			} );
+
 			it( '-pressed reacts to #isOn', () => {
 				view.isToggleable = true;
 				view.isOn = true;
@@ -280,10 +286,38 @@ describe( 'ButtonView', () => {
 		} );
 
 		describe( 'mousedown event', () => {
-			it( 'should be prevented', () => {
+			it( 'should not be prevented', () => {
 				const ret = view.element.dispatchEvent( new Event( 'mousedown', { cancelable: true } ) );
 
-				expect( ret ).to.false;
+				expect( ret ).to.true;
+			} );
+
+			describe( 'in Safari', () => {
+				let view, stub;
+
+				beforeEach( () => {
+					stub = testUtils.sinon.stub( env, 'isSafari' ).value( true );
+					view = new ButtonView( locale );
+					view.render();
+				} );
+
+				afterEach( () => {
+					stub.resetBehavior();
+					view.destroy();
+				} );
+
+				it( 'the button is focused', () => {
+					const spy = sinon.spy( view.element, 'focus' );
+					view.element.dispatchEvent( new Event( 'mousedown', { cancelable: true } ) );
+
+					expect( spy.callCount ).to.equal( 1 );
+				} );
+
+				it( 'the event is prevented', () => {
+					const ret = view.element.dispatchEvent( new Event( 'mousedown', { cancelable: true } ) );
+
+					expect( ret ).to.false;
+				} );
 			} );
 		} );
 

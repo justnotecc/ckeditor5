@@ -30,7 +30,9 @@ module.exports = {
 function parseArguments( args ) {
 	const config = {
 		string: [
-			'cwd'
+			'cwd',
+			'packages',
+			'ignore'
 		],
 
 		boolean: [
@@ -39,6 +41,8 @@ function parseArguments( args ) {
 
 		default: {
 			cwd: process.cwd(),
+			packages: [],
+			ignore: [],
 			'include-external-directory': false
 		}
 	};
@@ -52,6 +56,16 @@ function parseArguments( args ) {
 	// Normalize the current work directory path.
 	options.cwd = normalizePath( path.resolve( options.cwd ) );
 
+	// Convert packages to an array.
+	if ( typeof options.packages === 'string' ) {
+		options.packages = options.packages.split( ',' );
+	}
+
+	// Convert packages to skip to an array.
+	if ( typeof options.ignore === 'string' ) {
+		options.ignore = options.ignore.split( ',' );
+	}
+
 	return options;
 }
 
@@ -63,11 +77,11 @@ function parseArguments( args ) {
  */
 function getCKEditor5SourceFiles( { cwd, includeExternalDirectory } ) {
 	const patterns = [
-		'packages/*/src/**/*.js'
+		'packages/*/src/**/*.[jt]s'
 	];
 
 	if ( includeExternalDirectory ) {
-		patterns.push( 'external/*/packages/*/src/**/*.js' );
+		patterns.push( 'external/*/packages/*/src/**/*.[jt]s' );
 	}
 
 	const globOptions = { cwd, absolute: true };
@@ -106,11 +120,20 @@ function getCKEditor5PackagePaths( { cwd, includeExternalDirectory } ) {
  * @param {TranslationOptions} options
  * @return {Array.<CKEditor5Entry>}
  */
-function getCKEditor5PackageNames( transifexProcess, { cwd } ) {
+function getCKEditor5PackageNames( transifexProcess, { cwd, packages, ignore } ) {
 	const packagesPath = normalizePath( cwd, 'packages' );
 
 	return fs.readdirSync( packagesPath )
 		.filter( item => item.startsWith( 'ckeditor5-' ) )
+		.filter( item => {
+			// If no packages to process have been specified, handle all found.
+			if ( packages.length === 0 ) {
+				return true;
+			}
+
+			// Otherwise, process only specified packages.
+			return packages.includes( item );
+		} )
 		.map( packageName => {
 			let resourceName = packageName;
 
@@ -129,6 +152,13 @@ function getCKEditor5PackageNames( transifexProcess, { cwd } ) {
 			const relativePath = path.posix.relative( cwd, absolutePath );
 
 			return [ resourceName, relativePath ];
+		} )
+		.filter( ( [ packageName ] ) => {
+			if ( ignore.includes( packageName ) ) {
+				return false;
+			}
+
+			return true;
 		} );
 }
 
@@ -146,6 +176,10 @@ function normalizePath( ...values ) {
  * @typedef {Object} TranslationOptions
  *
  * @property {String} cwd An absolute path to the root directory from which a command is called.
+ *
+ * @property {Array.<String>} packages Package names to be processed. If empty, all found packages will be processed.
+ *
+ * @property {Array.<String>} [ignore] Name of packages that should be skipped while processing then.
  *
  * @property {Boolean} includeExternalDirectory Whether to look for packages located in the `external/` directory.
  */

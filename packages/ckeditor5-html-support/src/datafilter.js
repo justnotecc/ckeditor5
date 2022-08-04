@@ -7,6 +7,8 @@
  * @module html-support/datafilter
  */
 
+/* globals document */
+
 import DataSchema from './dataschema';
 
 import { Plugin } from 'ckeditor5/src/core';
@@ -552,14 +554,14 @@ export default class DataFilter extends Plugin {
 	 * as an event namespace, e.g. `register:span`.
 	 *
 	 * 		dataFilter.on( 'register', ( evt, definition ) => {
-	 * 			editor.schema.register( definition.model, definition.modelSchema );
+	 * 			editor.model.schema.register( definition.model, definition.modelSchema );
 	 * 			editor.conversion.elementToElement( { model: definition.model, view: definition.view } );
 	 *
 	 * 			evt.stop();
 	 * 		} );
 	 *
 	 * 		dataFilter.on( 'register:span', ( evt, definition ) => {
-	 * 			editor.schema.extend( '$text', { allowAttributes: 'htmlSpan' } );
+	 * 			editor.model.schema.extend( '$text', { allowAttributes: 'htmlSpan' } );
 	 *
 	 * 			editor.conversion.for( 'upcast' ).elementToAttribute( { view: 'span', model: 'htmlSpan' } );
 	 * 			editor.conversion.for( 'downcast' ).attributeToElement( { view: 'span', model: 'htmlSpan' } );
@@ -586,6 +588,15 @@ function consumeAttributes( viewElement, conversionApi, matcher ) {
 	const matches = consumeAttributeMatches( viewElement, conversionApi, matcher );
 	const { attributes, styles, classes } = mergeMatchResults( matches );
 	const viewAttributes = {};
+
+	// Remove invalid DOM element attributes.
+	if ( attributes.size ) {
+		for ( const key of attributes ) {
+			if ( !isValidAttributeName( key ) ) {
+				attributes.delete( key );
+			}
+		}
+	}
 
 	if ( attributes.size ) {
 		viewAttributes.attributes = iterableToObject( attributes, key => viewElement.getAttribute( key ) );
@@ -751,4 +762,15 @@ function splitRules( rules ) {
 	}
 
 	return splittedRules;
+}
+
+// Returns true if name is valid for a DOM attribute name.
+function isValidAttributeName( name ) {
+	try {
+		document.createAttribute( name );
+	} catch ( error ) {
+		return false;
+	}
+
+	return true;
 }
