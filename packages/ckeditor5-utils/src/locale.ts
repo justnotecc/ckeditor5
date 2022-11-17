@@ -105,7 +105,7 @@ export default class Locale {
 	 * For messages supporting plural forms the first value will determine the plural form.
 	 * @returns {String}
 	 */
-	public readonly t: ( message: string | Message, values?: number | string | readonly ( number | string )[] ) => string;
+	public readonly t: LocaleTranslate;
 
 	/**
 	 * Creates a new instance of the locale class. Learn more about
@@ -159,7 +159,7 @@ export default class Locale {
 	 * @param {Number|String|Array.<Number|String>} [values]
 	 * @returns {String}
 	 */
-	private _t( message: string | Message, values: number | string | readonly ( number | string )[] = [] ): string {
+	private _t( message: string | Message, values: number | string | ReadonlyArray<number | string> = [] ): string {
 		values = toArray( values );
 
 		if ( typeof message === 'string' ) {
@@ -175,8 +175,10 @@ export default class Locale {
 	}
 }
 
+export type LocaleTranslate = ( message: string | Message, values?: number | string | ReadonlyArray<number | string> ) => string;
+
 // Fills the `%0, %1, ...` string placeholders with values.
-function interpolateString( string: string, values: readonly any[] ): string {
+function interpolateString( string: string, values: ReadonlyArray<any> ): string {
 	return string.replace( /%(\d+)/g, ( match, index ) => {
 		return ( index < values.length ) ? values[ index ] : match;
 	} );

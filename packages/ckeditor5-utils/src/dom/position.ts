@@ -13,7 +13,7 @@ import getPositionedAncestor from './getpositionedancestor';
 import getBorderWidths from './getborderwidths';
 import { isFunction } from 'lodash-es';
 
-// @if CK_DEBUG_POSITION // import { RectDrawer } from '@ckeditor/ckeditor5-minimap/src/utils';
+// @if CK_DEBUG_POSITION // const { RectDrawer } = require( '@ckeditor/ckeditor5-minimap/src/utils' );
 
 /**
  * Calculates the `position: absolute` coordinates of a given element so it can be positioned with respect to the
@@ -162,7 +162,7 @@ function getConstrainedViewportRect( viewportOffsetConfig: Options[ 'viewportOff
 //
 // @returns {module:utils/dom/position~Position|null} An array containing the name of the position and it's rect.
 function getBestPosition(
-	positions: readonly PositioningFunction[],
+	positions: ReadonlyArray<PositioningFunction>,
 	options: ConstructorParameters<typeof PositionObject>[ 1 ]
 ): Position | null {
 	const { elementRect } = options;
@@ -272,7 +272,7 @@ export interface Position {
 	 * @readonly
 	 * @member {String}
 	 */
-	readonly name: string;
+	readonly name?: string;
 
 	/**
 	 * Additional position configuration, as passed from the {@link module:utils/dom/position~PositioningFunction positioning function}.
@@ -312,7 +312,7 @@ export interface Position {
 // @private
 // @implements {Position}
 class PositionObject implements Position {
-	public name!: string;
+	public name?: string;
 	public config?: object;
 
 	private _positioningFunctionCorrdinates!: { left: number; top: number };
@@ -486,7 +486,7 @@ export interface Options {
 	 *
 	 * @member {Array.<module:utils/dom/position~PositioningFunction>}
 	 */
-	readonly positions: readonly PositioningFunction[];
+	readonly positions: ReadonlyArray<PositioningFunction>;
 
 	/**
 	 * When set, the algorithm will chose position which fits the most in the
@@ -494,7 +494,7 @@ export interface Options {
 	 *
 	 * @member {module:utils/dom/rect~RectSource|Function}
 	 */
-	readonly limiter: RectSource | ( () => RectSource );
+	readonly limiter?: RectSource | ( () => ( RectSource | null ) ) | null;
 
 	/**
 	 * When set, the algorithm will chose such a position which fits `element`
@@ -565,6 +565,6 @@ export interface Options {
 export type PositioningFunction = ( elementRect: Rect, targetRect: Rect, viewportRect: Rect | null ) => ( {
 	top: number;
 	left: number;
-	name: string;
+	name?: string;
 	config?: object;
 } | null );

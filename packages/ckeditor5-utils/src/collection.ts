@@ -7,11 +7,10 @@
  * @module utils/collection
  */
 
-import EmitterMixin, { type Emitter } from './emittermixin';
+import { Emitter } from './emittermixin';
 import CKEditorError from './ckeditorerror';
 import uid from './uid';
 import isIterable from './isiterable';
-import mix from './mix';
 
 /**
  * Collections are ordered sets of objects. Items in the collection can be retrieved by their indexes
@@ -25,14 +24,14 @@ import mix from './mix';
  *
  * @mixes module:utils/emittermixin~EmitterMixin
  */
-class Collection<T extends { [ id in I ]?: string }, I extends string = 'id'> implements Iterable<T> {
+export default class Collection<T extends { [ id in I ]?: string }, I extends string = 'id'> extends Emitter implements Iterable<T> {
 	/**
 	 * The internal list of items in the collection.
 	 *
 	 * @private
 	 * @member {Object[]}
 	 */
-	private readonly _items: T[];
+	private readonly _items: Array<T>;
 
 	/**
 	 * The internal map of items in the collection.
@@ -89,7 +88,7 @@ class Collection<T extends { [ id in I ]?: string }, I extends string = 'id'> im
 	 * @private
 	 * @member {Array}
 	 */
-	private _skippedIndexesFromExternal: number[];
+	private _skippedIndexesFromExternal: Array<number>;
 
 	constructor( options?: { readonly idProperty?: I } );
 	constructor( initialItems: Iterable<T>, options?: { readonly idProperty?: I } );
@@ -131,6 +130,8 @@ class Collection<T extends { [ id in I ]?: string }, I extends string = 'id'> im
 	 * Items that do not have such a property will be assigned one when added to the collection.
 	 */
 	constructor( initialItemsOrOptions: Iterable<T> | { readonly idProperty?: I } = {}, options: { readonly idProperty?: I } = {} ) {
+		super();
+
 		const hasInitialItems = isIterable( initialItemsOrOptions );
 
 		if ( !hasInitialItems ) {
@@ -229,12 +230,12 @@ class Collection<T extends { [ id in I ]?: string }, I extends string = 'id'> im
 			this._items.splice( currentItemIndex, 0, item );
 			this._itemMap.set( itemId, item );
 
-			this.fire( 'add', item, currentItemIndex );
+			this.fire<CollectionAddEvent<T>>( 'add', item, currentItemIndex );
 
 			offset++;
 		}
 
-		this.fire( 'change', {
+		this.fire<CollectionChangeEvent<T>>( 'change', {
 			added: items,
 			removed: [],
 			index
@@ -315,7 +316,7 @@ class Collection<T extends { [ id in I ]?: string }, I extends string = 'id'> im
 	public remove( subject: T | number | string ): T {
 		const [ item, index ] = this._remove( subject );
 
-		this.fire( 'change', {
+		this.fire<CollectionChangeEvent<T>>( 'change', {
 			added: [],
 			removed: [ item ],
 			index
@@ -336,7 +337,7 @@ class Collection<T extends { [ id in I ]?: string }, I extends string = 'id'> im
 	public map<U>(
 		callback: ( item: T, index: number ) => U,
 		ctx?: any
-	): U[] {
+	): Array<U> {
 		return this._items.map( callback, ctx );
 	}
 
@@ -368,7 +369,7 @@ class Collection<T extends { [ id in I ]?: string }, I extends string = 'id'> im
 	public filter(
 		callback: ( item: T, index: number ) => boolean,
 		ctx?: any
-	): T[] {
+	): Array<T> {
 		return this._items.filter( callback, ctx );
 	}
 
@@ -391,7 +392,7 @@ class Collection<T extends { [ id in I ]?: string }, I extends string = 'id'> im
 			this._remove( 0 );
 		}
 
-		this.fire( 'change', {
+		this.fire<CollectionChangeEvent<T>>( 'change', {
 			added: [],
 			removed: removedItems,
 			index: 0
@@ -622,10 +623,10 @@ class Collection<T extends { [ id in I ]?: string }, I extends string = 'id'> im
 		}
 
 		// Synchronize the with collection as new items are added.
-		this.listenTo( externalCollection, 'add', addItem );
+		this.listenTo<CollectionAddEvent<S>>( externalCollection, 'add', addItem );
 
 		// Synchronize the with collection as new items are removed.
-		this.listenTo( externalCollection, 'remove', ( evt, externalItem, index ) => {
+		this.listenTo<CollectionRemoveEvent<S>>( externalCollection, 'remove', ( evt, externalItem, index ) => {
 			const item = this._bindToExternalToInternalMap.get( externalItem );
 
 			if ( item ) {
@@ -644,7 +645,7 @@ class Collection<T extends { [ id in I ]?: string }, I extends string = 'id'> im
 				}
 
 				return result;
-			}, [] as number[] );
+			}, [] as Array<number> );
 		} );
 	}
 
@@ -742,7 +743,7 @@ class Collection<T extends { [ id in I ]?: string }, I extends string = 'id'> im
 		this._bindToInternalToExternalMap.delete( item );
 		this._bindToExternalToInternalMap.delete( externalItem );
 
-		this.fire( 'remove', item, index! );
+		this.fire<CollectionRemoveEvent<T>>( 'remove', item, index! );
 
 		return [ item, index! ];
 	}
@@ -781,11 +782,24 @@ class Collection<T extends { [ id in I ]?: string }, I extends string = 'id'> im
 	 */
 }
 
-mix( Collection, EmitterMixin );
+export type CollectionAddEvent<T = any> = {
+	name: 'add';
+	args: [ item: T, index: number ];
+};
 
-interface Collection<T, I> extends Emitter {}
+export type CollectionChangeEvent<T = any> = {
+	name: 'change';
+	args: [ {
+		added: Iterable<T>;
+		removed: Iterable<T>;
+		index: number;
+	} ];
+};
 
-export default Collection;
+export type CollectionRemoveEvent<T = any> = {
+	name: 'remove';
+	args: [ item: T, index: number ];
+};
 
 /**
  * An object returned by the {@link module:utils/collection~Collection#bindTo `bindTo()`} method

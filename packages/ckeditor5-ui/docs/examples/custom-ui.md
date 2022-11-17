@@ -187,14 +187,14 @@ class BootstrapEditorUI extends EditorUI {
 	}
 
 	destroy() {
+		super.destroy();
+
 		// Restore the original editor#element.
 		this._elementReplacer.restore();
 
 		// Destroy the view.
 		this._view.editable.destroy();
 		this._view.destroy();
-
-		super.destroy();
 	}
 
 	// This method activates Bold, Italic, Underline, Undo and Redo buttons in the toolbar.
@@ -358,7 +358,7 @@ BootstrapEditor
 <summary>View editor content listing</summary>
 
 ```
-<!-- The outermost cotainer of the editor. -->
+<!-- The outermost container of the editor. -->
 <div class="ck-editor">
 	<!-- The toolbar of the editor. -->
 	<div class="btn-toolbar" role="toolbar" aria-label="Editor toolbar">

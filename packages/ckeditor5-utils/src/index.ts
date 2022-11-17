@@ -31,7 +31,7 @@ export * from './dom/scroll';
 
 export * from './keyboard';
 export * from './language';
-export { default as Locale } from './locale';
+export { default as Locale, LocaleTranslate } from './locale';
 export { default as Collection } from './collection';
 export { default as first } from './first';
 export { default as FocusTracker } from './focustracker';
@@ -39,6 +39,7 @@ export { default as KeystrokeHandler } from './keystrokehandler';
 export { default as toArray } from './toarray';
 export { default as toMap } from './tomap';
 export { default as priorities } from './priorities';
+export { default as insertToPriorityArray } from './inserttopriorityarray';
 
 export { default as uid } from './uid';
 
