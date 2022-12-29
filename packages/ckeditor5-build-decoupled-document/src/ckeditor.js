@@ -32,6 +32,7 @@ import IndentBlock from '@ckeditor/ckeditor5-indent/src/indentblock';
 import Alignment from '@ckeditor/ckeditor5-alignment/src/alignment';
 
 import Link from '@ckeditor/ckeditor5-link/src/link';
+import AutoLink from '@ckeditor/ckeditor5-link/src/autolink';
 
 import Image from '@ckeditor/ckeditor5-image/src/image';
 import ImageStyle from '@ckeditor/ckeditor5-image/src/imagestyle';
@@ -69,6 +70,7 @@ DecoupledEditor.builtinPlugins = [
   IndentBlock,
   Alignment,
   Link,
+  AutoLink,
   Image,
   ImageStyle,
   ImageResize,
@@ -95,6 +97,7 @@ DecoupledEditor.defaultConfig = {
       'RemoveFormat',
       '|',
       'uploadImage',
+      'link',
       '|',
       'bulletedList',
       'numberedList',
