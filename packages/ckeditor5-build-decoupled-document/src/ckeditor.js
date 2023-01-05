@@ -45,6 +45,7 @@ import Table from '@ckeditor/ckeditor5-table/src/table';
 import TableToolbar from '@ckeditor/ckeditor5-table/src/tabletoolbar';
 
 import MediaEmbed from '@ckeditor/ckeditor5-media-embed/src/mediaembed';
+import FindAndReplace from '@ckeditor/ckeditor5-find-and-replace/src/findandreplace';
 
 export default class DecoupledEditor extends DecoupledEditorBase { }
 
@@ -80,6 +81,7 @@ DecoupledEditor.builtinPlugins = [
   Table,
   TableToolbar,
   MediaEmbed,
+  FindAndReplace,
 ];
 
 // Editor configuration.
