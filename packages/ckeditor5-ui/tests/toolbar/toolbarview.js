@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -169,6 +169,7 @@ describe( 'ToolbarView', () => {
 			it( 'should be defined', () => {
 				expect( view.element.getAttribute( 'role' ) ).to.equal( 'toolbar' );
 				expect( view.element.getAttribute( 'aria-label' ) ).to.equal( 'Editor toolbar' );
+				expect( view.element.getAttribute( 'tabindex' ) ).to.equal( '-1' );
 			} );
 
 			it( 'should allow a custom aria-label', () => {
@@ -246,6 +247,21 @@ describe( 'ToolbarView', () => {
 	} );
 
 	describe( 'render()', () => {
+		it( 'registers itself in #focusTracker', () => {
+			const view = new ToolbarView( locale );
+			const spyAdd = sinon.spy( view.focusTracker, 'add' );
+			const spyRemove = sinon.spy( view.focusTracker, 'remove' );
+
+			sinon.assert.notCalled( spyAdd );
+
+			view.render();
+
+			sinon.assert.calledOnce( spyAdd );
+			sinon.assert.notCalled( spyRemove );
+
+			view.destroy();
+		} );
+
 		it( 'registers #items in #focusTracker', () => {
 			const view = new ToolbarView( locale );
 			const spyAdd = sinon.spy( view.focusTracker, 'add' );
@@ -257,7 +273,8 @@ describe( 'ToolbarView', () => {
 
 			view.render();
 
-			sinon.assert.calledTwice( spyAdd );
+			// 2 for items and 1 for toolbar itself.
+			sinon.assert.calledThrice( spyAdd );
 
 			view.items.remove( 1 );
 			sinon.assert.calledOnce( spyRemove );
@@ -672,6 +689,13 @@ describe( 'ToolbarView', () => {
 				], factory );
 
 				dropdownView = view.items.get( 1 );
+
+				// Make sure that toolbar view is not created before first dropdown open.
+				expect( dropdownView.toolbarView ).to.be.undefined;
+
+				// Trigger toolbar view creation (lazy init).
+				dropdownView.isOpen = true;
+
 				toolbarView = dropdownView.toolbarView;
 
 				const items = view.items;
@@ -848,7 +872,20 @@ describe( 'ToolbarView', () => {
 				], factory );
 
 				const level0DropdownView = view.items.get( 1 );
+
+				// Make sure that toolbar view is not created before first dropdown open.
+				expect( level0DropdownView.toolbarView ).to.be.undefined;
+
+				// Trigger toolbar view creation (lazy init).
+				level0DropdownView.isOpen = true;
+
 				const level1DropdownView = level0DropdownView.toolbarView.items.get( 2 );
+
+				// Make sure that toolbar view is not created before first dropdown open.
+				expect( level1DropdownView.toolbarView ).to.be.undefined;
+
+				// Trigger toolbar view creation (lazy init).
+				level1DropdownView.isOpen = true;
 
 				expect( level1DropdownView.toolbarView.items.length ).to.equal( 1 );
 				expect( level1DropdownView.toolbarView.items.get( 0 ).name ).to.equal( 'bar' );
@@ -886,6 +923,12 @@ describe( 'ToolbarView', () => {
 					}, factory );
 
 					dropdownView = view.items.get( 1 );
+
+					// Make sure that toolbar view is not created before first dropdown open.
+					expect( dropdownView.toolbarView ).to.be.undefined;
+
+					// Trigger toolbar view creation (lazy init).
+					dropdownView.isOpen = true;
 					toolbarView = dropdownView.toolbarView;
 
 					const nestedToolbarItems = toolbarView.items;
@@ -915,7 +958,20 @@ describe( 'ToolbarView', () => {
 					}, factory );
 
 					const level0DropdownView = view.items.get( 1 );
+
+					// Make sure that toolbar view is not created before first dropdown open.
+					expect( level0DropdownView.toolbarView ).to.be.undefined;
+
+					// Trigger toolbar view creation (lazy init).
+					level0DropdownView.isOpen = true;
+
 					const level1DropdownView = level0DropdownView.toolbarView.items.get( 0 );
+
+					// Make sure that toolbar view is not created before first dropdown open.
+					expect( level1DropdownView.toolbarView ).to.be.undefined;
+
+					// Trigger toolbar view creation (lazy init).
+					level1DropdownView.isOpen = true;
 
 					const level0NestedToolbarItems = level0DropdownView.toolbarView.items;
 					const level1NestedToolbarItems = level1DropdownView.toolbarView.items;
@@ -1491,6 +1547,8 @@ describe( 'ToolbarView', () => {
 			} );
 
 			it( 'shares its toolbarView#items with grouped items', () => {
+				groupedItemsDropdown.isOpen = true;
+
 				view.items.add( focusable() );
 				view.items.add( focusable() );
 				view.items.add( focusable() );

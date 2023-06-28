@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -21,6 +21,15 @@ ClassicEditor
 			}
 		},
 		cloudServices: CS_CONFIG,
+		toolbar: {
+			items: [
+				'undo', 'redo',
+				'|', 'heading',
+				'|', 'bold', 'italic',
+				'|', 'link', 'uploadImage', 'insertTable', 'mediaEmbed',
+				'|', 'bulletedList', 'numberedList', 'outdent', 'indent'
+			]
+		},
 		image: {
 			styles: {
 				options: [ {
@@ -53,10 +62,12 @@ ClassicEditor
 			},
 			toolbar: [ {
 				name: 'imageStyle:icons',
+				title: 'Alignment',
 				items: [ 'imageStyle:margin-left', 'imageStyle:margin-right', 'imageStyle:inline' ],
 				defaultItem: 'imageStyle:margin-left'
 			}, {
 				name: 'imageStyle:pictures',
+				title: 'Style',
 				items: [ 'imageStyle:block', 'imageStyle:side' ],
 				defaultItem: 'imageStyle:block'
 			}, '|', 'toggleImageCaption', 'linkImage'

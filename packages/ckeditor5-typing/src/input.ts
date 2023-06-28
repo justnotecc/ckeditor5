@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -7,27 +7,23 @@
  * @module typing/input
  */
 
-import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
+import { Plugin } from '@ckeditor/ckeditor5-core';
+import { env } from '@ckeditor/ckeditor5-utils';
+
 import InsertTextCommand from './inserttextcommand';
 import InsertTextObserver, { type ViewDocumentInsertTextEvent } from './inserttextobserver';
-import env from '@ckeditor/ckeditor5-utils/src/env';
 
 import type { Model } from '@ckeditor/ckeditor5-engine';
 
-// Import config.typing declaration.
-import './typingconfig';
-
 /**
  * Handles text input coming from the keyboard or other input methods.
- *
- * @extends module:core/plugin~Plugin
  */
 export default class Input extends Plugin {
 	/**
 	 * @inheritDoc
 	 */
-	public static get pluginName(): 'Input' {
-		return 'Input';
+	public static get pluginName() {
+		return 'Input' as const;
 	}
 
 	/**
@@ -92,7 +88,7 @@ export default class Input extends Plugin {
 				selection: model.createSelection( modelRanges )
 			};
 
-			// @if CK_DEBUG_TYPING // if ( window.logCKETyping ) {
+			// @if CK_DEBUG_TYPING // if ( ( window as any ).logCKETyping ) {
 			// @if CK_DEBUG_TYPING // 	console.log( '%c[Input]%c Execute insertText:',
 			// @if CK_DEBUG_TYPING // 		'font-weight: bold; color: green;', '',
 			// @if CK_DEBUG_TYPING // 		insertText,
@@ -116,10 +112,13 @@ export default class Input extends Plugin {
 					return;
 				}
 
-				// @if CK_DEBUG_TYPING // if ( window.logCKETyping ) {
+				// @if CK_DEBUG_TYPING // if ( ( window as any ).logCKETyping ) {
+				// @if CK_DEBUG_TYPING // 	const firstPositionPath = modelSelection.getFirstPosition()!.path;
+				// @if CK_DEBUG_TYPING // 	const lastPositionPath = modelSelection.getLastPosition()!.path;
+
 				// @if CK_DEBUG_TYPING // 	console.log( '%c[Input]%c KeyDown 229 -> model.deleteContent()',
 				// @if CK_DEBUG_TYPING // 		'font-weight: bold; color: green;', '',
-				// @if CK_DEBUG_TYPING // 		`[${ modelSelection.getFirstPosition().path }]-[${ modelSelection.getLastPosition().path }]`
+				// @if CK_DEBUG_TYPING // 		`[${ firstPositionPath }]-[${ lastPositionPath }]`
 				// @if CK_DEBUG_TYPING // 	);
 				// @if CK_DEBUG_TYPING // }
 
@@ -133,26 +132,19 @@ export default class Input extends Plugin {
 					return;
 				}
 
-				// @if CK_DEBUG_TYPING // if ( window.logCKETyping ) {
+				// @if CK_DEBUG_TYPING // if ( ( window as any ).logCKETyping ) {
+				// @if CK_DEBUG_TYPING // 	const firstPositionPath = modelSelection.getFirstPosition()!.path;
+				// @if CK_DEBUG_TYPING // 	const lastPositionPath = modelSelection.getLastPosition()!.path;
+
 				// @if CK_DEBUG_TYPING // 	console.log( '%c[Input]%c Composition start -> model.deleteContent()',
 				// @if CK_DEBUG_TYPING // 		'font-weight: bold; color: green;', '',
-				// @if CK_DEBUG_TYPING // 		`[${ modelSelection.getFirstPosition().path }]-[${ modelSelection.getLastPosition().path }]`
+				// @if CK_DEBUG_TYPING // 		`[${ firstPositionPath }]-[${ lastPositionPath }]`
 				// @if CK_DEBUG_TYPING // 	);
 				// @if CK_DEBUG_TYPING // }
 
 				deleteSelectionContent( model, insertTextCommand );
 			} );
 		}
-	}
-}
-
-declare module '@ckeditor/ckeditor5-core' {
-	interface CommandsMap {
-		insertText: InsertTextCommand;
-	}
-
-	interface PluginsMap {
-		[ Input.pluginName ]: Input;
 	}
 }
 

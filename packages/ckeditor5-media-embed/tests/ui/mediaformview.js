@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -82,10 +82,6 @@ describe( 'MediaFormView', () => {
 			view.cancelButtonView.fire( 'execute' );
 
 			expect( spy.calledOnce ).to.true;
-		} );
-
-		it( 'should implement the CSS transition disabling feature', () => {
-			expect( view.disableCssTransitions ).to.be.a( 'function' );
 		} );
 
 		describe( 'url input view', () => {
@@ -214,19 +210,6 @@ describe( 'MediaFormView', () => {
 			keyEvtData.keyCode = keyCodes.arrowright;
 			view.keystrokes.press( keyEvtData );
 			sinon.assert.callCount( keyEvtData.stopPropagation, 4 );
-		} );
-
-		it( 'intercepts the "selectstart" event of the #urlInputView with the high priority', () => {
-			const spy = sinon.spy();
-			const event = new Event( 'selectstart', {
-				bubbles: true,
-				cancelable: true
-			} );
-
-			event.stopPropagation = spy;
-
-			view.urlInputView.element.dispatchEvent( event );
-			sinon.assert.calledOnce( spy );
 		} );
 	} );
 

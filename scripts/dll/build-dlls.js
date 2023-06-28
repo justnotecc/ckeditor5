@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -9,10 +9,26 @@
 
 const chalk = require( 'chalk' );
 const childProcess = require( 'child_process' );
+const fs = require( 'fs' );
 const minimist = require( 'minimist' );
 const path = require( 'path' );
 
-const argv = minimist( process.argv.slice( 2 ) );
+const argv = minimist( process.argv.slice( 2 ), {
+	string: [
+		'base-dll-config',
+		'base-dll-path'
+	],
+	boolean: [
+		// Whether to skip building the base DLL.
+		'skip-base-dll',
+		// Whether to skip building packages DLL files.
+		'skip-packages-dll'
+	],
+	default: {
+		'skip-base-dll': false,
+		'skip-packages-dll': false
+	}
+} );
 
 const ROOT_DIRECTORY = argv.cwd ? path.resolve( argv.cwd ) : path.resolve( __dirname, '..', '..' );
 const DEVELOPMENT_MODE = argv.dev;
@@ -22,7 +38,7 @@ const VERBOSE_MODE = argv.verbose;
 // make them stand out from the wall of text that webpack spits out.
 const prefix = VERBOSE_MODE ? '\n📍 ' : '';
 
-if ( argv[ 'base-dll-config' ] ) {
+if ( argv[ 'base-dll-config' ] && !argv[ 'skip-base-dll' ] ) {
 	console.log( prefix + chalk.bold( 'Creating the base DLL build...' ) );
 
 	const baseDllPath = argv[ 'base-dll-path' ] || ROOT_DIRECTORY;
@@ -40,30 +56,34 @@ if ( argv[ 'base-dll-config' ] ) {
 	}
 }
 
-console.log( prefix + chalk.bold( 'Creating DLL-compatible package builds...' ) );
+if ( !argv[ 'skip-packages-dll' ] ) {
+	console.log( prefix + chalk.bold( 'Creating DLL-compatible package builds...' ) );
 
-let exitCode = 0;
+	let exitCode = 0;
 
-getPackageNames( ROOT_DIRECTORY )
-	.filter( isNotBaseDll )
-	.filter( hasDLLBuildScript )
-	.forEach( fullPackageName => {
-		console.log( prefix + `Building ${ fullPackageName }...` );
+	getPackageNames( ROOT_DIRECTORY )
+		.filter( isNotBaseDll )
+		.filter( hasDLLBuildScript )
+		.forEach( fullPackageName => {
+			console.log( prefix + `Building ${ fullPackageName }...` );
 
-		const status = execute( {
-			command: [ 'yarn', 'run', 'dll:build' ],
-			cwd: path.join( ROOT_DIRECTORY, 'packages', fullPackageName )
+			const status = execute( {
+				command: [ 'yarn', 'run', 'dll:build' ],
+				cwd: path.join( ROOT_DIRECTORY, 'packages', fullPackageName )
+			} );
+
+			const colorFn = chalk.bold.red;
+
+			if ( status ) {
+				console.log( colorFn( 'Script will continue the execution for other packages, but the failed build will be missing.' ) );
+				console.log( colorFn( 'If the missing build is built manually, the entire script does not have to be repeated.' ) );
+
+				exitCode = 1;
+			}
 		} );
 
-		if ( status ) {
-			console.log( chalk.bold.red( 'Script will continue the execution for other packages, but the failed build will be missing.' ) );
-			console.log( chalk.bold.red( 'If the missing build is built manually, the entire script does not have to be repeated.' ) );
-
-			exitCode = 1;
-		}
-	} );
-
-process.exit( exitCode );
+	process.exit( exitCode );
+}
 
 /**
  * @param {String} cwd
@@ -90,6 +110,11 @@ function isNotBaseDll( name ) {
  */
 function hasDLLBuildScript( name ) {
 	const packageJsonPath = path.join( ROOT_DIRECTORY, 'packages', name, 'package.json' );
+
+	if ( !fs.existsSync( packageJsonPath ) ) {
+		return false;
+	}
+
 	const scripts = require( packageJsonPath ).scripts;
 
 	return Boolean( scripts && scripts[ 'dll:build' ] );

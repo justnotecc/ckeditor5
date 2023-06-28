@@ -1,24 +1,28 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor';
 import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
 import CodeBlock from '@ckeditor/ckeditor5-code-block/src/codeblock';
+import { Link } from '@ckeditor/ckeditor5-link';
 import { getData as getModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
 import { getData as getViewData } from '@ckeditor/ckeditor5-engine/src/dev-utils/view';
 import { INLINE_FILLER } from '@ckeditor/ckeditor5-engine/src/view/filler';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
 
 import GeneralHtmlSupport from '../../src/generalhtmlsupport';
 import { getModelDataWithAttributes } from '../_utils/utils';
 
-/* global document */
+/* global document, console */
 
 describe( 'CustomElementSupport', () => {
 	let editor, model, editorElement, dataFilter;
 
 	const excludeAttributes = [ 'htmlContent', 'htmlElementName' ];
+
+	testUtils.createSinonSandbox();
 
 	beforeEach( () => {
 		editorElement = document.createElement( 'div' );
@@ -26,7 +30,7 @@ describe( 'CustomElementSupport', () => {
 
 		return ClassicTestEditor
 			.create( editorElement, {
-				plugins: [ CodeBlock, Paragraph, GeneralHtmlSupport ]
+				plugins: [ CodeBlock, Paragraph, Link, GeneralHtmlSupport ]
 			} )
 			.then( newEditor => {
 				editor = newEditor;
@@ -260,8 +264,8 @@ describe( 'CustomElementSupport', () => {
 
 			expect( getModelDataWithAttributes( model, { withoutSelection: true, excludeAttributes } ) ).to.deep.equal( {
 				data: '<htmlCustomElement' +
-					' htmlAttributes="(1)"' +
 					' htmlContent="<custom-foo-element data-foo="foo">bar</custom-foo-element>"' +
+					' htmlCustomElementAttributes="(1)"' +
 					' htmlElementName="custom-foo-element"></htmlCustomElement>',
 				attributes: {
 					1: {
@@ -275,6 +279,57 @@ describe( 'CustomElementSupport', () => {
 			expect( editor.getData() ).to.equal( '<custom-foo-element data-foo="foo">bar</custom-foo-element>' );
 		} );
 
+		it( 'should allow attributes without `data-` prefix', () => {
+			dataFilter.allowElement( /.*/ );
+			dataFilter.allowAttributes( { attributes: { 'foo': /.*/ } } );
+
+			editor.setData( '<custom-foo-element foo="bar">baz</custom-foo-element>' );
+
+			expect( getModelDataWithAttributes( model, { withoutSelection: true, excludeAttributes } ) ).to.deep.equal( {
+				data: '<htmlCustomElement' +
+					' htmlContent="<custom-foo-element foo="bar">baz</custom-foo-element>"' +
+					' htmlCustomElementAttributes="(1)"' +
+					' htmlElementName="custom-foo-element"></htmlCustomElement>',
+				attributes: {
+					1: {
+						attributes: {
+							'foo': 'bar'
+						}
+					}
+				}
+			} );
+
+			expect( editor.getData() ).to.equal( '<custom-foo-element foo="bar">baz</custom-foo-element>' );
+		} );
+
+		it( 'should ignore attributes with invalid name', () => {
+			const consoleWarnStub = sinon.stub( console, 'warn' );
+
+			dataFilter.allowElement( /.*/ );
+			dataFilter.allowAttributes( { attributes: /.*/ } );
+
+			editor.setData( '<custom-foo-element 200-abc="invalid" data-foo="bar">baz</custom-foo-element>' );
+
+			expect( getModelDataWithAttributes( model, { withoutSelection: true, excludeAttributes } ) ).to.deep.equal( {
+				data: '<htmlCustomElement' +
+					' htmlContent="<custom-foo-element data-foo="bar">baz</custom-foo-element>"' +
+					' htmlCustomElementAttributes="(1)"' +
+					' htmlElementName="custom-foo-element"></htmlCustomElement>',
+				attributes: {
+					1: {
+						attributes: {
+							'data-foo': 'bar'
+						}
+					}
+				}
+			} );
+
+			expect( editor.getData() ).to.equal( '<custom-foo-element data-foo="bar">baz</custom-foo-element>' );
+
+			expect( consoleWarnStub.calledOnce ).to.equal( true );
+			expect( consoleWarnStub.firstCall.args[ 0 ] ).to.match( /domconverter-invalid-attribute-detected/ );
+		} );
+
 		it( 'should allow attributes (classes)', () => {
 			dataFilter.allowElement( /.*/ );
 			dataFilter.allowAttributes( { classes: 'foo' } );
@@ -283,8 +338,8 @@ describe( 'CustomElementSupport', () => {
 
 			expect( getModelDataWithAttributes( model, { withoutSelection: true, excludeAttributes } ) ).to.deep.equal( {
 				data: '<htmlCustomElement' +
-					' htmlAttributes="(1)"' +
 					' htmlContent="<custom-foo-element class="foo">bar</custom-foo-element>"' +
+					' htmlCustomElementAttributes="(1)"' +
 					' htmlElementName="custom-foo-element"></htmlCustomElement>',
 				attributes: {
 					1: {
@@ -304,8 +359,8 @@ describe( 'CustomElementSupport', () => {
 
 			expect( getModelDataWithAttributes( model, { withoutSelection: true, excludeAttributes } ) ).to.deep.equal( {
 				data: '<htmlCustomElement' +
-					' htmlAttributes="(1)"' +
 					' htmlContent="<custom-foo-element style="background:red;">bar</custom-foo-element>"' +
+					' htmlCustomElementAttributes="(1)"' +
 					' htmlElementName="custom-foo-element"></htmlCustomElement>',
 				attributes: {
 					1: {
@@ -317,6 +372,23 @@ describe( 'CustomElementSupport', () => {
 			} );
 
 			expect( editor.getData() ).to.equal( '<custom-foo-element style="background:red;">bar</custom-foo-element>' );
+		} );
+
+		it( 'should allow linking custom element', () => {
+			dataFilter.allowElement( /.*/ );
+
+			editor.setData( '<a href="bar"><custom-foo-element>bar</custom-foo-element></a>' );
+
+			expect( getModelDataWithAttributes( model, { withoutSelection: true, excludeAttributes } ) ).to.deep.equal( {
+				data: '<htmlCustomElement' +
+					' htmlContent="<custom-foo-element>bar</custom-foo-element>"' +
+					' htmlElementName="custom-foo-element"' +
+					' linkHref="bar"' +
+					'></htmlCustomElement>',
+				attributes: {}
+			} );
+
+			expect( editor.getData() ).to.equal( '<a href="bar"><custom-foo-element>bar</custom-foo-element></a>' );
 		} );
 
 		it( 'should disallow attributes', () => {
@@ -374,6 +446,7 @@ describe( 'CustomElementSupport', () => {
 	it( 'should not convert html comments as a custom element', () => {
 		dataFilter.allowElement( /.*/ );
 
+		editor.data.processor.skipComments = false;
 		editor.setData( '<!-- foo --><custom>bar</custom>' );
 
 		expect( getModelDataWithAttributes( model, { withoutSelection: true, excludeAttributes } ) ).to.deep.equal( {

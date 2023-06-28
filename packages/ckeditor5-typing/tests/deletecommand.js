@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -96,6 +96,16 @@ describe( 'DeleteCommand', () => {
 
 			expect( lockSpy.calledOnce ).to.be.true;
 			expect( unlockSpy.calledOnce ).to.be.true;
+		} );
+
+		it( 'should not execute when selection is in non-editable place', () => {
+			setData( model, '<paragraph>foo[]bar</paragraph>' );
+
+			model.document.isReadOnly = true;
+
+			editor.execute( 'delete' );
+
+			expect( getData( model ) ).to.equal( '<paragraph>foo[]bar</paragraph>' );
 		} );
 
 		it( 'deletes previous character when selection is collapsed', () => {

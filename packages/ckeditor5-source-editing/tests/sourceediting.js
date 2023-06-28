@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -514,6 +514,22 @@ describe( 'SourceEditing', () => {
 		} );
 	} );
 
+	describe( 'updateEditorData', () => {
+		it( 'should update editor model when called', () => {
+			button.fire( 'execute' );
+
+			const domRoot = editor.editing.view.getDomRoot();
+			const textarea = domRoot.nextSibling.children[ 0 ];
+
+			textarea.value = 'bar';
+			textarea.dispatchEvent( new Event( 'input' ) );
+
+			expect( getData( editor.model, { withoutSelection: true } ) ).to.equal( '<paragraph>Foo</paragraph>' );
+			plugin.updateEditorData();
+			expect( getData( editor.model, { withoutSelection: true } ) ).to.equal( '<paragraph>bar</paragraph>' );
+		} );
+	} );
+
 	describe( 'integration with undo', () => {
 		it( 'should preserve the undo/redo stacks when no changes has been in the source editing mode', () => {
 			editor.model.change( writer => {
@@ -557,6 +573,29 @@ describe( 'SourceEditing', () => {
 
 			// Adds 2 new operations MoveOperation (delete content) + InsertOperation.
 			expect( editor.model.document.history.getOperations().length ).to.equal( 5 );
+		} );
+	} );
+
+	describe( 'integration with EditorUI', () => {
+		it( 'should call EditorUI#update() on every DOM input event', () => {
+			const updateSpy = sinon.spy();
+
+			button.fire( 'execute' );
+
+			editor.ui.on( 'update', updateSpy );
+
+			const domRoot = editor.editing.view.getDomRoot();
+			const textarea = domRoot.nextSibling.children[ 0 ];
+
+			textarea.value = 'bar';
+			textarea.dispatchEvent( new Event( 'input' ) );
+
+			sinon.assert.calledOnce( updateSpy );
+
+			textarea.value = 'barX';
+			textarea.dispatchEvent( new Event( 'input' ) );
+
+			sinon.assert.calledTwice( updateSpy );
 		} );
 	} );
 } );

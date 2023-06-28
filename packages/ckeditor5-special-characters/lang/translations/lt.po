@@ -1,4 +1,4 @@
-# Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+# Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
 #
 #                                     !!! IMPORTANT !!!
 #
@@ -12,13 +12,37 @@
 #
 msgid ""
 msgstr ""
-"Language-Team: Lithuanian (https://www.transifex.com/ckeditor/teams/11143/lt/)\n"
+"Language-Team: Lithuanian (https://app.transifex.com/ckeditor/teams/11143/lt/)\n"
 "Language: lt\n"
 "Plural-Forms: nplurals=4; plural=(n % 10 == 1 && (n % 100 > 19 || n % 100 < 11) ? 0 : (n % 10 >= 2 && n % 10 <=9) && (n % 100 > 19 || n % 100 < 11) ? 1 : n % 1 != 0 ? 2: 3);\n"
 
 msgctxt "Name of the special characters plugins, visible in a dropdown and as a button tooltip."
 msgid "Special characters"
 msgstr "Išskirtiniai simboliai"
+
+msgctxt "A category name is displayed in a special characters dropdown representing all available symbols."
+msgid "All"
+msgstr "Visi"
+
+msgctxt "A category name is displayed in a special characters dropdown representing arrow symbols."
+msgid "Arrows"
+msgstr "Rodyklės"
+
+msgctxt "A category name is displayed in a special characters dropdown representing currency symbols."
+msgid "Currency"
+msgstr "Valiuta"
+
+msgctxt "A category name is displayed in a special characters dropdown representing latin symbols."
+msgid "Latin"
+msgstr "Lotyniški rašmenys"
+
+msgctxt "A category name is displayed in a special characters dropdown representing mathematical symbols."
+msgid "Mathematical"
+msgstr "Matematiniai rašmenys"
+
+msgctxt "A category name is displayed in a special characters dropdown representing text symbols."
+msgid "Text"
+msgstr "Tekstas"
 
 msgctxt "A label for the \"leftwards simple arrow\" symbol."
 msgid "leftwards simple arrow"

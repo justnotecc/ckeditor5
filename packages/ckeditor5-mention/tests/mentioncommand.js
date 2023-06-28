@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -66,6 +66,20 @@ describe( 'MentionCommand', () => {
 			} );
 
 			assertMention( doc.getRoot().getChild( 0 ).getChild( 1 ), '@John' );
+		} );
+
+		it( 'should not execute if selectable is not editable', () => {
+			setData( model, '<paragraph>foo @Jo[]bar</paragraph>' );
+
+			model.document.isReadOnly = true;
+
+			command.execute( {
+				marker: '@',
+				mention: '@John',
+				range: model.createRange( selection.focus.getShiftedBy( -3 ), selection.focus )
+			} );
+
+			expect( doc.getRoot().getChild( 0 ).getChild( 1 ) ).to.be.null;
 		} );
 
 		it( 'inserts mention object with data if mention was passed as object', () => {

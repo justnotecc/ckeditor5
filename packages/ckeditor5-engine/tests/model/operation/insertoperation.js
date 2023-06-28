@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -87,6 +87,12 @@ describe( 'InsertOperation', () => {
 		expect( root.getChild( 0 ).data ).to.equal( 'bar' );
 		expect( root.getChild( 1 ).name ).to.equal( 'p' );
 		expect( root.getChild( 2 ).data ).to.equal( 'foo' );
+	} );
+
+	it( 'should return position on affectedSelectable', () => {
+		const pos = new Position( root, [ 1 ] );
+		const op = new InsertOperation( pos, 'bar',	doc.version );
+		expect( op.affectedSelectable ).to.deep.equal( pos );
 	} );
 
 	it( 'should insert between existing nodes', () => {

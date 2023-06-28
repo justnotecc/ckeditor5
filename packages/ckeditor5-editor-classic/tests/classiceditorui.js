@@ -1,16 +1,16 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-/* globals document, Event, console */
+/* globals window, document, Event, console */
 
 import View from '@ckeditor/ckeditor5-ui/src/view';
 
 import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor';
 import ClassicEditor from '../src/classiceditor';
 import ClassicEditorUI from '../src/classiceditorui';
-import EditorUI from '@ckeditor/ckeditor5-core/src/editor/editorui';
+import EditorUI from '@ckeditor/ckeditor5-ui/src/editorui/editorui';
 import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
 import ClassicEditorUIView from '../src/classiceditoruiview';
 import { Image, ImageCaption, ImageToolbar } from '@ckeditor/ckeditor5-image';
@@ -150,11 +150,26 @@ describe( 'ClassicEditorUI', () => {
 		} );
 
 		describe( 'placeholder', () => {
-			it( 'sets placeholder from editor.config.placeholder', () => {
+			it( 'sets placeholder from editor.config.placeholder - string', () => {
 				return VirtualClassicTestEditor
 					.create( 'foo', {
 						extraPlugins: [ Paragraph ],
 						placeholder: 'placeholder-text'
+					} )
+					.then( newEditor => {
+						const firstChild = newEditor.editing.view.document.getRoot().getChild( 0 );
+
+						expect( firstChild.getAttribute( 'data-placeholder' ) ).to.equal( 'placeholder-text' );
+
+						return newEditor.destroy();
+					} );
+			} );
+
+			it( 'sets placeholder from editor.config.placeholder - object', () => {
+				return VirtualClassicTestEditor
+					.create( 'foo', {
+						extraPlugins: [ Paragraph ],
+						placeholder: { main: 'placeholder-text' }
 					} )
 					.then( newEditor => {
 						const firstChild = newEditor.editing.view.document.getRoot().getChild( 0 );
@@ -334,6 +349,157 @@ describe( 'ClassicEditorUI', () => {
 
 		it( 'returns undefined if editable with the given name is absent', () => {
 			expect( ui.getEditableElement( 'absent' ) ).to.be.undefined;
+		} );
+	} );
+
+	describe( 'View#scrollToTheSelection integration', () => {
+		it( 'should listen to View#scrollToTheSelection and inject the height of the panel into `viewportOffset` when sticky', async () => {
+			const editorElement = document.createElement( 'div' );
+			document.body.appendChild( editorElement );
+
+			const editor = await ClassicEditor.create( editorElement, {
+				ui: {
+					viewportOffset: {
+						top: 10,
+						bottom: 20,
+						left: 30,
+						right: 40
+					}
+				}
+			} );
+
+			editor.ui.view.stickyPanel.isSticky = true;
+			sinon.stub( editor.ui.view.stickyPanel.element, 'getBoundingClientRect' ).returns( {
+				height: 50
+			} );
+
+			editor.editing.view.once( 'scrollToTheSelection', ( evt, data ) => {
+				const range = editor.editing.view.document.selection.getFirstRange();
+
+				expect( data ).to.deep.equal( {
+					target: editor.editing.view.domConverter.viewRangeToDom( range ),
+					viewportOffset: {
+						top: 160,
+						bottom: 120,
+						left: 130,
+						right: 140
+					},
+					ancestorOffset: 20,
+					alignToTop: undefined,
+					forceScroll: undefined
+				} );
+			} );
+
+			editor.editing.view.scrollToTheSelection( { viewportOffset: 100 } );
+
+			editorElement.remove();
+			await editor.destroy();
+		} );
+
+		it( 'should listen to View#scrollToTheSelection and re-scroll if the panel was not sticky at the moment of execution' +
+			'but becomes sticky after a short while', async () => {
+			const editorElement = document.createElement( 'div' );
+			document.body.appendChild( editorElement );
+
+			const editor = await ClassicEditor.create( editorElement, {
+				ui: {
+					viewportOffset: {
+						top: 10,
+						bottom: 20,
+						left: 30,
+						right: 40
+					}
+				}
+			} );
+
+			editor.ui.view.stickyPanel.isSticky = false;
+			sinon.stub( editor.ui.view.stickyPanel.element, 'getBoundingClientRect' ).returns( {
+				height: 50
+			} );
+
+			const spy = sinon.spy();
+
+			editor.editing.view.on( 'scrollToTheSelection', spy );
+			editor.editing.view.scrollToTheSelection( { viewportOffset: 100 } );
+
+			const range = editor.editing.view.document.selection.getFirstRange();
+
+			// The first call will trigger another one shortly once the panel becomes sticky.
+			sinon.assert.calledWith( spy.firstCall, sinon.match.object, {
+				target: editor.editing.view.domConverter.viewRangeToDom( range ),
+				alignToTop: undefined,
+				forceScroll: undefined,
+				viewportOffset: { top: 110, bottom: 120, left: 130, right: 140 },
+				ancestorOffset: 20
+			} );
+
+			await wait( 10 );
+			editor.ui.view.stickyPanel.isSticky = true;
+
+			// This is the second and final scroll that considers the geometry of a now-sticky panel.
+			sinon.assert.calledWith( spy.secondCall, sinon.match.object, {
+				target: editor.editing.view.domConverter.viewRangeToDom( range ),
+				alignToTop: undefined,
+				forceScroll: undefined,
+				viewportOffset: { top: 160, bottom: 120, left: 130, right: 140 },
+				ancestorOffset: 20
+			} );
+
+			editorElement.remove();
+			await editor.destroy();
+		} );
+
+		it( 'should listen to View#scrollToTheSelection and refuse re-scrolling if the panel was not sticky at the moment of execution' +
+			'and its state it didn\'t change', async () => {
+			const editorElement = document.createElement( 'div' );
+			document.body.appendChild( editorElement );
+
+			const editor = await ClassicEditor.create( editorElement, {
+				ui: {
+					viewportOffset: {
+						top: 10,
+						bottom: 20,
+						left: 30,
+						right: 40
+					}
+				}
+			} );
+
+			editor.ui.view.stickyPanel.isSticky = false;
+			sinon.stub( editor.ui.view.stickyPanel.element, 'getBoundingClientRect' ).returns( {
+				height: 50
+			} );
+
+			const spy = sinon.spy();
+
+			editor.editing.view.on( 'scrollToTheSelection', spy );
+			editor.editing.view.scrollToTheSelection( { viewportOffset: 100 } );
+
+			const range = editor.editing.view.document.selection.getFirstRange();
+
+			// The first call can trigger another one shortly once the panel becomes sticky.
+			sinon.assert.calledWith( spy.firstCall, sinon.match.object, {
+				target: editor.editing.view.domConverter.viewRangeToDom( range ),
+				alignToTop: undefined,
+				forceScroll: undefined,
+				viewportOffset: { top: 110, bottom: 120, left: 130, right: 140 },
+				ancestorOffset: 20
+			} );
+
+			// This timeout exceeds the time slot for scrollToTheSelection() affecting the stickiness of the panel.
+			// If the panel hasn't become sticky yet as a result of window getting scrolled chances are this will never happen.
+			await wait( 30 );
+
+			sinon.assert.calledOnce( spy );
+
+			editor.ui.view.stickyPanel.isSticky = true;
+
+			// There was no second scroll even though the panel became sticky. Too much time has passed and the change of its state
+			// cannot be attributed to doings of scrollToTheSelection() anymore.
+			sinon.assert.calledOnce( spy );
+
+			editorElement.remove();
+			await editor.destroy();
 		} );
 	} );
 } );
@@ -528,4 +694,10 @@ class VirtualClassicTestEditor extends VirtualTestEditor {
 			);
 		} );
 	}
+}
+
+function wait( time ) {
+	return new Promise( res => {
+		window.setTimeout( res, time );
+	} );
 }

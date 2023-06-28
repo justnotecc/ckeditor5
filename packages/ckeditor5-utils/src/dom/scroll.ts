@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -11,24 +11,73 @@ import isRange from './isrange';
 import Rect from './rect';
 import isText from './istext';
 
+type IfTrue<T> = T extends true ? true : never;
+
 /**
  * Makes any page `HTMLElement` or `Range` (`target`) visible inside the browser viewport.
  * This helper will scroll all `target` ancestors and the web browser viewport to reveal the target to
  * the user. If the `target` is already visible, nothing will happen.
  *
- * @param {Object} options
- * @param {HTMLElement|Range} options.target A target, which supposed to become visible to the user.
- * @param {Number} [options.viewportOffset] An offset from the edge of the viewport (in pixels)
- * the `target` will be moved by when the viewport is scrolled. It enhances the user experience
+ * @param options Additional configuration of the scrolling behavior.
+ * @param options.target A target, which supposed to become visible to the user.
+ * @param options.viewportOffset An offset from the edge of the viewport (in pixels)
+ * the `target` will be moved by if the viewport is scrolled. It enhances the user experience
  * by keeping the `target` some distance from the edge of the viewport and thus making it easier to
  * read or edit by the user.
+ * @param options.ancestorOffset An offset from the boundary of scrollable ancestors (if any)
+ * the `target` will be moved by if the viewport is scrolled. It enhances the user experience
+ * by keeping the `target` some distance from the edge of the ancestors and thus making it easier to
+ * read or edit by the user.
+ * @param options.alignToTop When set `true`, the helper will make sure the `target` is scrolled up
+ * to the top boundary of the viewport and/or scrollable ancestors if scrolled up. When not set
+ * (default), the `target` will be revealed by scrolling as little as possible. This option will
+ * not affect `targets` that must be scrolled down because they will appear at the top of the boundary
+ * anyway.
+ *
+ * ```
+ *                                             scrollViewportToShowTarget() with            scrollViewportToShowTarget() with
+ *          Initial state                        alignToTop unset (default)                        alignToTop = true
+ *
+ * ┌────────────────────────────────┬─┐       ┌────────────────────────────────┬─┐        ┌────────────────────────────────┬─┐
+ * │                                │▲│       │                                │▲│        │   [ Target to be revealed ]    │▲│
+ * │                                │ │       │                                │ │        │                                │ │
+ * │                                │█│       │                                │ │        │                                │ │
+ * │                                │█│       │                                │ │        │                                │ │
+ * │                                │ │       │                                │█│        │                                │ │
+ * │                                │ │       │                                │█│        │                                │█│
+ * │                                │ │       │                                │ │        │                                │█│
+ * │                                │▼│       │   [ Target to be revealed ]    │▼│        │                                │▼│
+ * └────────────────────────────────┴─┘       └────────────────────────────────┴─┘        └────────────────────────────────┴─┘
+ *
+ *
+ *     [ Target to be revealed ]
+ *```
+ *
+ * @param options.forceScroll When set `true`, the `target` will be aligned to the top of the viewport
+ * and scrollable ancestors whether it is already visible or not. This option will only work when `alignToTop`
+ * is `true`
  */
-export function scrollViewportToShowTarget(
-	{ target, viewportOffset = 0 }: { readonly target: HTMLElement | Range; readonly viewportOffset?: number }
+export function scrollViewportToShowTarget<T extends boolean, U extends IfTrue<T>>(
+	{
+		target,
+		viewportOffset = 0,
+		ancestorOffset = 0,
+		alignToTop,
+		forceScroll
+	}:
+	{
+		readonly target: HTMLElement | Range;
+		readonly viewportOffset?: number | { top: number; bottom: number; left: number; right: number };
+		readonly ancestorOffset?: number;
+		readonly alignToTop?: T;
+		readonly forceScroll?: U;
+	}
 ): void {
 	const targetWindow = getWindow( target );
 	let currentWindow: Window | null = targetWindow;
 	let currentFrame: HTMLElement | null = null;
+
+	viewportOffset = normalizeViewportOffset( viewportOffset );
 
 	// Iterate over all windows, starting from target's parent window up to window#top.
 	while ( currentWindow ) {
@@ -47,20 +96,32 @@ export function scrollViewportToShowTarget(
 		}
 
 		// Scroll the target's ancestors first. Once done, scrolling the viewport is easy.
-		scrollAncestorsToShowRect( firstAncestorToScroll, () => {
-			// Note: If the target does not belong to the current window **directly**,
-			// i.e. it resides in an iframe belonging to the window, obtain the target's rect
-			// in the coordinates of the current window. By default, a Rect returns geometry
-			// relative to the current window's viewport. To make it work in a parent window,
-			// it must be shifted.
-			return getRectRelativeToWindow( target, currentWindow! );
+		scrollAncestorsToShowRect( {
+			parent: firstAncestorToScroll,
+			getRect: () => {
+				// Note: If the target does not belong to the current window **directly**,
+				// i.e. it resides in an iframe belonging to the window, obtain the target's rect
+				// in the coordinates of the current window. By default, a Rect returns geometry
+				// relative to the current window's viewport. To make it work in a parent window,
+				// it must be shifted.
+				return getRectRelativeToWindow( target, currentWindow! );
+			},
+			alignToTop,
+			ancestorOffset,
+			forceScroll
 		} );
 
 		// Obtain the rect of the target after it has been scrolled within its ancestors.
 		// It's time to scroll the viewport.
 		const targetRect = getRectRelativeToWindow( target, currentWindow );
 
-		scrollWindowToShowRect( currentWindow, targetRect, viewportOffset );
+		scrollWindowToShowRect( {
+			window: currentWindow,
+			rect: targetRect,
+			viewportOffset,
+			alignToTop,
+			forceScroll
+		} );
 
 		if ( currentWindow.parent != currentWindow ) {
 			// Keep the reference to the <iframe> element the "previous current window" was
@@ -87,109 +148,193 @@ export function scrollViewportToShowTarget(
  * Makes any page `HTMLElement` or `Range` (target) visible within its scrollable ancestors,
  * e.g. if they have `overflow: scroll` CSS style.
  *
- * @param {HTMLElement|Range} target A target, which supposed to become visible to the user.
+ * @param target A target, which supposed to become visible to the user.
+ * @param ancestorOffset An offset between the target and the boundary of scrollable ancestors
+ * to be maintained while scrolling.
  */
-export function scrollAncestorsToShowTarget( target: HTMLElement | Range ): void {
+export function scrollAncestorsToShowTarget( target: HTMLElement | Range, ancestorOffset?: number ): void {
 	const targetParent = getParentElement( target );
 
-	scrollAncestorsToShowRect( targetParent, () => {
-		return new Rect( target );
+	scrollAncestorsToShowRect( {
+		parent: targetParent,
+		getRect: () => new Rect( target ),
+		ancestorOffset
 	} );
 }
 
-// Makes a given rect visible within its parent window.
-//
-// Note: Avoid the situation where the caret is still in the viewport, but totally
-// at the edge of it. In such situation, if it moved beyond the viewport in the next
-// action e.g. after paste, the scrolling would move it to the viewportOffset level
-// and it all would look like the caret visually moved up/down:
-//
-// 1.
-//		| foo[]
-//		|                                    <--- N px of space below the caret
-//		+---------------------------------...
-//
-// 2. *paste*
-// 3.
-//		|
-//		|
-//		+-foo-----------------------------...
-//		  bar[]                              <--- caret below viewport, scrolling...
-//
-// 4. *scrolling*
-// 5.
-//		|
-//		| foo
-//		| bar[]                              <--- caret precisely at the edge
-//		+---------------------------------...
-//
-// To prevent this, this method checks the rects moved by the viewportOffset to cover
-// the upper/lower edge of the viewport. It makes sure if the action repeats, there's
-// no twitching – it's a purely visual improvement:
-//
-// 5. (after fix)
-//		|
-//		| foo
-//		| bar[]
-//		|                                    <--- N px of space below the caret
-//		+---------------------------------...
-//
-// @private
-// @param {Window} window A window which is scrolled to reveal the rect.
-// @param {module:utils/dom/rect~Rect} rect A rect which is to be revealed.
-// @param {Number} viewportOffset See scrollViewportToShowTarget.
-function scrollWindowToShowRect( window: Window, rect: Rect, viewportOffset: number ): void {
-	const targetShiftedDownRect = rect.clone().moveBy( 0, viewportOffset );
-	const targetShiftedUpRect = rect.clone().moveBy( 0, -viewportOffset );
+/**
+ * Makes a given rect visible within its parent window.
+ *
+ * Note: Avoid the situation where the caret is still in the viewport, but totally
+ * at the edge of it. In such situation, if it moved beyond the viewport in the next
+ * action e.g. after paste, the scrolling would move it to the viewportOffset level
+ * and it all would look like the caret visually moved up/down:
+ *
+ * 1.
+ * ```
+ * | foo[]
+ * |                                    <--- N px of space below the caret
+ * +---------------------------------...
+ * ```
+ *
+ * 2. *paste*
+ * 3.
+ * ```
+ * |
+ * |
+ * +-foo-----------------------------...
+ *   bar[]                              <--- caret below viewport, scrolling...
+ * ```
+ *
+ * 4. *scrolling*
+ * 5.
+ * ```
+ * |
+ * | foo
+ * | bar[]                              <--- caret precisely at the edge
+ * +---------------------------------...
+ * ```
+ *
+ * To prevent this, this method checks the rects moved by the viewportOffset to cover
+ * the upper/lower edge of the viewport. It makes sure if the action repeats, there's
+ * no twitching – it's a purely visual improvement:
+ *
+ * 5. (after fix)
+ * ```
+ * |
+ * | foo
+ * | bar[]
+ * |                                    <--- N px of space below the caret
+ * +---------------------------------...
+ * ```
+ *
+ * @param options Additional configuration of the scrolling behavior.
+ * @param options.window A window which is scrolled to reveal the rect.
+ * @param options.rect A rect which is to be revealed.
+ * @param options.viewportOffset An offset from the edge of the viewport (in pixels) the `rect` will be
+ * moved by if the viewport is scrolled.
+ * @param options.alignToTop When set `true`, the helper will make sure the `rect` is scrolled up
+ * to the top boundary of the viewport if scrolled up. When not set (default), the `rect` will be
+ * revealed by scrolling as little as possible. This option will not affect rects that must be scrolled
+ * down because they will appear at the top of the boundary anyway.
+ * @param options.forceScroll When set `true`, the `rect` will be aligned to the top of the viewport
+ * whether it is already visible or not. This option will only work when `alignToTop` is `true`
+ */
+function scrollWindowToShowRect<T extends boolean, U extends IfTrue<T>>(
+	{
+		window,
+		rect,
+		alignToTop,
+		forceScroll,
+		viewportOffset
+	}: {
+		readonly window: Window;
+		readonly rect: Rect;
+		readonly viewportOffset: { top: number; bottom: number; left: number; right: number };
+		readonly alignToTop?: T;
+		readonly forceScroll?: U;
+	}
+): void {
+	const targetShiftedDownRect = rect.clone().moveBy( 0, viewportOffset.bottom );
+	const targetShiftedUpRect = rect.clone().moveBy( 0, -viewportOffset.top );
 	const viewportRect = new Rect( window ).excludeScrollbarsAndBorders();
 
 	const rects = [ targetShiftedUpRect, targetShiftedDownRect ];
+	const forceScrollToTop = alignToTop && forceScroll;
+	const allRectsFitInViewport = rects.every( rect => viewportRect.contains( rect ) );
 
-	if ( !rects.every( rect => viewportRect.contains( rect ) ) ) {
-		let { scrollX, scrollY } = window;
+	let { scrollX, scrollY } = window;
+	const initialScrollX = scrollX;
+	const initialScrollY = scrollY;
 
+	if ( forceScrollToTop ) {
+		scrollY -= ( viewportRect.top - rect.top ) + viewportOffset.top;
+	} else if ( !allRectsFitInViewport ) {
 		if ( isAbove( targetShiftedUpRect, viewportRect ) ) {
-			scrollY -= viewportRect.top - rect.top + viewportOffset;
+			scrollY -= viewportRect.top - rect.top + viewportOffset.top;
 		} else if ( isBelow( targetShiftedDownRect, viewportRect ) ) {
-			scrollY += rect.bottom - viewportRect.bottom + viewportOffset;
+			if ( alignToTop ) {
+				scrollY += rect.top - viewportRect.top - viewportOffset.top;
+			} else {
+				scrollY += rect.bottom - viewportRect.bottom + viewportOffset.bottom;
+			}
 		}
+	}
 
+	if ( !allRectsFitInViewport ) {
 		// TODO: Web browsers scroll natively to place the target in the middle
 		// of the viewport. It's not a very popular case, though.
 		if ( isLeftOf( rect, viewportRect ) ) {
-			scrollX -= viewportRect.left - rect.left + viewportOffset;
+			scrollX -= viewportRect.left - rect.left + viewportOffset.left;
 		} else if ( isRightOf( rect, viewportRect ) ) {
-			scrollX += rect.right - viewportRect.right + viewportOffset;
+			scrollX += rect.right - viewportRect.right + viewportOffset.right;
 		}
+	}
 
+	if ( scrollX != initialScrollX || scrollY !== initialScrollY ) {
 		window.scrollTo( scrollX, scrollY );
 	}
 }
 
-// Recursively scrolls element ancestors to visually reveal a rect.
-//
-// @private
-// @param {HTMLElement} A parent The first ancestors to start scrolling.
-// @param {Function} getRect A function which returns the Rect, which is to be revealed.
-function scrollAncestorsToShowRect( parent: HTMLElement, getRect: () => Rect ): void {
+/**
+ * Recursively scrolls element ancestors to visually reveal a rect.
+ *
+ * @param options Additional configuration of the scrolling behavior.
+ * @param options.parent The first parent ancestor to start scrolling.
+ * @param options.getRect A function which returns the Rect, which is to be revealed.
+ * @param options.ancestorOffset An offset from the boundary of scrollable ancestors (if any)
+ * the `Rect` instance will be moved by if the viewport is scrolled.
+ * @param options.alignToTop When set `true`, the helper will make sure the `Rect` instance is scrolled up
+ * to the top boundary of the scrollable ancestors if scrolled up. When not set (default), the `rect`
+ * will be revealed by scrolling as little as possible. This option will not affect rects that must be
+ * scrolled down because they will appear at the top of the boundary
+ * anyway.
+ * @param options.forceScroll When set `true`, the `rect` will be aligned to the top of scrollable ancestors
+ * whether it is already visible or not. This option will only work when `alignToTop` is `true`
+ */
+function scrollAncestorsToShowRect<T extends boolean, U extends IfTrue<T>>(
+	{
+		parent,
+		getRect,
+		alignToTop,
+		forceScroll,
+		ancestorOffset = 0
+	}: {
+		readonly parent: HTMLElement;
+		readonly getRect: () => Rect;
+		readonly alignToTop?: T;
+		readonly forceScroll?: U;
+		readonly ancestorOffset?: number;
+	}
+): void {
 	const parentWindow = getWindow( parent );
-	let parentRect: Rect, targetRect: Rect;
+	const forceScrollToTop = alignToTop && forceScroll;
+	let parentRect: Rect, targetRect: Rect, targetFitsInTarget: boolean;
 
 	while ( parent != parentWindow.document.body ) {
 		targetRect = getRect();
 		parentRect = new Rect( parent ).excludeScrollbarsAndBorders();
+		targetFitsInTarget = parentRect.contains( targetRect );
 
-		if ( !parentRect.contains( targetRect ) ) {
+		if ( forceScrollToTop ) {
+			parent.scrollTop -= ( parentRect.top - targetRect.top ) + ancestorOffset;
+		} else if ( !targetFitsInTarget ) {
 			if ( isAbove( targetRect, parentRect ) ) {
-				parent.scrollTop -= parentRect.top - targetRect.top;
+				parent.scrollTop -= parentRect.top - targetRect.top + ancestorOffset;
 			} else if ( isBelow( targetRect, parentRect ) ) {
-				parent.scrollTop += targetRect.bottom - parentRect.bottom;
+				if ( alignToTop ) {
+					parent.scrollTop += targetRect.top - parentRect.top - ancestorOffset;
+				} else {
+					parent.scrollTop += targetRect.bottom - parentRect.bottom + ancestorOffset;
+				}
 			}
+		}
 
+		if ( !targetFitsInTarget ) {
 			if ( isLeftOf( targetRect, parentRect ) ) {
-				parent.scrollLeft -= parentRect.left - targetRect.left;
+				parent.scrollLeft -= parentRect.left - targetRect.left + ancestorOffset;
 			} else if ( isRightOf( targetRect, parentRect ) ) {
-				parent.scrollLeft += targetRect.right - parentRect.right;
+				parent.scrollLeft += targetRect.right - parentRect.right + ancestorOffset;
 			}
 		}
 
@@ -197,51 +342,37 @@ function scrollAncestorsToShowRect( parent: HTMLElement, getRect: () => Rect ): 
 	}
 }
 
-// Determines if a given `Rect` extends beyond the bottom edge of the second `Rect`.
-//
-// @private
-// @param {module:utils/dom/rect~Rect} firstRect
-// @param {module:utils/dom/rect~Rect} secondRect
-// @returns {Boolean}
+/**
+ * Determines if a given `Rect` extends beyond the bottom edge of the second `Rect`.
+ */
 function isBelow( firstRect: Rect, secondRect: Rect ): boolean {
 	return firstRect.bottom > secondRect.bottom;
 }
 
-// Determines if a given `Rect` extends beyond the top edge of the second `Rect`.
-//
-// @private
-// @param {module:utils/dom/rect~Rect} firstRect
-// @param {module:utils/dom/rect~Rect} secondRect
-// @returns {Boolean}
+/**
+ * Determines if a given `Rect` extends beyond the top edge of the second `Rect`.
+ */
 function isAbove( firstRect: Rect, secondRect: Rect ): boolean {
 	return firstRect.top < secondRect.top;
 }
 
-// Determines if a given `Rect` extends beyond the left edge of the second `Rect`.
-//
-// @private
-// @param {module:utils/dom/rect~Rect} firstRect
-// @param {module:utils/dom/rect~Rect} secondRect
-// @returns {Boolean}
+/**
+ * Determines if a given `Rect` extends beyond the left edge of the second `Rect`.
+ */
 function isLeftOf( firstRect: Rect, secondRect: Rect ): boolean {
 	return firstRect.left < secondRect.left;
 }
 
-// Determines if a given `Rect` extends beyond the right edge of the second `Rect`.
-//
-// @private
-// @param {module:utils/dom/rect~Rect} firstRect
-// @param {module:utils/dom/rect~Rect} secondRect
-// @returns {Boolean}
+/**
+ * Determines if a given `Rect` extends beyond the right edge of the second `Rect`.
+ */
 function isRightOf( firstRect: Rect, secondRect: Rect ): boolean {
 	return firstRect.right > secondRect.right;
 }
 
-// Returns the closest window of an element or range.
-//
-// @private
-// @param {HTMLElement|Range} elementOrRange
-// @returns {Window}
+/**
+ * Returns the closest window of an element or range.
+ */
 function getWindow( elementOrRange: HTMLElement | Range ): Window {
 	if ( isRange( elementOrRange ) ) {
 		return elementOrRange.startContainer.ownerDocument!.defaultView!;
@@ -250,11 +381,9 @@ function getWindow( elementOrRange: HTMLElement | Range ): Window {
 	}
 }
 
-// Returns the closest parent of an element or DOM range.
-//
-// @private
-// @param {HTMLElement|Range} elementOrRange
-// @returns {HTMLelement}
+/**
+ * Returns the closest parent of an element or DOM range.
+ */
 function getParentElement( elementOrRange: HTMLElement | Range ): HTMLElement {
 	if ( isRange( elementOrRange ) ) {
 		let parent = elementOrRange.commonAncestorContainer as HTMLElement;
@@ -270,13 +399,13 @@ function getParentElement( elementOrRange: HTMLElement | Range ): HTMLElement {
 	}
 }
 
-// Returns the rect of an element or range residing in an iframe.
-// The result rect is relative to the geometry of the passed window instance.
-//
-// @private
-// @param {HTMLElement|Range} target Element or range which rect should be returned.
-// @param {Window} relativeWindow A window the rect should be relative to.
-// @returns {module:utils/dom/rect~Rect}
+/**
+ * Returns the rect of an element or range residing in an iframe.
+ * The result rect is relative to the geometry of the passed window instance.
+ *
+ * @param target Element or range which rect should be returned.
+ * @param relativeWindow A window the rect should be relative to.
+ */
 function getRectRelativeToWindow( target: HTMLElement | Range, relativeWindow: Window ): Rect {
 	const targetWindow = getWindow( target );
 	const rect = new Rect( target );
@@ -297,4 +426,25 @@ function getRectRelativeToWindow( target: HTMLElement | Range, relativeWindow: W
 	}
 
 	return rect;
+}
+
+/**
+ * A helper that explodes the `viewportOffset` configuration if defined as a plain number into an object
+ * with `top`, `bottom`, `left`, and `right` properties.
+ *
+ * If an object value is passed, this helper will pass it through.
+ *
+ * @param viewportOffset Viewport offset to be normalized.
+ */
+function normalizeViewportOffset( viewportOffset: number | { top: number; bottom: number; left: number; right: number } ) {
+	if ( typeof viewportOffset === 'number' ) {
+		return {
+			top: viewportOffset,
+			bottom: viewportOffset,
+			left: viewportOffset,
+			right: viewportOffset
+		};
+	}
+
+	return viewportOffset;
 }

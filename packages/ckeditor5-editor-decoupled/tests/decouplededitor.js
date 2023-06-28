@@ -1,20 +1,22 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 /* globals document, setTimeout, console */
 
+import DecoupledEditor from '../src/decouplededitor';
 import DecoupledEditorUI from '../src/decouplededitorui';
 import DecoupledEditorUIView from '../src/decouplededitoruiview';
 
 import HtmlDataProcessor from '@ckeditor/ckeditor5-engine/src/dataprocessor/htmldataprocessor';
 
-import DecoupledEditor from '../src/decouplededitor';
+import Context from '@ckeditor/ckeditor5-core/src/context';
+import EditorWatchdog from '@ckeditor/ckeditor5-watchdog/src/editorwatchdog';
+import ContextWatchdog from '@ckeditor/ckeditor5-watchdog/src/contextwatchdog';
 import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
 import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold';
-import DataApiMixin from '@ckeditor/ckeditor5-core/src/editor/utils/dataapimixin';
 import RootElement from '@ckeditor/ckeditor5-engine/src/model/rootelement';
 import CKEditorError from '@ckeditor/ckeditor5-utils/src/ckeditorerror';
 
@@ -45,7 +47,8 @@ describe( 'DecoupledEditor', () => {
 		} );
 
 		it( 'has a Data Interface', () => {
-			expect( testUtils.isMixed( DecoupledEditor, DataApiMixin ) ).to.be.true;
+			expect( DecoupledEditor.prototype ).have.property( 'setData' ).to.be.a( 'function' );
+			expect( DecoupledEditor.prototype ).have.property( 'getData' ).to.be.a( 'function' );
 		} );
 
 		it( 'creates main root element', () => {
@@ -430,6 +433,20 @@ describe( 'DecoupledEditor', () => {
 					} );
 			} );
 		}
+	} );
+
+	describe( 'static fields', () => {
+		it( 'DecoupledEditor.Context', () => {
+			expect( DecoupledEditor.Context ).to.equal( Context );
+		} );
+
+		it( 'DecoupledEditor.EditorWatchdog', () => {
+			expect( DecoupledEditor.EditorWatchdog ).to.equal( EditorWatchdog );
+		} );
+
+		it( 'DecoupledEditor.ContextWatchdog', () => {
+			expect( DecoupledEditor.ContextWatchdog ).to.equal( ContextWatchdog );
+		} );
 	} );
 
 	describeMemoryUsage( () => {

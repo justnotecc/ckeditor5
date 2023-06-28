@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -105,6 +105,16 @@ describe( 'InsertTextCommand', () => {
 
 			expect( getData( model ) ).to.equal( '<paragraph>foobar[]</paragraph>' );
 			expect( buffer.size ).to.equal( 3 );
+		} );
+
+		it( 'should not execute when selection is in non-editable place', () => {
+			setData( model, '<paragraph>foo[]bar</paragraph>' );
+
+			model.document.isReadOnly = true;
+
+			editor.execute( 'insertText', {	text: 'bar'	} );
+
+			expect( getData( model ) ).to.equal( '<paragraph>foo[]bar</paragraph>' );
 		} );
 
 		it( 'should insert text for a collapsed selection', () => {

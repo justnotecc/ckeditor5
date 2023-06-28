@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -234,6 +234,15 @@ describe( 'FontCommand', () => {
 			} );
 
 			expect( getData( model ) ).to.equal( '<paragraph>a[<$text font="foo">bcfo]obar</$text>xyz</paragraph>' );
+		} );
+
+		it( 'should use provided batch', () => {
+			setData( model, '<paragraph>a[bc<$text font="foo">fo]obar</$text>xyz</paragraph>' );
+			const batch = model.createBatch();
+			const spy = sinon.spy( model, 'enqueueChange' );
+
+			command.execute( { value: '#f00', batch } );
+			sinon.assert.calledWith( spy, batch );
 		} );
 
 		describe( 'should cause firing model change event', () => {

@@ -1,9 +1,9 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-/* globals document, Event */
+/* globals document */
 
 import LabeledFieldView from '@ckeditor/ckeditor5-ui/src/labeledfield/labeledfieldview';
 
@@ -212,19 +212,6 @@ describe( 'ImageInsertPanelView', () => {
 			keyEvtData.keyCode = keyCodes.arrowright;
 			view.keystrokes.press( keyEvtData );
 			sinon.assert.callCount( keyEvtData.stopPropagation, 4 );
-		} );
-
-		it( 'intercepts the "selectstart" event of the first integration element with the high priority', () => {
-			const spy = sinon.spy();
-			const event = new Event( 'selectstart', {
-				bubbles: true,
-				cancelable: true
-			} );
-
-			event.stopPropagation = spy;
-
-			view.getIntegration( 'insertImageViaUrl' ).element.dispatchEvent( event );
-			sinon.assert.calledOnce( spy );
 		} );
 
 		describe( 'activates keyboard navigation for the toolbar', () => {

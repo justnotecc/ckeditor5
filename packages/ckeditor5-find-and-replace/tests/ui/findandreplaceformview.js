@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -213,6 +213,12 @@ describe( 'FindAndReplaceFormView', () => {
 				} );
 
 				describe( 'options dropdown', () => {
+					beforeEach( () => {
+						// Trigger lazy init.
+						view._optionsDropdown.isOpen = true;
+						view._optionsDropdown.isOpen = false;
+					} );
+
 					it( 'should be a dropdown', () => {
 						expect( view._optionsDropdown ).to.be.instanceOf( DropdownView );
 						expect( view._optionsDropdown.class ).to.equal( 'ck-options-dropdown' );
@@ -353,10 +359,6 @@ describe( 'FindAndReplaceFormView', () => {
 		it( 'should create #_focusables view collection', () => {
 			expect( view._focusables ).to.be.instanceOf( ViewCollection );
 		} );
-
-		it( 'should implement the CSS transition disabling feature', () => {
-			expect( view.disableCssTransitions ).to.be.a( 'function' );
-		} );
 	} );
 
 	describe( 'render()', () => {
@@ -478,32 +480,6 @@ describe( 'FindAndReplaceFormView', () => {
 				keyEvtData.keyCode = keyCodes.arrowright;
 				view._keystrokes.press( keyEvtData );
 				sinon.assert.callCount( keyEvtData.stopPropagation, 4 );
-			} );
-
-			it( 'intercepts the "selectstart" in the #findInputView with the high priority to unlock select all', () => {
-				const spy = sinon.spy();
-				const event = new Event( 'selectstart', {
-					bubbles: true,
-					cancelable: true
-				} );
-
-				event.stopPropagation = spy;
-
-				view._findInputView.element.dispatchEvent( event );
-				sinon.assert.calledOnce( spy );
-			} );
-
-			it( 'intercepts the "selectstart" in the #replaceInputView with the high priority to unlock select all', () => {
-				const spy = sinon.spy();
-				const event = new Event( 'selectstart', {
-					bubbles: true,
-					cancelable: true
-				} );
-
-				event.stopPropagation = spy;
-
-				view._replaceInputView.element.dispatchEvent( event );
-				sinon.assert.calledOnce( spy );
 			} );
 
 			it( 'handles F3 keystroke and extecutes find next', () => {
@@ -764,9 +740,13 @@ describe( 'FindAndReplaceFormView', () => {
 				toolbar: [ 'findAndReplace' ]
 			} );
 
-			view = editor.plugins.get( 'FindAndReplaceUI' ).formView;
 			dropdown = editor.ui.view.toolbar.items
 				.find( item => item.buttonView && item.buttonView.label == 'Find and replace' );
+
+			// Trigger lazy init.
+			dropdown.isOpen = true;
+
+			view = editor.plugins.get( 'FindAndReplaceUI' ).formView;
 
 			findInput = view._findInputView;
 			matchCounterElement = findInput.element.firstChild.childNodes[ 2 ];
@@ -777,7 +757,12 @@ describe( 'FindAndReplaceFormView', () => {
 			replaceButton = view._replaceButtonView;
 			replaceAllButton = view._replaceAllButtonView;
 
+			// Trigger lazy init.
+			view._optionsDropdown.isOpen = true;
+			view._optionsDropdown.isOpen = false;
+
 			const optionsListView = view._optionsDropdown.panelView.children.get( 0 );
+
 			matchCaseSwitch = optionsListView.items.get( 0 ).children.get( 0 );
 			wholeWordsOnlySwitch = optionsListView.items.get( 1 ).children.get( 0 );
 		} );

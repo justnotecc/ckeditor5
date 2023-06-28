@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -7,7 +7,7 @@
  * @module enter/enter
  */
 
-import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
+import { Plugin } from '@ckeditor/ckeditor5-core';
 import EnterCommand from './entercommand';
 import EnterObserver, { type ViewDocumentEnterEvent } from './enterobserver';
 
@@ -17,15 +17,13 @@ import EnterObserver, { type ViewDocumentEnterEvent } from './enterobserver';
  * See also the {@link module:enter/shiftenter~ShiftEnter} plugin.
  *
  * For more information about this feature see the {@glink api/enter package page}.
- *
- * @extends module:core/plugin~Plugin
  */
 export default class Enter extends Plugin {
 	/**
 	 * @inheritDoc
 	 */
-	public static get pluginName(): 'Enter' {
-		return 'Enter';
+	public static get pluginName() {
+		return 'Enter' as const;
 	}
 
 	public init(): void {
@@ -53,15 +51,5 @@ export default class Enter extends Plugin {
 
 			view.scrollToTheSelection();
 		}, { priority: 'low' } );
-	}
-}
-
-declare module '@ckeditor/ckeditor5-core' {
-	interface CommandsMap {
-		'enter': EnterCommand;
-	}
-
-	interface PluginsMap {
-		[ Enter.pluginName ]: Enter;
 	}
 }

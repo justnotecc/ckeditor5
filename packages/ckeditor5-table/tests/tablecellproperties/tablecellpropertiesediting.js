@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -170,7 +170,7 @@ describe( 'table cell properties', () => {
 
 					const tableCell = model.document.getRoot().getNodeByPath( [ 0, 0, 0 ] );
 
-					assertTRBLAttribute( tableCell, 'tableCellBorderColor', '#f00', null, 'rgba(255, 0, 0, 1)', null );
+					assertTRBLAttribute( tableCell, 'tableCellBorderColor', '#f00', null, 'rgba(255,0,0,1)', null );
 					assertTRBLAttribute( tableCell, 'tableCellBorderStyle', 'solid', null, 'ridge', null );
 					assertTRBLAttribute( tableCell, 'tableCellBorderWidth', '1px', null, '2em', null );
 				} );

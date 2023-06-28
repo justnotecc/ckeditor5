@@ -1,9 +1,9 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-/* globals document, Event */
+/* globals document */
 
 import ListPropertiesView from '../../../src/listproperties/ui/listpropertiesview';
 import CollapsibleView from '../../../src/listproperties/ui/collapsibleview';
@@ -290,7 +290,7 @@ describe( 'ListPropertiesView', () => {
 			it( 'should have basic properties', () => {
 				expect( view.startIndexFieldView.label ).to.equal( 'Start at' );
 				expect( view.startIndexFieldView.class ).to.equal( 'ck-numbered-list-properties__start-index' );
-				expect( view.startIndexFieldView.fieldView.min ).to.equal( 1 );
+				expect( view.startIndexFieldView.fieldView.min ).to.equal( 0 );
 				expect( view.startIndexFieldView.fieldView.step ).to.equal( 1 );
 				expect( view.startIndexFieldView.fieldView.value ).to.equal( 1 );
 				expect( view.startIndexFieldView.fieldView.inputMode ).to.equal( 'numeric' );
@@ -566,19 +566,6 @@ describe( 'ListPropertiesView', () => {
 				keyEvtData.keyCode = keyCodes.arrowright;
 				view.keystrokes.press( keyEvtData );
 				sinon.assert.callCount( keyEvtData.stopPropagation, 4 );
-			} );
-
-			it( 'intercepts the "selectstart" in the #startIndexFieldView with the high priority to unlock select all', () => {
-				const spy = sinon.spy();
-				const event = new Event( 'selectstart', {
-					bubbles: true,
-					cancelable: true
-				} );
-
-				event.stopPropagation = spy;
-
-				view.startIndexFieldView.element.dispatchEvent( event );
-				sinon.assert.calledOnce( spy );
 			} );
 		} );
 	} );

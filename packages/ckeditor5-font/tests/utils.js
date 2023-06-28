@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -12,6 +12,7 @@ import {
 import { createDropdown } from '@ckeditor/ckeditor5-ui/src/dropdown/utils';
 import ColorTableView from './../src/ui/colortableview';
 import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
+import { Locale } from '@ckeditor/ckeditor5-utils';
 
 describe( 'utils', () => {
 	testUtils.createSinonSandbox();
@@ -23,7 +24,8 @@ describe( 'utils', () => {
 
 	describe( 'addColorTableToDropdown()', () => {
 		it( 'should create dropdown with color table', () => {
-			const dropdown = createDropdown();
+			const locale = new Locale();
+			const dropdown = createDropdown( locale );
 			dropdown.render();
 
 			addColorTableToDropdown( {
@@ -45,7 +47,7 @@ describe( 'utils', () => {
 					}
 				],
 				columns: 2,
-				removeButtonTooltip: 'Remove Color'
+				removeButtonLabel: 'Remove Color'
 			} );
 
 			expect( dropdown.colorTableView ).to.be.instanceOf( ColorTableView );

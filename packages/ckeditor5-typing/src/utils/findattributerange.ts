@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -16,11 +16,11 @@ import type { Position, Model, Range } from '@ckeditor/ckeditor5-engine';
  * It can be used e.g. to get the entire range on which the `linkHref` attribute needs to be changed when having a
  * selection inside a link.
  *
- * @param {module:engine/model/position~Position} position The start position.
- * @param {String} attributeName The attribute name.
- * @param {String} value The attribute value.
- * @param {module:engine/model/model~Model} model The model instance.
- * @returns {module:engine/model/range~Range} The link range.
+ * @param position The start position.
+ * @param attributeName The attribute name.
+ * @param value The attribute value.
+ * @param model The model instance.
+ * @returns The link range.
  */
 export default function findAttributeRange(
 	position: Position,
@@ -29,20 +29,22 @@ export default function findAttributeRange(
 	model: Model
 ): Range {
 	return model.createRange(
-		_findBound( position, attributeName, value, true, model ),
-		_findBound( position, attributeName, value, false, model )
+		findAttributeRangeBound( position, attributeName, value, true, model ),
+		findAttributeRangeBound( position, attributeName, value, false, model )
 	);
 }
 
-// Walks forward or backward (depends on the `lookBack` flag), node by node, as long as they have the same attribute value
-// and returns a position just before or after (depends on the `lookBack` flag) the last matched node.
-//
-// @param {module:engine/model/position~Position} position The start position.
-// @param {String} attributeName The attribute name.
-// @param {String} value The attribute value.
-// @param {Boolean} lookBack Whether the walk direction is forward (`false`) or backward (`true`).
-// @returns {module:engine/model/position~Position} The position just before the last matched node.
-function _findBound(
+/**
+ * Walks forward or backward (depends on the `lookBack` flag), node by node, as long as they have the same attribute value
+ * and returns a position just before or after (depends on the `lookBack` flag) the last matched node.
+ *
+ * @param position The start position.
+ * @param attributeName The attribute name.
+ * @param value The attribute value.
+ * @param lookBack Whether the walk direction is forward (`false`) or backward (`true`).
+ * @returns The position just before the last matched node.
+ */
+export function findAttributeRangeBound(
 	position: Position,
 	attributeName: string,
 	value: unknown,

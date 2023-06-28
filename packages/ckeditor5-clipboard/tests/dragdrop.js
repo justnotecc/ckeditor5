@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -35,6 +35,26 @@ describe( 'Drag and Drop', () => {
 
 	it( 'has proper name', () => {
 		expect( DragDrop.pluginName ).to.equal( 'DragDrop' );
+	} );
+
+	it( 'should not initialize if DragDropExperimental plugin is loaded', async () => {
+		const editorElement = document.createElement( 'div' );
+		document.body.appendChild( editorElement );
+
+		function DragDropExperimental() {}
+
+		DragDropExperimental.pluginName = 'DragDropExperimental';
+
+		const editor = await ClassicTestEditor.create( editorElement, {
+			plugins: [ DragDrop, DragDropExperimental ]
+		} );
+
+		const plugin = editor.plugins.get( 'DragDrop' );
+
+		expect( plugin.isEnabled ).to.be.false;
+
+		await editor.destroy();
+		await editorElement.remove();
 	} );
 
 	it( 'should be disabled on Android', async () => {
@@ -863,7 +883,7 @@ describe( 'Drag and Drop', () => {
 				expect( spyClipboardOutput.firstCall.firstArg.method ).to.equal( 'dragstart' );
 				expect( spyClipboardOutput.firstCall.firstArg.dataTransfer ).to.equal( dataTransferMock );
 				expect( stringifyView( spyClipboardOutput.firstCall.firstArg.content ) ).to.equal(
-					'<figure class="table"><table><tbody><tr><td>abc</td></tr></tbody></table></figure>'
+					'<figure class="table"><table><tbody><tr><td><p>abc</p></td></tr></tbody></table></figure>'
 				);
 
 				dataTransferMock.dropEffect = 'move';
@@ -929,7 +949,7 @@ describe( 'Drag and Drop', () => {
 				expect( spyClipboardOutput.firstCall.firstArg.method ).to.equal( 'dragstart' );
 				expect( spyClipboardOutput.firstCall.firstArg.dataTransfer ).to.equal( dataTransferMock );
 				expect( stringifyView( spyClipboardOutput.firstCall.firstArg.content ) ).to.equal(
-					'<figure class="table"><table><tbody><tr><td>abc</td></tr></tbody></table></figure>'
+					'<figure class="table"><table><tbody><tr><td><p>abc</p></td></tr></tbody></table></figure>'
 				);
 			} );
 
@@ -1464,6 +1484,23 @@ describe( 'Drag and Drop', () => {
 				expectDraggingMarker( targetPosition );
 			} );
 
+			it( 'cannot be dropped on non-editable place.', () => {
+				setModelData( model, '<paragraph>[]foobar</paragraph>' );
+
+				const dataTransferMock = createDataTransfer();
+				const targetPosition = model.createPositionAt( root.getChild( 0 ), 2 );
+
+				// For selection to be in non-editable place by overwriting `canEditAt()`.
+				model.on( 'canEditAt', evt => {
+					evt.return = false;
+					evt.stop();
+				}, { priority: 'highest' } );
+
+				fireDragging( dataTransferMock, targetPosition );
+
+				expect( model.markers.has( 'drop-target' ) ).to.be.false;
+			} );
+
 			it( 'should put drop target marker inside and attribute element', () => {
 				setModelData( model, '<paragraph>[]foo<$text bold="true">bar</$text></paragraph>' );
 
@@ -1800,6 +1837,21 @@ describe( 'Drag and Drop', () => {
 				} );
 
 				expect( widgetToolbarRepository.isEnabled ).to.be.true;
+			} );
+
+			it( 'is disabled when plugin is disabled', () => {
+				setModelData( editor.model, '<paragraph>Foo.</paragraph>[<horizontalLine></horizontalLine>]' );
+
+				const plugin = editor.plugins.get( 'DragDrop' );
+				plugin.isEnabled = false;
+
+				viewDocument.fire( 'dragstart', {
+					preventDefault: sinon.spy(),
+					target: viewDocument.getRoot().getChild( 1 ),
+					dataTransfer: createDataTransfer( {} )
+				} );
+
+				expect( widgetToolbarRepository.isEnabled ).to.be.false;
 			} );
 
 			it( 'is disabled when starts dragging the widget', () => {

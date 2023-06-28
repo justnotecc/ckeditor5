@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -152,6 +152,8 @@ describe( 'table cell properties', () => {
 							expect(	labeledDropdown.fieldView.buttonView.isOn ).to.be.false;
 							expect(	labeledDropdown.fieldView.buttonView.withText ).to.be.true;
 							expect(	labeledDropdown.fieldView.buttonView.tooltip ).to.equal( 'Style' );
+							expect( labeledDropdown.fieldView.buttonView.ariaLabel ).to.equal( 'Style' );
+							expect( labeledDropdown.fieldView.buttonView.ariaLabelledBy ).to.be.undefined;
 						} );
 
 						it( 'should bind button\'s label to #borderStyle property', () => {
@@ -171,6 +173,7 @@ describe( 'table cell properties', () => {
 						} );
 
 						it( 'should change #borderStyle when executed', () => {
+							labeledDropdown.fieldView.isOpen = true;
 							labeledDropdown.fieldView.listView.items.first.children.first.fire( 'execute' );
 							expect( view.borderStyle ).to.equal( 'none' );
 
@@ -179,6 +182,8 @@ describe( 'table cell properties', () => {
 						} );
 
 						it( 'should come with a set of pre–defined border styles', () => {
+							labeledDropdown.fieldView.isOpen = true;
+
 							expect( labeledDropdown.fieldView.listView.items.map( item => {
 								return item.children.first.label;
 							} ) ).to.have.ordered.members( [
@@ -195,6 +200,15 @@ describe( 'table cell properties', () => {
 
 							expect( view.borderColor ).to.equal( '' );
 							expect( view.borderWidth ).to.equal( '' );
+						} );
+
+						it( 'listView should have properties set', () => {
+							labeledDropdown.fieldView.isOpen = true;
+
+							const listView = labeledDropdown.fieldView.listView;
+
+							expect( listView.element.role ).to.equal( 'menu' );
+							expect( listView.element.ariaLabel ).to.equal( 'Style' );
 						} );
 					} );
 

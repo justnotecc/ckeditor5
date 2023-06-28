@@ -1,4 +1,4 @@
-# Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+# Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
 #
 #                                     !!! IMPORTANT !!!
 #
@@ -12,13 +12,37 @@
 #
 msgid ""
 msgstr ""
-"Language-Team: Italian (https://www.transifex.com/ckeditor/teams/11143/it/)\n"
+"Language-Team: Italian (https://app.transifex.com/ckeditor/teams/11143/it/)\n"
 "Language: it\n"
 "Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
 
 msgctxt "Name of the special characters plugins, visible in a dropdown and as a button tooltip."
 msgid "Special characters"
 msgstr "Caratteri speciali"
+
+msgctxt "A category name is displayed in a special characters dropdown representing all available symbols."
+msgid "All"
+msgstr "Tutti"
+
+msgctxt "A category name is displayed in a special characters dropdown representing arrow symbols."
+msgid "Arrows"
+msgstr "Frecce"
+
+msgctxt "A category name is displayed in a special characters dropdown representing currency symbols."
+msgid "Currency"
+msgstr "Valuta"
+
+msgctxt "A category name is displayed in a special characters dropdown representing latin symbols."
+msgid "Latin"
+msgstr "Latini"
+
+msgctxt "A category name is displayed in a special characters dropdown representing mathematical symbols."
+msgid "Mathematical"
+msgstr "Matematici"
+
+msgctxt "A category name is displayed in a special characters dropdown representing text symbols."
+msgid "Text"
+msgstr "Testo"
 
 msgctxt "A label for the \"leftwards simple arrow\" symbol."
 msgid "leftwards simple arrow"

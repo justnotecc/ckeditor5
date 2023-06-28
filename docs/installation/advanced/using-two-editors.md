@@ -16,7 +16,7 @@ The ability to use two or more types of rich text editors on one page is a commo
 
 If you want to load two different editors on one page you need to make sure that they are built together (once). This can be achieved in at least two ways:
 
-* {@link installation/advanced/integrating-from-source Integrating CKEditor 5 from source} directly into your application. Since you build you application once, the editors that you use will be built together, too.
+* {@link installation/advanced/integrating-from-source-webpack Integrating CKEditor 5 from source} directly into your application. Since you build you application once, the editors that you use will be built together, too.
 * [Creating a "super build" of CKEditor 5](#creating-super-builds). Instead of creating a build which exports just one editor, you can create a build which exports two or more at the same time.
 
 ## Creating "super builds"
@@ -41,7 +41,7 @@ Once all the dependencies are installed, modify the webpack's entry point which 
 
 ```js
 // The editor creator to use.
-import ClassicEditorBase from '@ckeditor/ckeditor5-editor-classic/src/classiceditor';
+import { ClassicEditor as ClassicEditorBase } from '@ckeditor/ckeditor5-editor-classic';
 
 // ...
 
@@ -62,8 +62,8 @@ Let's make it export an object with two classes: `ClassicEditor` and `InlineEdit
 
 ```js
 // The editor creators to use.
-import ClassicEditorBase from '@ckeditor/ckeditor5-editor-classic/src/classiceditor';
-import InlineEditorBase from '@ckeditor/ckeditor5-editor-inline/src/inlineeditor';
+import { ClassicEditor as ClassicEditorBase } from '@ckeditor/ckeditor5-editor-classic';
+import { InlineEditor as InlineEditorBase } from '@ckeditor/ckeditor5-editor-inline';
 
 // ...
 

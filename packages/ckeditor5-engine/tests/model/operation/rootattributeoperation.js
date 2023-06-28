@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -71,6 +71,11 @@ describe( 'RootAttributeOperation', () => {
 		expect( root.hasAttribute( 'isNew' ) ).to.be.true;
 	} );
 
+	it( 'should return rootElement on affectedSelectable', () => {
+		const op = new RootAttributeOperation( root, 'isNew', false, true, doc.version );
+		expect( op.affectedSelectable ).to.equal( root );
+	} );
+
 	it( 'should change attribute on the root element', () => {
 		root._setAttribute( 'isNew', false );
 
@@ -103,6 +108,19 @@ describe( 'RootAttributeOperation', () => {
 
 		expect( doc.version ).to.equal( 1 );
 		expect( root.hasAttribute( 'x' ) ).to.be.false;
+	} );
+
+	it( 'should set oldValue and newValue to null if undefined was passed', () => {
+		const op = new RootAttributeOperation(
+			root,
+			'x',
+			undefined,
+			undefined,
+			doc.version
+		);
+
+		expect( op.oldValue ).to.be.null;
+		expect( op.newValue ).to.be.null;
 	} );
 
 	it( 'should create a RootAttributeOperation as a reverse', () => {

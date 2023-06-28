@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -25,6 +25,11 @@ describe( 'DetachOperation', () => {
 		const op = new DetachOperation( Position._createBefore( element ), 1 );
 
 		expect( op.type ).to.equal( 'detach' );
+	} );
+
+	it( 'should return null on affectedSelectable', () => {
+		const op = new DetachOperation( Position._createBefore( element ), 1 );
+		expect( op.affectedSelectable ).to.equal( null );
 	} );
 
 	it( 'should remove given element from parent', () => {

@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -49,7 +49,10 @@ describe( 'SelectionObserver', () => {
 			domDocument.getSelection().removeAllRanges();
 
 			viewDocument.isFocused = true;
+
 			domMain.focus();
+
+			viewDocument._isFocusChanging = false;
 		} );
 
 		selectionObserver.enable();
@@ -82,6 +85,18 @@ describe( 'SelectionObserver', () => {
 			expect( newViewRange.start.offset ).to.equal( 2 );
 			expect( newViewRange.end.parent ).to.equal( viewFoo );
 			expect( newViewRange.end.offset ).to.equal( 2 );
+
+			done();
+		} );
+
+		changeDomSelection();
+	} );
+
+	it( 'should call focusObserver#flush when selection is changed', done => {
+		const flushSpy = testUtils.sinon.spy( selectionObserver.focusObserver, 'flush' );
+
+		viewDocument.on( 'selectionChange', () => {
+			sinon.assert.calledOnce( flushSpy );
 
 			done();
 		} );
@@ -211,15 +226,18 @@ describe( 'SelectionObserver', () => {
 			writer.setSelection( viewFoo, 0 );
 		} );
 
+		let wasInfiniteLoopDetected = false;
+		sinon.stub( selectionObserver, '_reportInfiniteLoop' ).callsFake( () => {
+			wasInfiniteLoopDetected = true;
+		} );
 		const selectionChangeSpy = sinon.spy();
 
-		// Catches the "Selection change observer detected an infinite rendering loop." warning in the CK_DEBUG mode.
-		sinon.stub( console, 'warn' );
-
+		selectionObserver._clearInfiniteLoop();
 		viewDocument.on( 'selectionChange', selectionChangeSpy );
 
 		return new Promise( resolve => {
 			viewDocument.on( 'selectionChangeDone', () => {
+				expect( wasInfiniteLoopDetected ).to.be.true;
 				expect( selectionChangeSpy.callCount ).to.equal( 60 );
 
 				resolve();
@@ -230,6 +248,15 @@ describe( 'SelectionObserver', () => {
 				counter--;
 			}
 		} );
+	} );
+
+	it.skip( 'SelectionObserver#_reportInfiniteLoop() should throw an error', () => {
+		expect( () => {
+			selectionObserver._reportInfiniteLoop();
+		} ).to.throw( Error,
+			'Selection change observer detected an infinite rendering loop.\n\n' +
+			'⚠️⚠️ Report this error on https://github.com/ckeditor/ckeditor5/issues/11658.'
+		);
 	} );
 
 	it( 'should not be treated as an infinite loop if selection is changed only few times', done => {
@@ -397,6 +424,20 @@ describe( 'SelectionObserver', () => {
 
 		// 1. Collapse in a text node, before ui element, and wait for async selectionchange to fire selection change handling.
 		sel.collapse( domText, 3 );
+	} );
+
+	describe( 'stopListening()', () => {
+		it( 'should not fire selectionChange after stopped observing a DOM element', () => {
+			const spy = sinon.spy();
+
+			viewDocument.on( 'selectionChange', spy );
+
+			selectionObserver.stopListening( domMain );
+
+			changeDomSelection();
+
+			expect( spy.called ).to.be.false;
+		} );
 	} );
 
 	describe( 'Management of view Document#isSelecting', () => {

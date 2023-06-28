@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -11,20 +11,14 @@ ClassicEditor
 		cloudServices: CS_CONFIG,
 		toolbar: {
 			items: [
-				'heading',
+				'undo', 'redo', '|', 'heading',
+				'|', 'fontColor', 'fontBackgroundColor',
 				'|',
-				'fontColor',
-				'fontBackgroundColor',
-				'|',
-				'bulletedList',
-				'numberedList',
-				'|',
-				'outdent',
-				'indent',
-				'|',
-				'undo',
-				'redo'
-			]
+				'|', 'bold', 'italic',
+				'|', 'link', 'uploadImage', 'insertTable', 'mediaEmbed',
+				'|', 'bulletedList', 'numberedList', 'outdent', 'indent'
+			],
+			shouldNotGroupWhenFull: true
 		},
 		ui: {
 			viewportOffset: {
@@ -191,7 +185,8 @@ ClassicEditor
 				}
 			],
 			columns: 9,
-			documentColors: 18
+			documentColors: 18,
+			colorPicker: false
 		},
 		fontColor: {
 			colors: [
@@ -216,7 +211,10 @@ ClassicEditor
 				'aqua'
 			],
 			columns: 4,
-			documentColors: 12
+			documentColors: 12,
+			colorPicker: {
+				format: 'hex'
+			}
 		}
 	} )
 	.then( editor => {

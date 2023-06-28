@@ -1,43 +1,30 @@
 /**
- * @license Copyright (c) 2003-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 /* globals window, document, console */
 
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic/src/ckeditor';
-import PageBreak from '@ckeditor/ckeditor5-page-break/src/pagebreak';
-import Alignment from '@ckeditor/ckeditor5-alignment/src/alignment';
+import { PageBreak } from '@ckeditor/ckeditor5-page-break';
+import { Alignment } from '@ckeditor/ckeditor5-alignment';
+import { CKBox } from '@ckeditor/ckeditor5-ckbox';
+import { PictureEditing, ImageResize, AutoImage } from '@ckeditor/ckeditor5-image';
+import { LinkImage } from '@ckeditor/ckeditor5-link';
 import { CS_CONFIG } from '@ckeditor/ckeditor5-cloud-services/tests/_utils/cloud-services-config';
 
-ClassicEditor.builtinPlugins.push( Alignment );
-ClassicEditor.builtinPlugins.push( PageBreak );
+// Umberto combines all `packages/*/docs` into the `docs/` directory. The import path must be valid after merging all directories.
+import ClassicEditor from '../build-classic';
+
+ClassicEditor.builtinPlugins.push( Alignment, PageBreak, PictureEditing, ImageResize, AutoImage, LinkImage, CKBox );
 
 ClassicEditor
 	.create( document.querySelector( '#snippet-page-break' ), {
 		toolbar: {
 			items: [
-				'heading',
-				'|',
-				'bold',
-				'italic',
-				'bulletedList',
-				'numberedList',
-				'|',
-				'outdent',
-				'indent',
-				'|',
-				'alignment',
-				'|',
-				'pageBreak',
-				'blockQuote',
-				'link',
-				'uploadImage',
-				'mediaEmbed',
-				'insertTable',
-				'|',
-				'undo',
-				'redo'
+				'undo', 'redo', '|', 'heading',
+				'|', 'bold', 'italic',
+				'|', 'link', 'uploadImage', 'insertTable', 'mediaEmbed', 'pageBreak',
+				'|', 'bulletedList', 'numberedList', 'outdent', 'indent'
 			]
 		},
 		ui: {
