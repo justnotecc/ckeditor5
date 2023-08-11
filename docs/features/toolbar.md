@@ -7,7 +7,7 @@ order: 10
 
 # Editor toolbar
 
-The toolbar is the most basic user interface element of CKEditor 5 that gives you convenient access to all its features. It has buttons and dropdowns that you can use to format, manage, insert, and change elements of your content.
+The toolbar is the most basic user interface element of CKEditor&nbsp;5 that gives you convenient access to all its features. It has buttons and dropdowns that you can use to format, manage, insert, and change elements of your content.
 
 ## Demo
 
@@ -16,7 +16,7 @@ Below is a sample toolbar with a basic set of features. Toolbar items can be eas
 {@snippet features/toolbar-basic}
 
 <info-box info>
-	All demos in this guide only present a limited set of features for clarity. Visit the {@link examples/builds/full-featured-editor full-featured editor example} to see more in action.
+	All demos in this guide only present a limited set of features for clarity. Visit the {@link examples/builds/full-featured-editor feature-rich editor example} to see more in action.
 </info-box>
 
 ## Basic toolbar configuration
