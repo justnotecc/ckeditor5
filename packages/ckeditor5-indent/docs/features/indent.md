@@ -1,6 +1,7 @@
 ---
 title: Block indentation
 category: features
+meta-title: Block indentation | CKEditor 5 Documentation
 ---
 
 {@snippet features/build-indent-source}
@@ -74,7 +75,7 @@ ClassicEditor
 	.catch( /* ... */ );
 ```
 
-Using classes instead of fixed units (`px` or `em`) has another advantage &mdash; you retain control over what indentation levels are used in the documents. For instance, you can limit indentation to 2 or 3 different levels and there is no way the users can go beyond that. In the example above, the `.custom-block-indent-c` class level is the maximum allowed indentation value. This should help keep your content clean and predictable.
+Using classes instead of fixed units (`px` or `em`) has another advantage &ndash; you retain control over what indentation levels are used in the documents. For instance, you can limit indentation to 2 or 3 different levels and there is no way the users can go beyond that. In the example above, the `.custom-block-indent-c` class level is the maximum allowed indentation value. This should help keep your content clean and predictable.
 
 In this configuration, the WYSIWYG editor will restrict indentation levels to the set of provided classes. The class with the last index in the array has the biggest indentation.
 
@@ -190,7 +191,7 @@ The {@link module:indent/indentblock~IndentBlock} plugin registers the following
 	```
 
 <info-box>
-	We recommend using the official {@link framework/development-tools#ckeditor-5-inspector CKEditor&nbsp;5 inspector} for development and debugging. It will give you tons of useful information about the state of the editor such as internal data structures, selection, commands, and many more.
+	We recommend using the official {@link framework/development-tools/inspector CKEditor&nbsp;5 inspector} for development and debugging. It will give you tons of useful information about the state of the editor such as internal data structures, selection, commands, and many more.
 </info-box>
 
 ## Contribute

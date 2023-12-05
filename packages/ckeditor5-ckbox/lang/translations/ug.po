@@ -15,6 +15,7 @@ msgstr ""
 "Language-Team: Uyghur (https://app.transifex.com/ckeditor/teams/11143/ug/)\n"
 "Language: ug\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 
 msgctxt "Toolbar button tooltip for opening a file browser that allows inserting an image or a file to the editor."
 msgid "Open file manager"
@@ -26,4 +27,4 @@ msgstr "يۈكلەيدىغان ھۆججەتنىڭ تۈرىنى جەزملىيە�
 
 msgctxt "A message is displayed when the user is not authorised to access CKBox workspace configured as default one."
 msgid "Cannot access default workspace."
-msgstr ""
+msgstr "كۆڭۈلدىكى خىزمەت بوشلۇقىنى زىيارەت قىلالمايدۇ"

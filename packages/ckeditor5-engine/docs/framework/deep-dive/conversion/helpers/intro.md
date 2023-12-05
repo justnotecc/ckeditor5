@@ -1,6 +1,7 @@
 ---
 category: framework-deep-dive-conversion-helpers
 menu-title: Introduction
+meta-title: Introduction to conversion helpers | CKEditor 5 Framework Documentation
 order: 10
 since: 33.0.0
 modified_at: 2022-03-02
@@ -16,6 +17,6 @@ There are, however, cases where you might want to provide a rich editing experie
 
 ## Helpers by category
 
-* **{@link framework/deep-dive/conversion/helpers/downcast Downcast helpers &mdash; model to view conversion}**
+* **{@link framework/deep-dive/conversion/helpers/downcast Downcast helpers &ndash; model to view conversion}**
 
-* **{@link framework/deep-dive/conversion/helpers/upcast Upcast helpers &mdash; view to model conversion}**
+* **{@link framework/deep-dive/conversion/helpers/upcast Upcast helpers &ndash; view to model conversion}**

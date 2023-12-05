@@ -1,5 +1,6 @@
 ---
 category: features
+meta-title: Headings | CKEditor 5 Documentation
 ---
 
 # Headings
@@ -44,7 +45,7 @@ The heading feature lets you also use a set of heading buttons instead of the dr
 
 You can configure which heading levels the editor will support and how they should be named in the Headings dropdown. Use the {@link module:heading/headingconfig~HeadingConfig#options `heading.options`} configuration option to do so.
 
-For example, the following editor will support only two levels of headings &mdash; `<h1>` and `<h2>`:
+For example, the following editor will support only two levels of headings &ndash; `<h1>` and `<h2>`:
 
 ```html
 <div id="editor">
@@ -223,7 +224,7 @@ The {@link module:heading/headingbuttonsui~HeadingButtonsUI} plugin registers si
 The {@link module:paragraph/paragraphbuttonui~ParagraphButtonUI} plugin registers the UI button component: `'paragraph'`.
 
 <info-box>
-	We recommend using the official {@link framework/development-tools#ckeditor-5-inspector CKEditor&nbsp;5 inspector} for development and debugging. It will give you tons of useful information about the state of the editor such as internal data structures, selection, commands, and many more.
+	We recommend using the official {@link framework/development-tools/inspector CKEditor&nbsp;5 inspector} for development and debugging. It will give you tons of useful information about the state of the editor such as internal data structures, selection, commands, and many more.
 </info-box>
 
 ## Contribute

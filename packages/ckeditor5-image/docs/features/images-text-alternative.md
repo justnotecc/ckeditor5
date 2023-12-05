@@ -1,8 +1,8 @@
 ---
 category: features-images
 menu-title: Text alternative
-meta-title: Text alternative tag for images in CKEditor&nbsp;5
-meta-description: Setting and managing the alt tag on images in CKEditor&nbsp;5
+meta-title: Image text alternative | CKEditor 5 Documentation
+meta-description: Setting and managing the alt tag on images in CKEditor 5
 order: 20
 ---
 {@snippet features/build-image-source}
@@ -13,7 +13,7 @@ Image text alternative (the `alt` attribute) helps screen reader users navigate 
 
 ## Demo
 
-The editor below has the base image feature enabled. Click any of the images and use the contextual image toolbar {@icon @ckeditor/ckeditor5-core/theme/icons/low-vision.svg Alternative text} to edit the text alternative.
+The editor below has the base image feature enabled. Click any of the images and use the contextual image toolbar {@icon @ckeditor/ckeditor5-core/theme/icons/text-alternative.svg Alternative text} to edit the text alternative.
 
 {@snippet features/image-text-alternative}
 
@@ -58,7 +58,7 @@ The {@link module:image/imagetextalternative~ImageTextAlternative} plugin regist
 * The {@link module:image/imagetextalternative/imagetextalternativecommand~ImageTextAlternativeCommand `'imageTextAlternative'` command}.
 
 <info-box>
-	We recommend using the official {@link framework/development-tools#ckeditor-5-inspector CKEditor&nbsp;5 inspector} for development and debugging. It will give you tons of useful information about the state of the editor such as internal data structures, selection, commands, and many more.
+	We recommend using the official {@link framework/development-tools/inspector CKEditor&nbsp;5 inspector} for development and debugging. It will give you tons of useful information about the state of the editor such as internal data structures, selection, commands, and many more.
 </info-box>
 
 ## Contribute

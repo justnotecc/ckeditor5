@@ -1,5 +1,6 @@
 ---
 category: alternative-setups
+meta-title: Integrating CKEditor 5 from source using Vite | CKEditor 5 documentation
 order: 15
 modified_at: 2023-02-06
 ---
@@ -26,7 +27,7 @@ npm create vite@latest ckeditor5-vite-example -- --template vanilla
 ```
 
 <info-box>
-	NPM 6 and below doesn't require an extra double-dash in the command above.
+	npm 6 and below do not require an extra double-dash in the command above.
 </info-box>
 
 Select the appropriate Vite template to use TypeScript in your project.
@@ -147,7 +148,7 @@ This module will export an editor creator class which has all the plugins and co
 ```js
 // main.js
 
-import ClassicEditor from './ckeditor';
+import ClassicEditor from './src/ckeditor';
 
 ClassicEditor
 	// Note that you do not have to specify the plugin and toolbar configuration — using defaults from the build.
@@ -215,7 +216,7 @@ Then, you can use the configured editor. Replace the content of `main.ts` with t
 ```ts
 // main.ts
 
-import ClassicEditor from './ckeditor';
+import ClassicEditor from './src/ckeditor';
 
 ClassicEditor
     // Note that you do not have to specify the plugin and toolbar configuration — using defaults from the build.
@@ -339,4 +340,4 @@ ClassicEditor
 
 ## Building
 
-Finally, you can build your application. Import the script with the editor into `index.html` if you didn't use the scaffolded template. Run Vite (by typing `npm run dev`) on your project and the rich-text editor will be a part of it.
+Finally, you can build your application. Import the script with the editor into `index.html` if you did not use the scaffolded template. Run Vite (by typing `npm run dev`) on your project and the rich-text editor will be a part of it.

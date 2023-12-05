@@ -1,6 +1,7 @@
 ---
 category: features
 menu-title: Mentions
+meta-title: Mentions| CKEditor 5 Documentation
 modified_at: 2021-10-20
 ---
 
@@ -202,6 +203,38 @@ ClassicEditor
 ```
 
 A full, working demo with all possible customizations and its source code is available {@link features/mentions#fully-customized-mention-feed at the end of this section}.
+
+### Customizing the text inserted into the editor
+
+You can control the text inserted into the editor when creating a mention via the {@link module:mention/mentionconfig~MentionFeedObjectItem `text`} property in the mention configuration.
+
+```js
+ClassicEditor
+	.create( editorElement, {
+		plugins: [ Mention, ... ],
+		mention: {
+			feeds: [
+				// Feed items as objects.
+				{
+					marker: '@',
+					feed: [
+						{
+							id: '@Barney',
+							fullName: 'Barney Stinson',
+							// Custom text to be inserted into the editor
+							text: 'Swarley'
+						},
+						// ...
+					]
+				},
+			]
+		}
+	} )
+	.then( ... )
+	.catch( ... );
+```
+
+The string that you specify in this property will be displayed in the editor when a mention is created.
 
 ### Customizing the output
 
@@ -520,7 +553,7 @@ The {@link module:mention/mention~Mention} plugin registers:
 	```
 
 <info-box>
-	We recommend using the official {@link framework/development-tools#ckeditor-5-inspector CKEditor&nbsp;5 inspector} for development and debugging. It will give you tons of useful information about the state of the editor such as internal data structures, selection, commands, and many more.
+	We recommend using the official {@link framework/development-tools/inspector CKEditor&nbsp;5 inspector} for development and debugging. It will give you tons of useful information about the state of the editor such as internal data structures, selection, commands, and many more.
 </info-box>
 
 ## Contribute

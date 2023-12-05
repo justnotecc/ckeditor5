@@ -1,5 +1,6 @@
 ---
 menu-title: React
+meta-title: React rich text editor component | CKEditor 5 documentation
 category: integrations
 order: 30
 ---
@@ -53,9 +54,8 @@ class App extends Component {
 						// You can store the "editor" and use when it is needed.
 						console.log( 'Editor is ready to use!', editor );
 					} }
-					onChange={ ( event, editor ) => {
-						const data = editor.getData();
-						console.log( { event, editor, data } );
+					onChange={ ( event ) => {
+						console.log( event );
 					} }
 					onBlur={ ( event, editor ) => {
 						console.log( 'Blur.', editor );
@@ -231,7 +231,7 @@ class App extends Component {
                             this.editor.ui.view.toolbar.element.remove();
                         }
                     } }
-                    onChange={ ( event, editor ) => console.log( { event, editor } ) }
+                    onChange={ ( event ) => console.log( event ) }
                     editor={ DecoupledEditor }
                     data="<p>Hello from CKEditor&nbsp;5's decoupled editor!</p>"
                     config={ /* the editor configuration */ }
@@ -248,12 +248,16 @@ export default App;
 
 The easiest way to integrate {@link features/collaboration collaboration plugins} in a React application is to build the editor from source including the collaboration plugins together with the React application.
 
-For such a scenario we provide a few ready-to-use integrations featuring collaborative editing in React applications:
+<info-box>
+	For such a scenario we provide a few **ready-to-use integrations** featuring collaborative editing in React applications:
 
-* [CKEditor&nbsp;5 with real-time collaboration features](https://github.com/ckeditor/ckeditor5-collaboration-samples/tree/master/real-time-collaboration-for-react)
-* [CKEditor&nbsp;5 with the track changes feature](https://github.com/ckeditor/ckeditor5-collaboration-samples/tree/master/track-changes-for-react)
+	* [CKEditor&nbsp;5 with real-time collaboration features](https://github.com/ckeditor/ckeditor5-collaboration-samples/tree/master/real-time-collaboration-for-react)
+	* [CKEditor&nbsp;5 with real-time collaboration and revision history features](https://github.com/ckeditor/ckeditor5-collaboration-samples/tree/master/real-time-collaboration-revision-history-for-react)
+	* [CKEditor&nbsp;5 with the revision history feature](https://github.com/ckeditor/ckeditor5-collaboration-samples/tree/master/revision-history-for-react)
+	* [CKEditor&nbsp;5 with the track changes feature](https://github.com/ckeditor/ckeditor5-collaboration-samples/tree/master/track-changes-for-react)
 
-It is not mandatory to build applications on top of the above samples, however, they should help you get started.
+	It is not mandatory to build applications on top of the above samples, however, they should help you get started.
+</info-box>
 
 Note: These integrations are meant to be as simple as possible, so they do not use the Create React App CLI. However, you should have no problem starting from `CRA` after reading the sections below.
 
@@ -263,13 +267,13 @@ This guide assumes that you have created a zip archive with the editor built usi
 
 The directory with the editor's build cannot be placed inside the `src/` directory because Node could return an error:
 
-```
+```plain
 FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
 ```
 
 Because of that, we recommend placing the directory next to the `src/` and `node_modules/` folders:
 
-```
+```plain
 ├── ckeditor5
 │   ├── build
 │   ├── sample
@@ -314,9 +318,8 @@ class App extends Component {
 						// You can store the "editor" and use when it is needed.
 						console.log( 'Editor is ready to use!', editor );
 					} }
-					onChange={ ( event, editor ) => {
-						const data = editor.getData();
-						console.log( { event, editor, data } );
+					onChange={ ( event ) => {
+						console.log( event );
 					} }
 					onBlur={ ( event, editor ) => {
 						console.log( 'Blur.', editor );
@@ -333,11 +336,30 @@ class App extends Component {
 export default App;
 ```
 
+### Vite
+
+Vite requires linked packages to be ESM, and unfortunately, the CKEditor build is not ESM yet (but we're working on it). Therefore, you must modify the `vite.config.js` file to integrate a custom build with Vite. The snippet below will allow you to include the custom build in a Vite bundle. Check out the [Vite docs](https://vitejs.dev/guide/dep-pre-bundling.html#monorepos-and-linked-dependencies) to see more details.
+
+```js
+// vite.config.js
+
+export default defineConfig({
+  optimizeDeps: {
+    include: ['@workspace/ckeditor5-custom-build'],
+  },
+  build: {
+    commonjsOptions: {
+      include: [/@workspace\/ckeditor5-custom-build/, /node_modules/],
+    }
+  }
+})
+```
+
 ### The `JavaScript heap out of memory` error
 
 When building the application for the production using the `yarn build` command, it may produce an error related to the memory available on the build machine:
 
-```
+```plain
 <--- Last few GCs --->
 
 [32550:0x110008000]    42721 ms: Scavenge (reduce) 4061.0 (4069.6) -> 4060.5 (4070.8) MB, 4.3 / 0.0 ms  (average mu = 0.358, current mu = 0.374) allocation failure
@@ -636,9 +658,8 @@ class App extends Component {
                         // You can store the "editor" and use when it is needed.
                         console.log( 'Editor is ready to use!', editor );
                     } }
-                    onChange={ ( event, editor ) => {
-                        const data = editor.getData();
-                        console.log( { event, editor, data } );
+                    onChange={ ( event ) => {
+                        console.log( event );
                     } }
                     onBlur={ ( event, editor ) => {
                         console.log( 'Blur.', editor );
@@ -718,7 +739,7 @@ For more information, please refer to the {@link features/ui-language Setting th
 
 Using the editor [built from source](#integrating-ckeditor-5-built-from-source) requires you to modify the webpack configuration. First, install the [official translations webpack plugin](https://www.npmjs.com/package/@ckeditor/ckeditor5-dev-translations) that allows localizing editor builds:
 
-```
+```bash
 yarn add @ckeditor/ckeditor5-dev-translations --dev
 ```
 

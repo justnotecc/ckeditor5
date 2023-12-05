@@ -1,12 +1,13 @@
 ---
 category: features
 menu-title: Block quote
+meta-title: Block quote | CKEditor 5 Documentation
 ---
 {@snippet features/block-quote-source}
 
 # Block quote
 
-The block quote feature lets you easily include block quotations or pull quotes in your content. It's also an attractive way to draw the readers' attention to selected parts of the text.
+The block quote feature lets you easily include block quotations or pull quotes in your content. It is also an attractive way to draw the readers' attention to selected parts of the text.
 
 ## Demo
 
@@ -22,7 +23,7 @@ Use the block quote toolbar button {@icon @ckeditor/ckeditor5-core/theme/icons/q
 
 Starting from version 27.1.0, CKEditor&nbsp;5 will properly display a block quote nested in another block quote. This sort of structure is indispensable in email editors or discussion forums. The ability to cite previous messages and preserve a correct quotation structure is often crucial to maintain the flow of communication. Nested block quotes may also prove useful for scientific or academic papers, but articles citing sources and referring to previous writing would often use it, too.
 
-Support for nested block quotes is provided as backward compatibility for loading pre-existing content, for example created in CKEditor 4. Additionally, pasting content with nested block quotes is supported. You can also nest a block quote in another block quote using the {@link features/drag-drop drag and drop} mechanism &mdash; just select an existing block quote and drag it into another.
+Support for nested block quotes is provided as backward compatibility for loading pre-existing content, for example created in CKEditor 4. Additionally, pasting content with nested block quotes is supported. You can also nest a block quote in another block quote using the {@link features/drag-drop drag and drop} mechanism &ndash; just select an existing block quote and drag it into another.
 
 {@snippet features/nested-block-quote}
 
@@ -91,7 +92,7 @@ ClassicEditor
 ```
 
 <info-box>
-	Check the {@link framework/creating-simple-plugin-timestamp plugin development guide} if you need more information about the technical side of this solution.
+	Check the {@link tutorials/crash-course/editor step-by-step tutorial} if you need more information about the technical side of this solution.
 </info-box>
 
 ## Related features
@@ -118,7 +119,7 @@ editor.execute( 'blockQuote' );
 ```
 
 <info-box>
-	We recommend using the official {@link framework/development-tools#ckeditor-5-inspector CKEditor&nbsp;5 inspector} for development and debugging. It will give you tons of useful information about the state of the editor such as internal data structures, selection, commands, and many more.
+	We recommend using the official {@link framework/development-tools/inspector CKEditor&nbsp;5 inspector} for development and debugging. It will give you tons of useful information about the state of the editor such as internal data structures, selection, commands, and many more.
 </info-box>
 
 ## Contribute

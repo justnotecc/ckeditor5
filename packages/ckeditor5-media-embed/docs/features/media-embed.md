@@ -1,6 +1,7 @@
 ---
 category: features
 menu-title: Media embed
+meta-title: Media embed | CKEditor 5 Documentation
 modified_at: 2021-10-08
 ---
 
@@ -101,7 +102,7 @@ The above limitations can be overcome with the help of proxy services like Ifram
 The data output format of the feature can be configured using the {@link module:media-embed/mediaembedconfig~MediaEmbedConfig#previewsInData `config.mediaEmbed.previewsInData`} option.
 
 <info-box info>
-	This option does not change how the media are displayed inside the editor &mdash; the previewable ones will still be displayed with previews. It only affects the output data (see below).
+	This option does not change how the media are displayed inside the editor &ndash; the previewable ones will still be displayed with previews. It only affects the output data (see below).
 </info-box>
 
 #### Semantic data output (default)
@@ -168,7 +169,7 @@ Names of providers **without previews**:
 * `'facebook'`.
 
 <info-box notice>
-	The default media provider configuration does not support all possible media URLs &mdash; only the most common are included. Services like Iframely or Embedly support thousands of media providers and it is up to you to define which you want to allow.
+	The default media provider configuration does not support all possible media URLs &ndash; only the most common are included. Services like Iframely or Embedly support thousands of media providers and it is up to you to define which you want to allow.
 </info-box>
 
 #### Extending media providers
@@ -473,7 +474,7 @@ The {@link module:media-embed/mediaembed~MediaEmbed} plugin registers:
 	```
 
 <info-box>
-	We recommend using the official {@link framework/development-tools#ckeditor-5-inspector CKEditor&nbsp;5 inspector} for development and debugging. It will give you tons of useful information about the state of the editor such as internal data structures, selection, commands, and many more.
+	We recommend using the official {@link framework/development-tools/inspector CKEditor&nbsp;5 inspector} for development and debugging. It will give you tons of useful information about the state of the editor such as internal data structures, selection, commands, and many more.
 </info-box>
 
 ## Contribute

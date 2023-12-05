@@ -1,12 +1,13 @@
 ---
 menu-title: Installing plugins
+meta-title: Installing plugins | CKEditor 5 documentation
 category: plugins
 order: 30
 ---
 
 # Installing plugins
 
-CKEditor&nbsp;5 plugins, responsible for various features, are distributed through [npm](https://www.npmjs.com) packages. We implemented them modularly. It means a single plugin may contain multiple JavaScript files. Don't hesitate and explore available CKEditor&nbsp;5 features - they are waiting for you to install them!
+CKEditor&nbsp;5 plugins, responsible for various features, are distributed through [npm](https://www.npmjs.com) packages. We implemented them modularly. It means a single plugin may contain multiple JavaScript files. Do not hesitate and explore available CKEditor&nbsp;5 features - they are waiting for you to install them!
 
 <info-box hint>
 	If you are looking for an easy way to create a custom build of CKEditor&nbsp;5 without installing anything, check the [online builder](https://ckeditor.com/ckeditor-5/online-builder/), which allows you to create a build with a custom set of plugins through a simple and intuitive UI.
@@ -16,7 +17,7 @@ CKEditor&nbsp;5 plugins, responsible for various features, are distributed throu
 
 To enrich the CKEditor&nbsp;5 by installing plugins, you will require:
 
-* [Node.js](https://nodejs.org/en/) 16.0.0+
+* [Node.js](https://nodejs.org/en/) 18.0.0+
 * [npm](https://www.npmjs.com/) 5.7.1+ (**note:** some npm 5+ versions were known to cause [problems](https://github.com/npm/npm/issues/16991), especially with deduplicating packages; upgrade npm when in doubt)
 
 <info-box warning>
@@ -193,7 +194,7 @@ npm run build
 
 If you are integrating an editor from the source into your application, then this step should be handled by build scripts used in your project.
 
-## Adding a JavaScript plugin
+## Adding an unofficial JavaScript plugin
 
 The CKEditor&nbsp;5 is a TypeScript project, and all plugins provided by CKEditor&nbsp;5 also use TypeScript. However, there are ways to use JavaScript packages with the editor.
 
@@ -209,7 +210,7 @@ If you successfully installed those types, there is nothing more to do. You shou
 
 ### Custom declarations
 
-If you create a custom plugin, there won't be community types. In that case, you need to add your custom definitions. To do so, follow the steps.
+If you create a custom plugin, community types will not be available. In that case, you need to add your custom definitions.
 
 First, create a declaration file `.d.ts` in your project. For example, you can place it in `types/index.d.ts`. Then inside the file, define the module as shown in the example below.
 
