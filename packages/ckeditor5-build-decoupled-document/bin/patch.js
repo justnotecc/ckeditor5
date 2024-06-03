@@ -110,6 +110,38 @@ const patchFontColorUi = () => {
   fs.writeFileSync(fpath, outs.join('\n'));
 };
 
+const patchViewToPlainText = () => {
+  const fpath = 'node_modules/@ckeditor/ckeditor5-clipboard/src/utils/viewtoplaintext.js';
+
+  const match1 = "        return '\\n\\n';";
+  const repmt1 = "        return '\\n';";
+
+  const match2 = "    return '\\n\\n';";
+  const repmt2 = "    return '\\n';";
+
+  const text = fs.readFileSync(fpath, 'utf-8');
+  const lines = text.split('\n');
+
+  const outs = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    if (line === match1) {
+      outs.push(repmt1);
+      continue;
+    }
+    if (line === match2) {
+      outs.push(repmt2);
+      continue;
+    }
+
+    outs.push(line);
+  }
+
+  fs.writeFileSync(fpath, outs.join('\n'));
+};
+
 patchButtonView();
 patchDropdownUtils();
 patchFontColorUi();
+patchViewToPlainText();
