@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -7,34 +7,34 @@
  * @module engine/view/view
  */
 
-import Document, { type ViewDocumentLayoutChangedEvent } from './document';
-import DowncastWriter from './downcastwriter';
-import Renderer from './renderer';
-import DomConverter from './domconverter';
-import Position, { type PositionOffset } from './position';
-import Range from './range';
+import Document, { type ViewDocumentLayoutChangedEvent } from './document.js';
+import DowncastWriter from './downcastwriter.js';
+import Renderer from './renderer.js';
+import DomConverter from './domconverter.js';
+import Position, { type PositionOffset } from './position.js';
+import Range from './range.js';
 import Selection, {
 	type PlaceOrOffset,
 	type Selectable,
 	type SelectionOptions
-} from './selection';
+} from './selection.js';
 
-import type { default as Observer, ObserverConstructor } from './observer/observer';
-import type { ViewDocumentSelectionChangeEvent } from './documentselection';
-import type { StylesProcessor } from './stylesmap';
-import type Element from './element';
-import type { default as Node, ViewNodeChangeEvent } from './node';
-import type Item from './item';
+import type { default as Observer, ObserverConstructor } from './observer/observer.js';
+import type { ViewDocumentSelectionChangeEvent } from './documentselection.js';
+import type { StylesProcessor } from './stylesmap.js';
+import type Element from './element.js';
+import type { default as Node, ViewNodeChangeEvent } from './node.js';
+import type Item from './item.js';
 
-import KeyObserver from './observer/keyobserver';
-import FakeSelectionObserver from './observer/fakeselectionobserver';
-import MutationObserver from './observer/mutationobserver';
-import SelectionObserver from './observer/selectionobserver';
-import FocusObserver, { type ViewDocumentBlurEvent } from './observer/focusobserver';
-import CompositionObserver from './observer/compositionobserver';
-import InputObserver from './observer/inputobserver';
-import ArrowKeysObserver from './observer/arrowkeysobserver';
-import TabObserver from './observer/tabobserver';
+import KeyObserver from './observer/keyobserver.js';
+import FakeSelectionObserver from './observer/fakeselectionobserver.js';
+import MutationObserver, { type ViewDocumentMutationsEvent } from './observer/mutationobserver.js';
+import SelectionObserver from './observer/selectionobserver.js';
+import FocusObserver, { type ViewDocumentBlurEvent } from './observer/focusobserver.js';
+import CompositionObserver from './observer/compositionobserver.js';
+import InputObserver from './observer/inputobserver.js';
+import ArrowKeysObserver from './observer/arrowkeysobserver.js';
+import TabObserver from './observer/tabobserver.js';
 
 import {
 	CKEditorError,
@@ -43,8 +43,8 @@ import {
 	scrollViewportToShowTarget,
 	type ObservableChangeEvent
 } from '@ckeditor/ckeditor5-utils';
-import { injectUiElementHandling } from './uielement';
-import { injectQuirksHandling } from './filler';
+import { injectUiElementHandling } from './uielement.js';
+import { injectQuirksHandling } from './filler.js';
 
 import { cloneDeep } from 'lodash-es';
 
@@ -83,7 +83,7 @@ type DomRange = globalThis.Range;
  * If you do not need full a DOM - view management, and only want to transform a tree of view elements to a tree of DOM
  * elements you do not need this controller. You can use the {@link module:engine/view/domconverter~DomConverter DomConverter} instead.
  */
-export default class View extends ObservableMixin() {
+export default class View extends /* #__PURE__ */ ObservableMixin() {
 	/**
 	 * Instance of the {@link module:engine/view/document~Document} associated with this view controller.
 	 */
@@ -119,10 +119,8 @@ export default class View extends ObservableMixin() {
 
 	/**
 	 * Instance of the {@link module:engine/view/renderer~Renderer renderer}.
-	 *
-	 * @internal
 	 */
-	public readonly _renderer: Renderer;
+	private readonly _renderer: Renderer;
 
 	/**
 	 * A DOM root attributes cache. It saves the initial values of DOM root attributes before the DOM element
@@ -230,6 +228,17 @@ export default class View extends ObservableMixin() {
 				}
 			} );
 		}
+
+		// Listen to external content mutations (directly in the DOM) and mark them to get verified by the renderer.
+		this.listenTo<ViewDocumentMutationsEvent>( this.document, 'mutations', ( evt, { mutations } ) => {
+			mutations.forEach( mutation => this._renderer.markToSync( mutation.type, mutation.node ) );
+		}, { priority: 'low' } );
+
+		// After all mutated nodes were marked to sync we can trigger view to DOM synchronization
+		// to make sure the DOM structure matches the view.
+		this.listenTo<ViewDocumentMutationsEvent>( this.document, 'mutations', () => {
+			this.forceRender();
+		}, { priority: 'lowest' } );
 	}
 
 	/**
@@ -270,7 +279,12 @@ export default class View extends ObservableMixin() {
 			if ( name === 'class' ) {
 				this._writer.addClass( value.split( ' ' ), viewRoot );
 			} else {
-				this._writer.setAttribute( name, value, viewRoot );
+				// There is a chance that some attributes have already been set on the view root before attaching
+				// the DOM root and should be preserved. This is a similar case to the "class" attribute except
+				// this time there is no workaround using a some low-level API.
+				if ( !viewRoot.hasAttribute( name ) ) {
+					this._writer.setAttribute( name, value, viewRoot );
+				}
 			}
 		}
 

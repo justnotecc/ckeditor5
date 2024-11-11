@@ -1,17 +1,17 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 /* globals document */
-import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor';
+import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor.js';
 
-import Clipboard from '@ckeditor/ckeditor5-clipboard/src/clipboard';
+import Clipboard from '@ckeditor/ckeditor5-clipboard/src/clipboard.js';
 import { Image, ImageUpload } from '@ckeditor/ckeditor5-image';
-import CKFinderUploadAdapter from '../src/uploadadapter';
-import FileRepository from '@ckeditor/ckeditor5-upload/src/filerepository';
-import { createNativeFileMock } from '@ckeditor/ckeditor5-upload/tests/_utils/mocks';
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
+import CKFinderUploadAdapter from '../src/uploadadapter.js';
+import FileRepository from '@ckeditor/ckeditor5-upload/src/filerepository.js';
+import { createNativeFileMock } from '@ckeditor/ckeditor5-upload/tests/_utils/mocks.js';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
 
 describe( 'CKFinderUploadAdapter', () => {
 	let editor, sinonXHR, fileRepository, editorElement;
@@ -46,6 +46,14 @@ describe( 'CKFinderUploadAdapter', () => {
 		if ( editor ) {
 			return editor.destroy();
 		}
+	} );
+
+	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+		expect( CKFinderUploadAdapter.isOfficialPlugin ).to.be.true;
+	} );
+
+	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+		expect( CKFinderUploadAdapter.isPremiumPlugin ).to.be.false;
 	} );
 
 	it( 'should be loaded', () => {

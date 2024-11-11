@@ -1,11 +1,11 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-import Typing from '../src/typing';
-import Input from '../src/input';
-import Delete from '../src/delete';
+import Typing from '../src/typing.js';
+import Input from '../src/input.js';
+import Delete from '../src/delete.js';
 
 describe( 'Typing feature', () => {
 	it( 'requires Input and Delete features', () => {
@@ -13,5 +13,13 @@ describe( 'Typing feature', () => {
 
 		expect( typingRequirements ).to.contain( Input );
 		expect( typingRequirements ).to.contain( Delete );
+	} );
+
+	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+		expect( Typing.isOfficialPlugin ).to.be.true;
+	} );
+
+	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+		expect( Typing.isPremiumPlugin ).to.be.false;
 	} );
 } );

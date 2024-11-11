@@ -1,29 +1,32 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-import Editor from '../../src/editor/editor';
-import EditingController from '@ckeditor/ckeditor5-engine/src/controller/editingcontroller';
-import ModelTestEditor from '../../tests/_utils/modeltesteditor';
+import Editor from '../../src/editor/editor.js';
+import EditingController from '@ckeditor/ckeditor5-engine/src/controller/editingcontroller.js';
+import ModelTestEditor from '../../tests/_utils/modeltesteditor.js';
 
-import HtmlDataProcessor from '@ckeditor/ckeditor5-engine/src/dataprocessor/htmldataprocessor';
-import RootElement from '@ckeditor/ckeditor5-engine/src/model/rootelement';
+import HtmlDataProcessor from '@ckeditor/ckeditor5-engine/src/dataprocessor/htmldataprocessor.js';
+import RootElement from '@ckeditor/ckeditor5-engine/src/model/rootelement.js';
 
-import { getData, setData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
+import { getData, setData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model.js';
 
-import testUtils from '../../tests/_utils/utils';
+import testUtils from '../../tests/_utils/utils.js';
 
 describe( 'ModelTestEditor', () => {
 	testUtils.createSinonSandbox();
 
 	describe( 'constructor()', () => {
-		it( 'creates an instance of editor', () => {
+		it( 'creates an instance of editor', async () => {
 			const editor = new ModelTestEditor( { foo: 1 } );
 
 			expect( editor ).to.be.instanceof( Editor );
 			expect( editor.config.get( 'foo' ) ).to.equal( 1 );
 			expect( editor.data.processor ).to.be.instanceof( HtmlDataProcessor );
+
+			editor.fire( 'ready' );
+			await editor.destroy();
 		} );
 
 		it( 'should disable editing pipeline', () => {
@@ -38,15 +41,13 @@ describe( 'ModelTestEditor', () => {
 			} );
 		} );
 
-		it( 'creates main root element', () => {
+		it( 'creates main root element', async () => {
 			const editor = new ModelTestEditor();
 
 			expect( editor.model.document.getRoot( 'main' ) ).to.instanceof( RootElement );
-		} );
 
-		it( 'mixes DataApiMixin', () => {
-			expect( ModelTestEditor.prototype ).have.property( 'setData' ).to.be.a( 'function' );
-			expect( ModelTestEditor.prototype ).have.property( 'getData' ).to.be.a( 'function' );
+			editor.fire( 'ready' );
+			await editor.destroy();
 		} );
 	} );
 
@@ -60,6 +61,10 @@ describe( 'ModelTestEditor', () => {
 
 					editor.model.schema.extend( '$text', { allowIn: '$root' } );
 				} );
+		} );
+
+		afterEach( async () => {
+			await editor.destroy();
 		} );
 
 		it( 'should set data of the first root', () => {
@@ -81,6 +86,10 @@ describe( 'ModelTestEditor', () => {
 
 					editor.model.schema.extend( '$text', { allowIn: '$root' } );
 				} );
+		} );
+
+		afterEach( async () => {
+			await editor.destroy();
 		} );
 
 		it( 'should set data of the first root', () => {

@@ -1,55 +1,56 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 /* globals document,Event */
 
-import ColorSelectorView from './../../src/colorselector/colorselectorview';
-import ColorTileView from '../../src/colorgrid/colortileview';
-import FocusCycler from '../../src/focuscycler';
-import ColorPickerView from '../../src/colorpicker/colorpickerview';
+import ColorSelectorView from './../../src/colorselector/colorselectorview.js';
+import ColorTileView from '../../src/colorgrid/colortileview.js';
+import FocusCycler from '../../src/focuscycler.js';
+import ColorPickerView from '../../src/colorpicker/colorpickerview.js';
+import ColorGridsFragmentView from '../../src/colorselector/colorgridsfragmentview.js';
 
-import Collection from '@ckeditor/ckeditor5-utils/src/collection';
-import FocusTracker from '@ckeditor/ckeditor5-utils/src/focustracker';
-import KeystrokeHandler from '@ckeditor/ckeditor5-utils/src/keystrokehandler';
-import { keyCodes } from '@ckeditor/ckeditor5-utils/src/keyboard';
-import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor';
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
-import { setData as setModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
+import Collection from '@ckeditor/ckeditor5-utils/src/collection.js';
+import FocusTracker from '@ckeditor/ckeditor5-utils/src/focustracker.js';
+import KeystrokeHandler from '@ckeditor/ckeditor5-utils/src/keystrokehandler.js';
+import { keyCodes } from '@ckeditor/ckeditor5-utils/src/keyboard.js';
+import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor.js';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
+import { setData as setModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model.js';
 
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
 
 import removeButtonIcon from '@ckeditor/ckeditor5-core/theme/icons/eraser.svg';
 import checkButtonIcon from '@ckeditor/ckeditor5-core/theme/icons/check.svg';
 import cancelButtonIcon from '@ckeditor/ckeditor5-core/theme/icons/cancel.svg';
 
+const colorDefinitions = [
+	{
+		color: '#000',
+		label: 'Black',
+		options: {
+			hasBorder: false
+		}
+	},
+	{
+		color: 'rgb(255, 255, 255)',
+		label: 'White',
+		options: {
+			hasBorder: true
+		}
+	},
+	{
+		color: 'red',
+		label: 'Red',
+		options: {
+			hasBorder: false
+		}
+	}
+];
+
 describe( 'ColorSelectorView', () => {
 	let locale, colorSelectorView;
-
-	const colorDefinitions = [
-		{
-			color: '#000',
-			label: 'Black',
-			options: {
-				hasBorder: false
-			}
-		},
-		{
-			color: 'rgb(255, 255, 255)',
-			label: 'White',
-			options: {
-				hasBorder: true
-			}
-		},
-		{
-			color: 'red',
-			label: 'Red',
-			options: {
-				hasBorder: false
-			}
-		}
-	];
 
 	beforeEach( () => {
 		locale = { t() {} };
@@ -447,12 +448,39 @@ describe( 'ColorSelectorView', () => {
 				colorSelectorView.colorPickerFragmentView.colorPickerView.slidersView.first.element;
 
 			const spy = sinon.spy();
+
+			colorSelectorView.selectedColor = '#660055';
 			colorSelectorView.on( 'execute', spy );
 
 			colorSelectorView.keystrokes.press( keyEvtData );
 			sinon.assert.calledOnce( keyEvtData.preventDefault );
 			sinon.assert.calledOnce( keyEvtData.stopPropagation );
 			sinon.assert.calledOnce( spy );
+		} );
+
+		it( 'should not execute when color picker is focused, enter pressed and has incorrect value', () => {
+			const keyEvtData = {
+				keyCode: keyCodes.enter,
+				preventDefault: sinon.spy(),
+				stopPropagation: sinon.spy()
+			};
+
+			colorSelectorView._appendColorPickerFragment();
+
+			colorSelectorView.colorGridsFragmentView.colorPickerButtonView.fire( 'execute' );
+
+			// Mock the remove color button is focused.
+			colorSelectorView.focusTracker.isFocused = true;
+			colorSelectorView.focusTracker.focusedElement =
+				colorSelectorView.colorPickerFragmentView.colorPickerView.slidersView.first.element;
+
+			const spy = sinon.spy();
+
+			colorSelectorView.selectedColor = 'Foo Bar';
+			colorSelectorView.on( 'execute', spy );
+
+			colorSelectorView.keystrokes.press( keyEvtData );
+			sinon.assert.notCalled( spy );
 		} );
 
 		it( 'should stop propagation when use arrow keys', () => {
@@ -589,11 +617,12 @@ describe( 'ColorSelectorView', () => {
 	} );
 
 	describe( 'action bar', () => {
-		let actionBar, saveButton, cancelButton;
+		let actionBar, saveButton, cancelButton, colorPickerView;
 
 		beforeEach( () => {
 			colorSelectorView._appendColorPickerFragment();
 			actionBar = colorSelectorView.colorPickerFragmentView.actionBarView;
+			colorPickerView = colorSelectorView.colorPickerFragmentView.colorPickerView;
 			saveButton = colorSelectorView.colorPickerFragmentView.saveButtonView;
 			cancelButton = colorSelectorView.colorPickerFragmentView.cancelButtonView;
 		} );
@@ -612,17 +641,39 @@ describe( 'ColorSelectorView', () => {
 				expect( saveButton.icon ).to.equal( checkButtonIcon );
 			} );
 
-			it( 'should execute event with "null" value', () => {
+			it( 'should not fire "execute" event with incorrect value', () => {
 				const spy = sinon.spy();
 				colorSelectorView.on( 'execute', spy );
+				colorSelectorView.selectedColor = 'FooBar';
+
+				saveButton.element.dispatchEvent( new Event( 'click' ) );
+
+				expect( spy ).not.to.be.called;
+			} );
+
+			it( 'should fire execute event with correct value', () => {
+				const spy = sinon.spy();
+				colorSelectorView.on( 'execute', spy );
+				colorSelectorView.selectedColor = '#ff0000';
 
 				saveButton.element.dispatchEvent( new Event( 'click' ) );
 
 				sinon.assert.calledOnce( spy );
 				sinon.assert.calledWith( spy, sinon.match.any, {
-					value: colorSelectorView.selectedColor,
+					value: '#ff0000',
 					source: 'colorPickerSaveButton'
 				} );
+			} );
+
+			it( 'should show error label on save with incorrect value', () => {
+				const spy = sinon.spy();
+
+				colorSelectorView.on( 'execute', spy );
+				colorSelectorView.selectedColor = 'FooBar';
+
+				saveButton.element.dispatchEvent( new Event( 'click' ) );
+
+				expect( colorPickerView.hexInputRow.inputView.errorText ).to.be.string;
 			} );
 		} );
 
@@ -856,5 +907,30 @@ describe( 'ColorSelectorView', () => {
 				color: 'rgb(255,255,255)'
 			} );
 		} );
+	} );
+} );
+
+describe( 'ColorGridsFragmentView', () => {
+	const locale = { t() {} };
+
+	it( 'should not focus on render', () => {
+		const colorGridsFragmentView = new ColorGridsFragmentView( locale, {
+			colors: colorDefinitions,
+			columns: 5,
+			removeButtonLabel: 'Remove color',
+			documentColorsLabel: 'Document colors',
+			documentColorsCount: 4,
+			focusTracker: new FocusTracker(),
+			focusables: new Collection()
+		} );
+
+		const spy = sinon.spy( colorGridsFragmentView, 'focus' );
+
+		colorGridsFragmentView.render();
+
+		sinon.assert.notCalled( spy );
+
+		colorGridsFragmentView.destroy();
+		colorGridsFragmentView.element.remove();
 	} );
 } );

@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -9,9 +9,9 @@
  * @module ckbox/ckboxcommand
  */
 
-import type { Writer } from 'ckeditor5/src/engine';
-import { Command, type Editor } from 'ckeditor5/src/core';
-import { createElement, toMap } from 'ckeditor5/src/utils';
+import type { Writer } from 'ckeditor5/src/engine.js';
+import { Command, type Editor } from 'ckeditor5/src/core.js';
+import { createElement, toMap } from 'ckeditor5/src/utils.js';
 
 import type {
 	CKBoxAssetDefinition,
@@ -20,16 +20,9 @@ import type {
 	CKBoxAssetLinkAttributesDefinition,
 	CKBoxAssetLinkDefinition,
 	CKBoxRawAssetDefinition
-} from './ckboxconfig';
+} from './ckboxconfig.js';
 
-import { blurHashToDataUrl, getImageUrls } from './utils';
-
-declare global {
-	// eslint-disable-next-line no-var
-	var CKBox: {
-		mount( wrapper: Element, options: Record<string, unknown> ): void;
-	};
-}
+import { blurHashToDataUrl, getImageUrls } from './utils.js';
 
 // Defines the waiting time (in milliseconds) for inserting the chosen asset into the model. The chosen asset is temporarily stored in the
 // `CKBoxCommand#_chosenAssets` and it is removed from there automatically after this time. See `CKBoxCommand#_chosenAssets` for more
@@ -133,23 +126,58 @@ export default class CKBoxCommand extends Command {
 	 * - language The language for CKBox dialog.
 	 * - tokenUrl The token endpoint URL.
 	 * - serviceOrigin The base URL of the API service.
-	 * - dialog.onClose The callback function invoked after closing the CKBox dialog.
+	 * - forceDemoLabel Whether to force "Powered by CKBox" link.
 	 * - assets.onChoose The callback function invoked after choosing the assets.
+	 * - dialog.onClose The callback function invoked after closing the CKBox dialog.
+	 * - dialog.width The dialog width in pixels.
+	 * - dialog.height The dialog height in pixels.
+	 * - categories.icons Allows setting custom icons for categories.
+	 * - view.openLastView Sets if the last view visited by the user will be reopened
+	 * on the next startup.
+	 * - view.startupFolderId Sets the ID of the folder that will be opened on startup.
+	 * - view.startupCategoryId Sets the ID of the category that will be opened on startup.
+	 * - view.hideMaximizeButton Sets whether to hide the ‘Maximize’ button.
+	 * - view.componentsHideTimeout Sets timeout after which upload components are hidden
+	 * after completed upload.
+	 * - view.dialogMinimizeTimeout Sets timeout after which upload dialog is minimized
+	 * after completed upload.
 	 */
 	private _prepareOptions() {
 		const editor = this.editor;
 		const ckboxConfig = editor.config.get( 'ckbox' )!;
+
+		const dialog = ckboxConfig.dialog;
+		const categories = ckboxConfig.categories;
+		const view = ckboxConfig.view;
+		const upload = ckboxConfig.upload;
 
 		return {
 			theme: ckboxConfig.theme,
 			language: ckboxConfig.language,
 			tokenUrl: ckboxConfig.tokenUrl,
 			serviceOrigin: ckboxConfig.serviceOrigin,
-			dialog: {
-				onClose: () => this.fire<CKBoxEvent<'close'>>( 'ckbox:close' )
-			},
+			forceDemoLabel: ckboxConfig.forceDemoLabel,
+			choosableFileExtensions: ckboxConfig.choosableFileExtensions,
 			assets: {
 				onChoose: ( assets: Array<CKBoxRawAssetDefinition> ) => this.fire<CKBoxEvent<'choose'>>( 'ckbox:choose', assets )
+			},
+			dialog: {
+				onClose: () => this.fire<CKBoxEvent<'close'>>( 'ckbox:close' ),
+				width: dialog && dialog.width,
+				height: dialog && dialog.height
+			},
+			categories: categories && {
+				icons: categories.icons
+			},
+			view: view && {
+				openLastView: view.openLastView,
+				startupFolderId: view.startupFolderId,
+				startupCategoryId: view.startupCategoryId,
+				hideMaximizeButton: view.hideMaximizeButton
+			},
+			upload: upload && {
+				componentsHideTimeout: upload.componentsHideTimeout,
+				dialogMinimizeTimeout: upload.dialogMinimizeTimeout
 			}
 		};
 	}
@@ -375,8 +403,10 @@ function prepareAssets(
 
 /**
  * Parses the assets attributes into the internal data format.
+ *
+ * @internal
  */
-function prepareImageAssetAttributes( asset: CKBoxRawAssetDefinition ): CKBoxAssetImageAttributesDefinition {
+export function prepareImageAssetAttributes( asset: CKBoxRawAssetDefinition ): CKBoxAssetImageAttributesDefinition {
 	const { imageFallbackUrl, imageSources } = getImageUrls( asset.data.imageUrls! );
 	const { description, width, height, blurHash } = asset.data.metadata!;
 	const imagePlaceholder = blurHashToDataUrl( blurHash );

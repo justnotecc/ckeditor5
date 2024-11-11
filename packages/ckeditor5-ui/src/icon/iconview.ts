@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -9,7 +9,7 @@
  * @module ui/icon/iconview
  */
 
-import View from '../view';
+import View from '../view.js';
 
 import type { ObservableChangeEvent } from '@ckeditor/ckeditor5-utils';
 
@@ -21,6 +21,9 @@ import '../../theme/components/icon/icon.css';
 export default class IconView extends View {
 	/**
 	 * The SVG source of the icon.
+	 *
+	 * The user must provide the entire XML string, not just the path. See the
+	 * {@glink framework/architecture/ui-library#setting-label-icon-and-tooltip UI library} guide for details.
 	 *
 	 * @observable
 	 */

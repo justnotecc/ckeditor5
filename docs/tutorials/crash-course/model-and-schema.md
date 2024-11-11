@@ -10,7 +10,7 @@ modified_at: 2023-08-16
 
 ## The editor
 
-The editors come in a few flavors. While each looks very different visually, they are very similar under the hood and consist of two parts:
+The editors come in a few flavors. While each looks different visually, they are similar under the hood and consist of two parts:
 
 * Editing engine,
 * Editing UI.
@@ -21,7 +21,7 @@ Later you will also learn about the **editing UI**, but for now, all you need to
 
 ### Model
 
-The first and most important part of the editing engine is the model. The model is an HTML-like structure that represents the content of the editor. When the {@link module:core/editor/utils/dataapimixin~DataApi#setData `editor.setData()`} method is called, HTML passed as the argument is converted into the model. Then, when the {@link module:core/editor/utils/dataapimixin~DataApi#getData `model.getData()`} method is called, the model is converted back to HTML.
+The first and most important part of the editing engine is the model. The model is an HTML-like structure that represents the content of the editor. When the {@link module:core/editor/editor~Editor#setData `editor.setData()`} method is called, HTML passed as the argument is converted into the model. Then, when the {@link module:core/editor/editor~Editor#getData `editor.getData()`} method is called, the model is converted back to HTML.
 
 One major difference between the model and HTML is that in the model, both text and elements can have attributes.
 
@@ -33,7 +33,7 @@ Let's see how the model compares to HTML.
 
 ### Schema
 
-You cannot put everything in the model. At least not until you update the schema. The schema defines what is allowed and where, what attributes are allowed for certain nodes, and so on.
+You cannot put anything you want inside the document model. At least not until you update the schema. The schema defines what is allowed and where, what attributes are allowed for certain nodes, what is not allowed, and so on.
 
 Schema determines things like whether the given element can be enclosed in a block quote, or whether the bold button is enabled on selected content.
 
@@ -93,7 +93,7 @@ import CKEditorInspector from '@ckeditor/ckeditor5-inspector';
 CKEditorInspector.attach(editor);
 ```
 
-When the page refreshes, you should see a debugging panel for CKEditor. Go to the `Schema` tab and click on the `$text` element. On the right side you should see `highlight:true` under the `Allowed Attributes` section.
+When the page refreshes, you should see a debugging panel for CKEditor. Go to the `Schema` tab and click the `$text` element. On the right side you should see `highlight:true` under the `Allowed Attributes` section.
 
 Go to the `Model` tab and re-run this code in the console:
 

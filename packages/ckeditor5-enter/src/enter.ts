@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -8,8 +8,8 @@
  */
 
 import { Plugin } from '@ckeditor/ckeditor5-core';
-import EnterCommand from './entercommand';
-import EnterObserver, { type ViewDocumentEnterEvent } from './enterobserver';
+import EnterCommand from './entercommand.js';
+import EnterObserver, { type ViewDocumentEnterEvent } from './enterobserver.js';
 
 /**
  * This plugin handles the <kbd>Enter</kbd> keystroke (hard line break) in the editor.
@@ -26,10 +26,18 @@ export default class Enter extends Plugin {
 		return 'Enter' as const;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
+	public static override get isOfficialPlugin(): true {
+		return true;
+	}
+
 	public init(): void {
 		const editor = this.editor;
 		const view = editor.editing.view;
 		const viewDocument = view.document;
+		const t = this.editor.t;
 
 		view.addObserver( EnterObserver );
 
@@ -51,5 +59,15 @@ export default class Enter extends Plugin {
 
 			view.scrollToTheSelection();
 		}, { priority: 'low' } );
+
+		// Add the information about the keystroke to the accessibility database.
+		editor.accessibility.addKeystrokeInfos( {
+			keystrokes: [
+				{
+					label: t( 'Insert a hard break (a new paragraph)' ),
+					keystroke: 'Enter'
+				}
+			]
+		} );
 	}
 }

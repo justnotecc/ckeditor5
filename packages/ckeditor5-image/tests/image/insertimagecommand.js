@@ -1,15 +1,15 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor';
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
-import { setData as setModelData, getData as getModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
+import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor.js';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
+import { setData as setModelData, getData as getModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model.js';
 
-import InsertImageCommand from '../../src/image/insertimagecommand';
-import ImageBlockEditing from '../../src/image/imageblockediting';
-import ImageInlineEditing from '../../src/image/imageinlineediting';
+import InsertImageCommand from '../../src/image/insertimagecommand.js';
+import ImageBlockEditing from '../../src/image/imageblockediting.js';
+import ImageInlineEditing from '../../src/image/imageinlineediting.js';
 
 describe( 'InsertImageCommand', () => {
 	let editor, command, model;
@@ -132,6 +132,37 @@ describe( 'InsertImageCommand', () => {
 			command.execute( { source: imgSrc } );
 
 			expect( getModelData( model ) ).to.equal( `<paragraph>f[<imageInline src="${ imgSrc }"></imageInline>]o</paragraph>` );
+		} );
+
+		it( 'should be possible to specify image type as image (imageBlock)', () => {
+			const imgSrc = 'foo/bar.jpg';
+
+			setModelData( model, '<paragraph>f[o]o</paragraph>' );
+
+			command.execute( {
+				imageType: 'imageBlock',
+				source: imgSrc
+			} );
+
+			expect( getModelData( model ) ).to.equal( `[<imageBlock src="${ imgSrc }"></imageBlock>]<paragraph>foo</paragraph>` );
+		} );
+
+		it( 'should be possible to specify image type as image (imageInline)', () => {
+			const imgSrc1 = 'foo/bar.jpg';
+			const imgSrc2 = 'foo/baz.jpg';
+
+			setModelData( model, '[]' );
+
+			command.execute( {
+				imageType: 'imageInline',
+				source: [ imgSrc1, imgSrc2 ]
+			} );
+
+			expect( getModelData( model ) )
+				.to.equal(
+					`<paragraph><imageInline src="${ imgSrc1 }"></imageInline>` +
+					`[<imageInline src="${ imgSrc2 }"></imageInline>]</paragraph>`
+				);
 		} );
 
 		it( 'should insert multiple images at selection position as other widgets for inline type images', () => {

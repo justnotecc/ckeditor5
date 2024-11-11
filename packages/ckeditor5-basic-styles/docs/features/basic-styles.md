@@ -19,12 +19,12 @@ You may apply basic formatting options with toolbar buttons. You can also make u
 {@snippet features/basic-styles}
 
 <info-box info>
-	This demo only presents a limited set of features. Visit the {@link examples/builds/full-featured-editor feature-rich editor example} to see more in action.
+	This demo presents a limited set of features. Visit the {@link examples/builds/full-featured-editor feature-rich editor example} to see more in action.
 </info-box>
 
 ## Available text styles
 
-| Style feature | {@link framework/architecture/core-editor-architecture#commands Command} name | {@link features/toolbar Toolbar} component name | Output element |
+| Style feature | {@link framework/architecture/core-editor-architecture#commands Command} name | {@link getting-started/setup/toolbar Toolbar} component name | Output element |
 |-----|---|-----|-----|
 | {@link module:basic-styles/bold~Bold} | `'bold'` | `'bold'` | `<strong>bold</strong>` |
 | {@link module:basic-styles/italic~Italic} | `'italic'` | `'italic'` | `<i>italic</i>` |
@@ -35,14 +35,12 @@ You may apply basic formatting options with toolbar buttons. You can also make u
 | {@link module:basic-styles/superscript~Superscript} | `'superscript'` | `'superscript'` | `<sup>superscript</sup>` |
 
 <info-box info>
-	{@link module:basic-styles/bold~Bold} and {@link module:basic-styles/italic~Italic} are available out–of–the–box in most of the {@link installation/getting-started/predefined-builds editor builds}.
-
 	The {@link module:basic-styles/code~Code} feature provides support for inline code formatting. To create blocks of pre-formatted code with a specific programming language assigned, use the {@link features/code-blocks code block feature}.
 </info-box>
 
 ### Supported input
 
-By default, each feature can upcast more than one type of content. Here is the full list of elements supported by each feature, either when pasting from the clipboard, loading data on start, or using the {@link module:core/editor/utils/dataapimixin~DataApi#setData data API}.
+By default, each feature can upcast more than one type of content. Here is the full list of elements supported by each feature, either when pasting from the clipboard, loading data on start, or using the {@link module:core/editor/editor~Editor#setData data API}.
 
 | Style feature | Supported input elements |
 |-----|---|
@@ -69,23 +67,19 @@ CKEditor&nbsp;5 allows for typing both at the inner and outer boundaries of code
 ## Installation
 
 <info-box info>
-	Bold and italic styles are enabled by default in all {@link installation/getting-started/predefined-builds predefined builds}. Strikethrough and underline are available in the {@link installation/getting-started/predefined-builds#document-editor document editor build} and {@link installation/getting-started/predefined-builds#superbuild superbuild} only. The code style is present in the {@link installation/getting-started/predefined-builds#superbuild superbuild} only. These installation instructions are for developers interested in building their own, custom editor.
+	⚠️ **New import paths**
+
+	Starting with {@link updating/update-to-42 version 42.0.0}, we changed the format of import paths. This guide uses the new, shorter format. Refer to the {@link getting-started/legacy-getting-started/legacy-imports Packages in the legacy setup} guide if you use an older version of CKEditor&nbsp;5.
 </info-box>
 
-To add the basic styles features to your editor install the [`@ckeditor/ckeditor5-basic-styles`](https://www.npmjs.com/package/@ckeditor/ckeditor5-basic-styles) package:
-
-```
-npm install --save @ckeditor/ckeditor5-basic-styles
-```
-
-And add the plugins which you need to your plugin list. Then, simply configure the toolbar items to make the features available in the user interface.
+After {@link getting-started/quick-start installing the editor}, add the plugins which you need to your plugin list. Then, simply configure the toolbar items to make the features available in the user interface.
 
 ```js
-import { Bold, Code, Italic, Strikethrough, Subscript, Superscript, Underline } from '@ckeditor/ckeditor5-basic-styles';
+import { ClassicEditor, Bold, Code, Italic, Strikethrough, Subscript, Superscript, Underline } from 'ckeditor5';
 
 ClassicEditor
 	.create( document.querySelector( '#editor' ), {
-		plugins: [ Bold, Italic, Underline, Strikethrough, Code, Subscript, Superscript ],
+		plugins: [ Bold, Code, Italic, Strikethrough, Subscript, Superscript, Underline ],
 		toolbar: {
 			items: [ 'bold', 'italic', 'underline', 'strikethrough', 'code', 'subscript', 'superscript'  ]
 		}
@@ -94,16 +88,13 @@ ClassicEditor
 	.catch( /* ... */ );
 ```
 
-<info-box info>
-	Read more about {@link installation/plugins/installing-plugins installing plugins}.
-</info-box>
-
 ## Related features
 
 Check out also these CKEditor&nbsp;5 features to gain better control over your content style and format:
 * {@link features/font Font styles} &ndash; Easily and efficiently control the font {@link features/font#configuring-the-font-family-feature family}, {@link features/font#configuring-the-font-size-feature size}, {@link features/font#configuring-the-font-color-and-font-background-color-features text or background color}.
 * {@link features/style Styles} &ndash; Apply pre-configured styles to existing elements in the editor content.
 * {@link features/text-alignment Text alignment} &ndash; Because it does matter whether the content is left, right, centered, or justified.
+* {@link features/case-change Case change} &ndash; Turn a text fragment or block into uppercase, lowercase, or title case.
 * {@link features/code-blocks Code blocks}  &ndash; Insert longer, multiline code listings, expanding the inline code style greatly.
 * {@link features/highlight Highlight} &ndash; Mark important words and passages, aiding a review or drawing attention to specific parts of the content.
 * {@link features/format-painter Format painter} &ndash; Easily copy text formatting and apply it in a different place in the edited document.

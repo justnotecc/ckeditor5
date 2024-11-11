@@ -1,37 +1,34 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-/* globals console, window, document */
+/* globals window */
 
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
-import LinkEditing from '@ckeditor/ckeditor5-link/src/linkediting';
-import LinkImageEditing from '@ckeditor/ckeditor5-link/src/linkimageediting';
-import PictureEditing from '@ckeditor/ckeditor5-image/src/pictureediting';
-import ImageUploadEditing from '@ckeditor/ckeditor5-image/src/imageupload/imageuploadediting';
-import ImageUploadProgress from '@ckeditor/ckeditor5-image/src/imageupload/imageuploadprogress';
-import ImageBlockEditing from '@ckeditor/ckeditor5-image/src/image/imageblockediting';
-import ImageInlineEditing from '@ckeditor/ckeditor5-image/src/image/imageinlineediting';
-import ImageCaptionEditing from '@ckeditor/ckeditor5-image/src/imagecaption/imagecaptionediting';
-import CloudServices from '@ckeditor/ckeditor5-cloud-services/src/cloudservices';
-import ModelElement from '@ckeditor/ckeditor5-engine/src/model/element';
-import { keyCodes } from '@ckeditor/ckeditor5-utils/src/keyboard';
-import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor';
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
-import { getData as getModelData, setData as setModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
-import CloudServicesCoreMock from './_utils/cloudservicescoremock';
-import { getData as getViewData } from '@ckeditor/ckeditor5-engine/src/dev-utils/view';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
+import LinkEditing from '@ckeditor/ckeditor5-link/src/linkediting.js';
+import LinkImageEditing from '@ckeditor/ckeditor5-link/src/linkimageediting.js';
+import PictureEditing from '@ckeditor/ckeditor5-image/src/pictureediting.js';
+import ImageUploadEditing from '@ckeditor/ckeditor5-image/src/imageupload/imageuploadediting.js';
+import ImageUploadProgress from '@ckeditor/ckeditor5-image/src/imageupload/imageuploadprogress.js';
+import ImageBlockEditing from '@ckeditor/ckeditor5-image/src/image/imageblockediting.js';
+import ImageInlineEditing from '@ckeditor/ckeditor5-image/src/image/imageinlineediting.js';
+import ImageCaptionEditing from '@ckeditor/ckeditor5-image/src/imagecaption/imagecaptionediting.js';
+import CloudServices from '@ckeditor/ckeditor5-cloud-services/src/cloudservices.js';
+import ModelElement from '@ckeditor/ckeditor5-engine/src/model/element.js';
+import { keyCodes } from '@ckeditor/ckeditor5-utils/src/keyboard.js';
+import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor.js';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
+import { getData as getModelData, setData as setModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model.js';
+import CloudServicesCoreMock from './_utils/cloudservicescoremock.js';
+import { getData as getViewData } from '@ckeditor/ckeditor5-engine/src/dev-utils/view.js';
 
-import CKBoxEditing from '../src/ckboxediting';
-import CKBoxCommand from '../src/ckboxcommand';
-import CKBoxUploadAdapter from '../src/ckboxuploadadapter';
-import Token from '@ckeditor/ckeditor5-cloud-services/src/token/token';
-import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor';
-import Image from '@ckeditor/ckeditor5-image/src/image';
-import TokenMock from '@ckeditor/ckeditor5-cloud-services/tests/_utils/tokenmock';
-
-const CKBOX_API_URL = 'https://upload.example.com';
+import CKBoxEditing from '../src/ckboxediting.js';
+import CKBoxImageEditing from '../src/ckboximageedit/ckboximageeditediting.js';
+import CKBoxCommand from '../src/ckboxcommand.js';
+import CKBoxUploadAdapter from '../src/ckboxuploadadapter.js';
+import TokenMock from '@ckeditor/ckeditor5-cloud-services/tests/_utils/tokenmock.js';
+import CKBoxUtils from '../src/ckboxutils.js';
 
 describe( 'CKBoxEditing', () => {
 	let editor, model, view, originalCKBox, replaceImageSourceCommand;
@@ -64,12 +61,20 @@ describe( 'CKBoxEditing', () => {
 		expect( CKBoxEditing.pluginName ).to.equal( 'CKBoxEditing' );
 	} );
 
+	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+		expect( CKBoxEditing.isOfficialPlugin ).to.be.true;
+	} );
+
+	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+		expect( CKBoxEditing.isPremiumPlugin ).to.be.false;
+	} );
+
 	it( 'should be loaded', () => {
 		expect( editor.plugins.get( CKBoxEditing ) ).to.be.instanceOf( CKBoxEditing );
 	} );
 
 	it( 'should load link and picture features', () => {
-		expect( CKBoxEditing.requires ).to.deep.equal( [ 'CloudServices', 'LinkEditing', 'PictureEditing', CKBoxUploadAdapter ] );
+		expect( CKBoxEditing.requires ).to.deep.equal( [ 'LinkEditing', 'PictureEditing', CKBoxUploadAdapter, CKBoxUtils ] );
 	} );
 
 	it( 'should register the "ckbox" command if CKBox lib is loaded', () => {
@@ -86,276 +91,6 @@ describe( 'CKBoxEditing', () => {
 		} );
 
 		expect( editor.commands.get( 'ckbox' ) ).to.be.undefined;
-	} );
-
-	describe( 'getToken()', () => {
-		it( 'should return an instance of token', () => {
-			const ckboxEditing = editor.plugins.get( CKBoxEditing );
-
-			expect( ckboxEditing.getToken() ).to.be.instanceOf( Token );
-		} );
-	} );
-
-	describe( 'fetching token', () => {
-		it( 'should create an instance of Token class which is ready to use (specified ckbox.tokenUrl)', () => {
-			const ckboxEditing = editor.plugins.get( CKBoxEditing );
-
-			expect( ckboxEditing.getToken() ).to.be.instanceOf( Token );
-			expect( ckboxEditing.getToken().value ).to.equal( 'ckbox-token' );
-			expect( editor.plugins.get( 'CloudServicesCore' ).tokenUrl ).to.equal( 'http://cs.example.com' );
-		} );
-
-		it( 'should not create a new token if already created (specified cloudServices.tokenUrl)', async () => {
-			const editorElement = document.createElement( 'div' );
-			document.body.appendChild( editorElement );
-
-			const editor = await ClassicTestEditor
-				.create( editorElement, {
-					plugins: [
-						LinkEditing,
-						Image,
-						PictureEditing,
-						ImageUploadEditing,
-						ImageUploadProgress,
-						CloudServices,
-						CKBoxEditing,
-						CKBoxUploadAdapter
-					],
-					substitutePlugins: [
-						CloudServicesCoreMock
-					],
-					cloudServices: {
-						tokenUrl: 'http://cs.example.com'
-					},
-					ckbox: {
-						serviceOrigin: CKBOX_API_URL
-					}
-				} );
-
-			const ckboxEditing = editor.plugins.get( CKBoxEditing );
-			expect( ckboxEditing.getToken() ).to.be.instanceOf( Token );
-			expect( ckboxEditing.getToken().value ).to.equal( 'ckbox-token' );
-			expect( editor.plugins.get( 'CloudServicesCore' ).tokenUrl ).to.equal( 'http://cs.example.com' );
-
-			editorElement.remove();
-			return editor.destroy();
-		} );
-
-		it( 'should create a new token when passed "ckbox.tokenUrl" and "cloudServices.tokenUrl" values are different', async () => {
-			const editorElement = document.createElement( 'div' );
-			document.body.appendChild( editorElement );
-
-			const editor = await ClassicTestEditor
-				.create( editorElement, {
-					plugins: [
-						LinkEditing,
-						Image,
-						PictureEditing,
-						ImageUploadEditing,
-						ImageUploadProgress,
-						CloudServices,
-						CKBoxEditing,
-						CKBoxUploadAdapter
-					],
-					substitutePlugins: [
-						CloudServicesCoreMock
-					],
-					cloudServices: {
-						tokenUrl: 'http://cs.example.com'
-					},
-					ckbox: {
-						tokenUrl: 'http://ckbox.example.com',
-						serviceOrigin: CKBOX_API_URL
-					}
-				} );
-
-			const ckboxEditing = editor.plugins.get( CKBoxEditing );
-			expect( ckboxEditing.getToken() ).to.be.instanceOf( Token );
-			expect( ckboxEditing.getToken().value ).to.equal( 'ckbox-token' );
-			expect( editor.plugins.get( 'CloudServicesCore' ).tokenUrl ).to.equal( 'http://ckbox.example.com' );
-
-			editorElement.remove();
-			return editor.destroy();
-		} );
-
-		it( 'should not create a new token when passed "ckbox.tokenUrl" and "cloudServices.tokenUrl" values are equal', async () => {
-			const editorElement = document.createElement( 'div' );
-			document.body.appendChild( editorElement );
-
-			const editor = await ClassicTestEditor
-				.create( editorElement, {
-					plugins: [
-						LinkEditing,
-						Image,
-						PictureEditing,
-						ImageUploadEditing,
-						ImageUploadProgress,
-						CloudServices,
-						CKBoxEditing,
-						CKBoxUploadAdapter
-					],
-					substitutePlugins: [
-						CloudServicesCoreMock
-					],
-					cloudServices: {
-						tokenUrl: 'http://example.com'
-					},
-					ckbox: {
-						tokenUrl: 'http://example.com',
-						serviceOrigin: CKBOX_API_URL
-					}
-				} );
-
-			const ckboxEditing = editor.plugins.get( CKBoxEditing );
-			expect( ckboxEditing.getToken() ).to.be.instanceOf( Token );
-			expect( ckboxEditing.getToken().value ).to.equal( 'ckbox-token' );
-			expect( editor.plugins.get( 'CloudServicesCore' ).tokenUrl ).to.equal( 'http://example.com' );
-
-			editorElement.remove();
-			return editor.destroy();
-		} );
-	} );
-
-	describe( 'config', () => {
-		it( 'should set default values', async () => {
-			const editor = await createTestEditor( {
-				language: 'pl',
-				cloudServices: {
-					tokenUrl: 'http://cs.example.com'
-				}
-			} );
-
-			expect( editor.config.get( 'ckbox' ) ).to.deep.equal( {
-				serviceOrigin: 'https://api.ckbox.io',
-				defaultUploadCategories: null,
-				ignoreDataId: false,
-				language: 'pl',
-				theme: 'lark',
-				tokenUrl: 'http://cs.example.com'
-			} );
-
-			await editor.destroy();
-		} );
-
-		it( 'should set default values if CKBox lib is missing but `config.ckbox` is set', async () => {
-			delete window.CKBox;
-
-			const editor = await createTestEditor( {
-				ckbox: {
-					tokenUrl: 'http://cs.example.com'
-				}
-			} );
-
-			expect( editor.config.get( 'ckbox' ) ).to.deep.equal( {
-				serviceOrigin: 'https://api.ckbox.io',
-				defaultUploadCategories: null,
-				ignoreDataId: false,
-				language: 'en',
-				theme: 'lark',
-				tokenUrl: 'http://cs.example.com'
-			} );
-
-			await editor.destroy();
-		} );
-
-		it( 'should not set default values if CKBox lib and `config.ckbox` are missing', async () => {
-			delete window.CKBox;
-
-			const editor = await createTestEditor( {
-				cloudServices: {
-					tokenUrl: 'http://cs.example.com'
-				}
-			} );
-
-			expect( editor.config.get( 'ckbox' ) ).to.be.undefined;
-
-			await editor.destroy();
-		} );
-
-		it( 'should prefer own language configuration over the one from the editor locale', async () => {
-			const editor = await createTestEditor( {
-				language: 'pl',
-				cloudServices: {
-					tokenUrl: 'http://cs.example.com'
-				},
-				ckbox: {
-					language: 'de'
-				}
-			} );
-
-			expect( editor.config.get( 'ckbox' ).language ).to.equal( 'de' );
-
-			await editor.destroy();
-		} );
-
-		it( 'should prefer own "tokenUrl" configuration over the one from the "cloudServices"', async () => {
-			const editor = await createTestEditor( {
-				language: 'pl',
-				cloudServices: {
-					tokenUrl: 'http://cs.example.com'
-				},
-				ckbox: {
-					tokenUrl: 'bar'
-				}
-			} );
-
-			expect( editor.config.get( 'ckbox' ).tokenUrl ).to.equal( 'bar' );
-
-			await editor.destroy();
-		} );
-
-		it( 'should set "theme" value based on `config.ckbox.theme`', async () => {
-			const editor = await createTestEditor( {
-				ckbox: {
-					theme: 'newTheme',
-					tokenUrl: 'http://cs.example.com'
-				}
-			} );
-
-			expect( editor.config.get( 'ckbox' ).theme ).to.equal( 'newTheme' );
-
-			await editor.destroy();
-		} );
-
-		it( 'should throw if the "tokenUrl" is not provided', async () => {
-			await createTestEditor()
-				.then(
-					() => {
-						throw new Error( 'Expected to be rejected' );
-					},
-					error => {
-						expect( error.message ).to.match( /ckbox-plugin-missing-token-url/ );
-					}
-				);
-		} );
-
-		it( 'should log an error if there is no image feature loaded in the editor', async () => {
-			sinon.stub( console, 'error' );
-
-			const editor = await createTestEditor( {
-				plugins: [
-					Paragraph,
-					ImageCaptionEditing,
-					LinkEditing,
-					LinkImageEditing,
-					PictureEditing,
-					ImageUploadEditing,
-					ImageUploadProgress,
-					CloudServices,
-					CKBoxUploadAdapter,
-					CKBoxEditing
-				],
-				ckbox: {
-					tokenUrl: 'http://cs.example.com'
-				}
-			} );
-
-			expect( console.error.callCount ).to.equal( 1 );
-			expect( console.error.args[ 0 ][ 0 ] ).to.equal( 'ckbox-plugin-image-feature-missing' );
-			expect( console.error.args[ 0 ][ 1 ] ).to.equal( editor );
-
-			await editor.destroy();
-		} );
 	} );
 
 	describe( 'schema', () => {
@@ -460,6 +195,36 @@ describe( 'CKBoxEditing', () => {
 			expect( model.schema.checkAttribute( [ '$root', '$block', linkElement ], 'ckboxLinkId' ) ).to.be.false;
 
 			await editor.destroy();
+		} );
+
+		describe( 'CKBox loaded before the ImageBlock and ImageInline plugins', () => {
+			let editor, model, originalCKBox;
+
+			beforeEach( async () => {
+				TokenMock.initialToken = 'ckbox-token';
+
+				originalCKBox = window.CKBox;
+				window.CKBox = {};
+
+				editor = await createTestEditor( {
+					ckbox: {
+						tokenUrl: 'http://cs.example.com'
+					}
+				}, true );
+
+				model = editor.model;
+			} );
+
+			afterEach( async () => {
+				window.CKBox = originalCKBox;
+				await editor.destroy();
+			} );
+
+			// https://github.com/ckeditor/ckeditor5/issues/15581
+			it( 'should extend the schema rules for imageBlock and imageInline', () => {
+				expect( model.schema.checkAttribute( [ '$root', 'imageBlock' ], 'ckboxImageId' ) ).to.be.true;
+				expect( model.schema.checkAttribute( [ '$root', '$block', 'imageInline' ], 'ckboxImageId' ) ).to.be.true;
+			} );
 		} );
 	} );
 
@@ -1033,7 +798,8 @@ describe( 'CKBoxEditing', () => {
 								'class="ck-editor__editable ck-editor__nested-editable" ' +
 								'contenteditable="true" ' +
 								'data-placeholder="Enter image caption" ' +
-								'role="textbox">' +
+								'role="textbox" ' +
+								'tabindex="-1">' +
 								'<a data-ckbox-resource-id="link-id" href="/assets/sample.png">Text of the caption</a>' +
 							'</figcaption>' +
 						'</figure>'
@@ -2074,24 +1840,152 @@ describe( 'CKBoxEditing', () => {
 
 		expect( element.getAttribute( 'ckboxImageId' ) ).to.be.undefined;
 	} );
+
+	describe( 'permissions', () => {
+		let sinonXHR;
+		const CKBOX_API_URL = 'https://upload.example.com';
+		const CKBOX_TOKEN_URL = 'http://cs.example.com';
+
+		beforeEach( () => {
+			sinonXHR = testUtils.sinon.useFakeServer();
+			sinonXHR.autoRespond = true;
+			sinonXHR.respondImmediately = true;
+		} );
+
+		afterEach( () => {
+			sinonXHR.restore();
+		} );
+
+		it( 'should not disable image upload command if access allowed', async () => {
+			sinonXHR.respondWith( 'GET', CKBOX_API_URL + '/permissions', [
+				200,
+				{ 'Content-Type': 'application/json' },
+				JSON.stringify( {
+					'id1': {
+						'asset:create': true
+					}
+				} )
+			] );
+
+			const editor = await createTestEditor( {
+				ckbox: {
+					tokenUrl: CKBOX_TOKEN_URL,
+					serviceOrigin: CKBOX_API_URL
+				}
+			} );
+
+			const uploadImageCommand = editor.commands.get( 'uploadImage' );
+
+			expect( uploadImageCommand.isEnabled ).to.be.true;
+			expect( uploadImageCommand.isAccessAllowed ).to.be.true;
+
+			await editor.destroy();
+		} );
+
+		it( 'should disable image upload command if access not allowed', async () => {
+			sinonXHR.respondWith( 'GET', CKBOX_API_URL + '/permissions', [
+				200,
+				{ 'Content-Type': 'application/json' },
+				JSON.stringify( {
+					'id1': {
+						'asset:create': false
+					}
+				} )
+			] );
+
+			const editor = await createTestEditor( {
+				ckbox: {
+					tokenUrl: CKBOX_TOKEN_URL,
+					serviceOrigin: CKBOX_API_URL
+				}
+			} );
+
+			const uploadImageCommand = editor.commands.get( 'uploadImage' );
+
+			expect( uploadImageCommand.isEnabled ).to.be.false;
+			expect( uploadImageCommand.isAccessAllowed ).to.be.false;
+
+			await editor.destroy();
+		} );
+
+		it( 'should not disable image upload command if access allowed ( CKBox loaded first )', async () => {
+			sinonXHR.respondWith( 'GET', CKBOX_API_URL + '/permissions', [
+				200,
+				{ 'Content-Type': 'application/json' },
+				JSON.stringify( {
+					'id1': {
+						'asset:create': true
+					}
+				} )
+			] );
+
+			const editor = await createTestEditor( {
+				ckbox: {
+					tokenUrl: CKBOX_TOKEN_URL,
+					serviceOrigin: CKBOX_API_URL
+				}
+			}, true );
+
+			const uploadImageCommand = editor.commands.get( 'uploadImage' );
+
+			expect( uploadImageCommand.isEnabled ).to.be.true;
+			expect( uploadImageCommand.isAccessAllowed ).to.be.true;
+
+			await editor.destroy();
+		} );
+
+		it( 'should disable image upload command if access not allowed ( CKBox loaded first )', async () => {
+			sinonXHR.respondWith( 'GET', CKBOX_API_URL + '/permissions', [
+				200,
+				{ 'Content-Type': 'application/json' },
+				JSON.stringify( {
+					'id1': {
+						'asset:create': false
+					}
+				} )
+			] );
+
+			const editor = await createTestEditor( {
+				ckbox: {
+					tokenUrl: CKBOX_TOKEN_URL,
+					serviceOrigin: CKBOX_API_URL
+				}
+			}, true );
+
+			const uploadImageCommand = editor.commands.get( 'uploadImage' );
+
+			expect( uploadImageCommand.isEnabled ).to.be.false;
+			expect( uploadImageCommand.isAccessAllowed ).to.be.false;
+
+			await editor.destroy();
+		} );
+	} );
 } );
 
-function createTestEditor( config = {} ) {
+function createTestEditor( config = {}, loadCKBoxFirst = false ) {
+	const plugins = [
+		Paragraph,
+		ImageBlockEditing,
+		ImageInlineEditing,
+		ImageCaptionEditing,
+		LinkEditing,
+		LinkImageEditing,
+		PictureEditing,
+		ImageUploadEditing,
+		ImageUploadProgress,
+		CloudServices,
+		CKBoxUploadAdapter,
+		CKBoxImageEditing
+	];
+
+	if ( loadCKBoxFirst ) {
+		plugins.unshift( CKBoxEditing );
+	} else {
+		plugins.push( CKBoxEditing );
+	}
+
 	return VirtualTestEditor.create( {
-		plugins: [
-			Paragraph,
-			ImageBlockEditing,
-			ImageInlineEditing,
-			ImageCaptionEditing,
-			LinkEditing,
-			LinkImageEditing,
-			PictureEditing,
-			ImageUploadEditing,
-			ImageUploadProgress,
-			CloudServices,
-			CKBoxUploadAdapter,
-			CKBoxEditing
-		],
+		plugins,
 		substitutePlugins: [
 			CloudServicesCoreMock
 		],

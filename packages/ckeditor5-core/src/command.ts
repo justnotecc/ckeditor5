@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -15,7 +15,7 @@ import {
 	type ObservableSetEvent
 } from '@ckeditor/ckeditor5-utils';
 
-import type Editor from './editor/editor';
+import type Editor from './editor/editor.js';
 
 /**
  * Base class for the CKEditor commands.
@@ -30,7 +30,7 @@ import type Editor from './editor/editor';
  * By default, commands are disabled when the editor is in the {@link module:core/editor/editor~Editor#isReadOnly read-only} mode
  * but commands with the {@link module:core/command~Command#affectsData `affectsData`} flag set to `false` will not be disabled.
  */
-export default class Command extends ObservableMixin() {
+export default class Command extends /* #__PURE__ */ ObservableMixin() {
 	/**
 	 * The editor on which this command will be used.
 	 */

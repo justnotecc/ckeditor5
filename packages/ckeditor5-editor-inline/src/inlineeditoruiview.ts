@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -11,20 +11,21 @@ import {
 	BalloonPanelView,
 	EditorUIView,
 	InlineEditableUIView,
+	MenuBarView,
 	ToolbarView
-} from 'ckeditor5/src/ui';
+} from 'ckeditor5/src/ui.js';
 import {
 	Rect,
 	ResizeObserver,
 	toUnit,
 	type PositioningFunction,
 	type Locale
-} from 'ckeditor5/src/utils';
-import type {
-	View
-} from 'ckeditor5/src/engine';
+} from 'ckeditor5/src/utils.js';
+import type { EditingView } from 'ckeditor5/src/engine.js';
 
-const toPx = toUnit( 'px' );
+import '../theme/inlineeditor.css';
+
+const toPx = /* #__PURE__ */ toUnit( 'px' );
 
 /**
  * Inline editor UI view. Uses an nline editable and a floating toolbar.
@@ -133,23 +134,29 @@ export default class InlineEditorUIView extends EditorUIView {
 	 * @param options.shouldToolbarGroupWhenFull When set `true` enables automatic items grouping
 	 * in the main {@link module:editor-inline/inlineeditoruiview~InlineEditorUIView#toolbar toolbar}.
 	 * See {@link module:ui/toolbar/toolbarview~ToolbarOptions#shouldGroupWhenFull} to learn more.
+	 * @param options.label When set, this value will be used as an accessible `aria-label` of the
+	 * {@link module:ui/editableui/editableuiview~EditableUIView editable view}.
 	 */
 	constructor(
 		locale: Locale,
-		editingView: View,
+		editingView: EditingView,
 		editableElement?: HTMLElement,
 		options: {
 			shouldToolbarGroupWhenFull?: boolean;
+			useMenuBar?: boolean;
+			label?: string | Record<string, string>;
 		} = {}
 	) {
 		super( locale );
-
-		const t = locale.t;
 
 		this.toolbar = new ToolbarView( locale, {
 			shouldGroupWhenFull: options.shouldToolbarGroupWhenFull,
 			isFloating: true
 		} );
+
+		if ( options.useMenuBar ) {
+			this.menuBarView = new MenuBarView( locale );
+		}
 
 		this.set( 'viewportTopOffset', 0 );
 
@@ -163,9 +170,7 @@ export default class InlineEditorUIView extends EditorUIView {
 		} );
 
 		this.editable = new InlineEditableUIView( locale, editingView, editableElement, {
-			label: editableView => {
-				return t( 'Rich Text Editor. Editing area: %0', editableView.name! );
-			}
+			label: options.label
 		} );
 
 		this._resizeObserver = null;
@@ -179,7 +184,13 @@ export default class InlineEditorUIView extends EditorUIView {
 
 		this.body.add( this.panel );
 		this.registerChild( this.editable );
-		this.panel.content.add( this.toolbar );
+
+		if ( this.menuBarView ) {
+			// Set toolbar as a child of a stickyPanel and makes toolbar sticky.
+			this.panel.content.addMany( [ this.menuBarView, this.toolbar ] );
+		} else {
+			this.panel.content.add( this.toolbar );
+		}
 
 		const options = this.toolbar.options;
 

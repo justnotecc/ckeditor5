@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -7,25 +7,22 @@
  * @module engine/model/position
  */
 
-import TypeCheckable from './typecheckable';
-import TreeWalker, { type TreeWalkerOptions, type TreeWalkerValue } from './treewalker';
+import TypeCheckable from './typecheckable.js';
+import TreeWalker, { type TreeWalkerOptions, type TreeWalkerValue } from './treewalker.js';
 
-import type Document from './document';
-import type DocumentFragment from './documentfragment';
-import type Element from './element';
-import type InsertOperation from './operation/insertoperation';
-import type Item from './item';
-import type MergeOperation from './operation/mergeoperation';
-import type MoveOperation from './operation/moveoperation';
-import type Node from './node';
-import type Operation from './operation/operation';
-import type SplitOperation from './operation/splitoperation';
-import type Text from './text';
+import type Document from './document.js';
+import type DocumentFragment from './documentfragment.js';
+import type Element from './element.js';
+import type InsertOperation from './operation/insertoperation.js';
+import type Item from './item.js';
+import type MergeOperation from './operation/mergeoperation.js';
+import type MoveOperation from './operation/moveoperation.js';
+import type Node from './node.js';
+import type Operation from './operation/operation.js';
+import type SplitOperation from './operation/splitoperation.js';
+import type Text from './text.js';
 
 import { CKEditorError, compareArrays } from '@ckeditor/ckeditor5-utils';
-
-// To check if component is loaded more than once.
-import '@ckeditor/ckeditor5-utils/src/version';
 
 /**
  * Represents a position in the model tree.
@@ -180,7 +177,7 @@ export default class Position extends TypeCheckable {
 		let parent: any = this.root;
 
 		for ( let i = 0; i < this.path.length - 1; i++ ) {
-			parent = parent.getChild( parent.offsetToIndex( this.path[ i ] ) );
+			parent = parent.getChildAtOffset( this.path[ i ] );
 
 			if ( !parent ) {
 				/**
@@ -227,7 +224,7 @@ export default class Position extends TypeCheckable {
 	}
 
 	/**
-	 * Node directly after this position or `null` if this position is in text node.
+	 * Node directly after this position. Returns `null` if this position is at the end of its parent, or if it is in a text node.
 	 */
 	public get nodeAfter(): Node | null {
 		// Cache the parent and reuse for performance reasons. See #6579 and #6582.
@@ -237,7 +234,7 @@ export default class Position extends TypeCheckable {
 	}
 
 	/**
-	 * Node directly before this position or `null` if this position is in text node.
+	 * Node directly before this position. Returns `null` if this position is at the start of its parent, or if it is in a text node.
 	 */
 	public get nodeBefore(): Node | null {
 		// Cache the parent and reuse for performance reasons. See #6579 and #6582.
@@ -258,6 +255,27 @@ export default class Position extends TypeCheckable {
 	 */
 	public get isAtEnd(): boolean {
 		return this.offset == this.parent.maxOffset;
+	}
+
+	/**
+	 * Checks whether the position is valid in current model tree, that is whether it points to an existing place in the model.
+	 */
+	public isValid(): boolean {
+		if ( this.offset < 0 ) {
+			return false;
+		}
+
+		let parent: any = this.root;
+
+		for ( let i = 0; i < this.path.length - 1; i++ ) {
+			parent = parent.getChildAtOffset( this.path[ i ] );
+
+			if ( !parent ) {
+				return false;
+			}
+		}
+
+		return this.offset <= parent.maxOffset;
 	}
 
 	/**
@@ -1074,10 +1092,11 @@ export type PositionStickiness = 'toNone' | 'toNext' | 'toPrevious';
  * * {@link module:engine/model/position~getNodeAfterPosition}
  * * {@link module:engine/model/position~getNodeBeforePosition}
  *
+ * @param position
  * @param positionParent The parent of the given position.
  */
 export function getTextNodeAtPosition( position: Position, positionParent: Element | DocumentFragment ): Text | null {
-	const node = positionParent.getChild( positionParent.offsetToIndex( position.offset ) );
+	const node = positionParent.getChildAtOffset( position.offset );
 
 	if ( node && node.is( '$text' ) && node.startOffset! < position.offset ) {
 		return node;
@@ -1105,6 +1124,7 @@ export function getTextNodeAtPosition( position: Position, positionParent: Eleme
  * * {@link module:engine/model/position~getTextNodeAtPosition}
  * * {@link module:engine/model/position~getNodeBeforePosition}
  *
+ * @param position Position to check.
  * @param positionParent The parent of the given position.
  * @param textNode Text node at the given position.
  */
@@ -1117,7 +1137,7 @@ export function getNodeAfterPosition(
 		return null;
 	}
 
-	return positionParent.getChild( positionParent.offsetToIndex( position.offset ) );
+	return positionParent.getChildAtOffset( position.offset );
 }
 
 /**
@@ -1130,6 +1150,7 @@ export function getNodeAfterPosition(
  * * {@link module:engine/model/position~getTextNodeAtPosition}
  * * {@link module:engine/model/position~getNodeAfterPosition}
  *
+ * @param position Position to check.
  * @param positionParent The parent of the given position.
  * @param textNode Text node at the given position.
  */

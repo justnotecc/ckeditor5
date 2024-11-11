@@ -17,7 +17,7 @@ Use the button below to toggle the read-only mode. Some features, like exports o
 {@snippet features/read-only}
 
 <info-box info>
-	This demo only presents a limited set of features. Visit the {@link examples/builds/full-featured-editor feature-rich editor example} to see more in action.
+	This demo presents a limited set of features. Visit the {@link examples/builds/full-featured-editor feature-rich editor example} to see more in action.
 </info-box>
 
 <info-box>
@@ -25,10 +25,6 @@ Use the button below to toggle the read-only mode. Some features, like exports o
 </info-box>
 
 ## Additional feature information
-
-<info-box info>
-	This feature is available in all {@link installation/getting-started/predefined-builds#available-builds predefined builds}.
-</info-box>
 
 The feature does not require any additional plugin and the editor can be set into a read-only mode using the editor's {@link module:core/editor/editor~Editor#enableReadOnlyMode `Editor#enableReadOnlyMode()`} method.
 

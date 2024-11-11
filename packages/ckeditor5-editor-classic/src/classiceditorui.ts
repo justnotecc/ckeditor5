@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -7,14 +7,22 @@
  * @module editor-classic/classiceditorui
  */
 
-import type { Editor, ElementApi } from 'ckeditor5/src/core';
-import { EditorUI, normalizeToolbarConfig, type EditorUIReadyEvent } from 'ckeditor5/src/ui';
+import type { Editor, ElementApi } from 'ckeditor5/src/core.js';
+import {
+	EditorUI,
+	DialogView,
+	normalizeToolbarConfig,
+	type DialogViewMoveToEvent,
+	type Dialog,
+	type EditorUIReadyEvent,
+	type ContextualBalloonGetPositionOptionsEvent
+} from 'ckeditor5/src/ui.js';
 import {
 	enablePlaceholder,
 	type ViewScrollToTheSelectionEvent
-} from 'ckeditor5/src/engine';
-import { ElementReplacer, Rect, type EventInfo } from 'ckeditor5/src/utils';
-import type ClassicEditorUIView from './classiceditoruiview';
+} from 'ckeditor5/src/engine.js';
+import { ElementReplacer, Rect, type EventInfo } from 'ckeditor5/src/utils.js';
+import type ClassicEditorUIView from './classiceditoruiview.js';
 
 /**
  * The classic editor UI class.
@@ -46,6 +54,7 @@ export default class ClassicEditorUI extends EditorUI {
 
 		this.view = view;
 		this._toolbarConfig = normalizeToolbarConfig( editor.config.get( 'toolbar' ) );
+
 		this._elementReplacer = new ElementReplacer();
 
 		this.listenTo<ViewScrollToTheSelectionEvent>(
@@ -107,6 +116,14 @@ export default class ClassicEditorUI extends EditorUI {
 
 		this._initPlaceholder();
 		this._initToolbar();
+
+		if ( view.menuBarView ) {
+			this._initMenuBar( view.menuBarView );
+		}
+
+		this._initDialogPluginIntegration();
+		this._initContextualBalloonIntegration();
+
 		this.fire<EditorUIReadyEvent>( 'ready' );
 	}
 
@@ -120,7 +137,11 @@ export default class ClassicEditorUI extends EditorUI {
 		const editingView = this.editor.editing.view;
 
 		this._elementReplacer.restore();
-		editingView.detachDomRoot( view.editable.name! );
+
+		if ( editingView.getDomRoot( view.editable.name! ) ) {
+			editingView.detachDomRoot( view.editable.name! );
+		}
+
 		view.destroy();
 	}
 
@@ -174,6 +195,65 @@ export default class ClassicEditorUI extends EditorUI {
 	}
 
 	/**
+	 * Provides an integration between the sticky toolbar and {@link module:ui/panel/balloon/contextualballoon contextual balloon plugin}.
+	 * It allows the contextual balloon to consider the height of the
+	 * {@link module:editor-classic/classiceditoruiview~ClassicEditorUIView#stickyPanel}. It prevents the balloon from overlapping
+	 * the sticky toolbar by adjusting the balloon's position using viewport offset configuration.
+	 */
+	private _initContextualBalloonIntegration(): void {
+		if ( !this.editor.plugins.has( 'ContextualBalloon' ) ) {
+			return;
+		}
+
+		const { stickyPanel } = this.view;
+		const contextualBalloon = this.editor.plugins.get( 'ContextualBalloon' );
+
+		contextualBalloon.on<ContextualBalloonGetPositionOptionsEvent>( 'getPositionOptions', evt => {
+			const position = evt.return;
+
+			if ( !position || !stickyPanel.isSticky || !stickyPanel.element ) {
+				return;
+			}
+
+			// Measure toolbar (and menu bar) height.
+			const stickyPanelHeight = new Rect( stickyPanel.element ).height;
+
+			// Handle edge case when the target element is larger than the limiter.
+			// It's an issue because the contextual balloon can overlap top table cells when the table is larger than the viewport
+			// and it's placed at the top of the editor. It's better to overlap toolbar in that situation.
+			// Check this issue: https://github.com/ckeditor/ckeditor5/issues/15744
+			const target = typeof position.target === 'function' ? position.target() : position.target;
+			const limiter = typeof position.limiter === 'function' ? position.limiter() : position.limiter;
+
+			if ( target && limiter && new Rect( target ).height >= new Rect( limiter ).height - stickyPanelHeight ) {
+				return;
+			}
+
+			// Ensure that viewport offset is present, it can be undefined according to the typing.
+			const viewportOffsetConfig = { ...position.viewportOffsetConfig };
+			const newTopViewportOffset = ( viewportOffsetConfig.top || 0 ) + stickyPanelHeight;
+
+			evt.return = {
+				...position,
+				viewportOffsetConfig: {
+					...viewportOffsetConfig,
+					top: newTopViewportOffset
+				}
+			};
+		}, { priority: 'low' } );
+
+		// Update balloon position when the toolbar becomes sticky or when ui viewportOffset changes.
+		const updateBalloonPosition = () => {
+			if ( contextualBalloon.visibleView ) {
+				contextualBalloon.updatePosition();
+			}
+		};
+
+		this.listenTo( stickyPanel, 'change:isSticky', updateBalloonPosition );
+		this.listenTo( this.editor.ui, 'change:viewportOffset', updateBalloonPosition );
+	}
+
+	/**
 	 * Provides an integration between the sticky toolbar and {@link module:utils/dom/scroll~scrollViewportToShowTarget}.
 	 * It allows the UI-agnostic engine method to consider the geometry of the
 	 * {@link module:editor-classic/classiceditoruiview~ClassicEditorUIView#stickyPanel} that pins to the
@@ -207,6 +287,39 @@ export default class ClassicEditorUI extends EditorUI {
 				this.stopListening( stickyPanel, 'change:isSticky', scrollViewportOnPanelGettingSticky );
 			}, 20 );
 		}
+	}
+
+	/**
+	 * Provides an integration between the sticky toolbar and {@link module:ui/dialog/dialog the Dialog plugin}.
+	 *
+	 * It moves the dialog down to ensure that the
+	 * {@link module:editor-classic/classiceditoruiview~ClassicEditorUIView#stickyPanel sticky panel}
+	 * used by the editor UI will not get obscured by the dialog when the dialog uses one of its automatic positions.
+	 */
+	private _initDialogPluginIntegration(): void {
+		if ( !this.editor.plugins.has( 'Dialog' ) ) {
+			return;
+		}
+
+		const stickyPanel = this.view.stickyPanel;
+		const dialogPlugin: Dialog = this.editor.plugins.get( 'Dialog' );
+
+		dialogPlugin.on( 'show', () => {
+			const dialogView = dialogPlugin.view!;
+
+			dialogView.on<DialogViewMoveToEvent>( 'moveTo', ( evt, data ) => {
+				// Engage only when the panel is sticky, and the dialog is using one of default positions.
+				if ( !stickyPanel.isSticky || dialogView.wasMoved ) {
+					return;
+				}
+
+				const stickyPanelContentRect = new Rect( stickyPanel.contentPanelElement );
+
+				if ( data[ 1 ] < stickyPanelContentRect.bottom + DialogView.defaultOffset ) {
+					data[ 1 ] = stickyPanelContentRect.bottom + DialogView.defaultOffset;
+				}
+			}, { priority: 'high' } );
+		}, { priority: 'low' } );
 	}
 }
 

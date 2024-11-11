@@ -1,23 +1,24 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-import InlineEditorUIView from '../src/inlineeditoruiview';
-import EditingView from '@ckeditor/ckeditor5-engine/src/view/view';
-import ToolbarView from '@ckeditor/ckeditor5-ui/src/toolbar/toolbarview';
-import BalloonPanelView from '@ckeditor/ckeditor5-ui/src/panel/balloon/balloonpanelview';
-import InlineEditableUIView from '@ckeditor/ckeditor5-ui/src/editableui/inline/inlineeditableuiview';
-import Locale from '@ckeditor/ckeditor5-utils/src/locale';
+import InlineEditorUIView from '../src/inlineeditoruiview.js';
+import EditingView from '@ckeditor/ckeditor5-engine/src/view/view.js';
+import ToolbarView from '@ckeditor/ckeditor5-ui/src/toolbar/toolbarview.js';
+import BalloonPanelView from '@ckeditor/ckeditor5-ui/src/panel/balloon/balloonpanelview.js';
+import InlineEditableUIView from '@ckeditor/ckeditor5-ui/src/editableui/inline/inlineeditableuiview.js';
+import Locale from '@ckeditor/ckeditor5-utils/src/locale.js';
 import createRoot from '@ckeditor/ckeditor5-engine/tests/view/_utils/createroot.js';
-import Rect from '@ckeditor/ckeditor5-utils/src/dom/rect';
-import toUnit from '@ckeditor/ckeditor5-utils/src/dom/tounit';
-import global from '@ckeditor/ckeditor5-utils/src/dom/global';
-import ResizeObserver from '@ckeditor/ckeditor5-utils/src/dom/resizeobserver';
+import Rect from '@ckeditor/ckeditor5-utils/src/dom/rect.js';
+import toUnit from '@ckeditor/ckeditor5-utils/src/dom/tounit.js';
+import global from '@ckeditor/ckeditor5-utils/src/dom/global.js';
+import ResizeObserver from '@ckeditor/ckeditor5-utils/src/dom/resizeobserver.js';
 
 const toPx = toUnit( 'px' );
 
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
+import { MenuBarView } from '@ckeditor/ckeditor5-ui';
 
 describe( 'InlineEditorUIView', () => {
 	let locale, view, editingView, editingViewRoot;
@@ -107,12 +108,78 @@ describe( 'InlineEditorUIView', () => {
 				expect( view.editable.isRendered ).to.be.false;
 			} );
 
-			it( 'is given an accessible aria label', () => {
+			it( 'creates an editing root with the default aria-label', () => {
 				view.render();
 
 				expect( editingViewRoot.getAttribute( 'aria-label' ) ).to.equal( 'Rich Text Editor. Editing area: main' );
 
 				view.destroy();
+			} );
+
+			it( 'creates an editing root with the configured aria-label (string format)', () => {
+				const editingView = new EditingView();
+				const editingViewRoot = createRoot( editingView.document );
+				const view = new InlineEditorUIView( locale, editingView, undefined, {
+					label: 'Foo'
+				} );
+				view.editable.name = editingViewRoot.rootName;
+				view.render();
+
+				expect( editingViewRoot.getAttribute( 'aria-label' ) ).to.equal( 'Foo' );
+
+				view.destroy();
+			} );
+
+			it( 'creates an editing root with the configured aria-label (object format)', () => {
+				const editingView = new EditingView();
+				const editingViewRoot = createRoot( editingView.document );
+				const view = new InlineEditorUIView( locale, editingView, undefined, {
+					label: {
+						main: 'Foo'
+					}
+				} );
+				view.editable.name = editingViewRoot.rootName;
+				view.render();
+
+				expect( editingViewRoot.getAttribute( 'aria-label' ) ).to.equal( 'Foo' );
+
+				view.destroy();
+			} );
+		} );
+
+		describe( '#menuBarView', () => {
+			it( 'is not created', () => {
+				expect( view.menuBarView ).to.be.undefined;
+			} );
+		} );
+	} );
+
+	describe( 'with menu bar', () => {
+		let viewWithMenuBar;
+		testUtils.createSinonSandbox();
+
+		beforeEach( () => {
+			viewWithMenuBar = new InlineEditorUIView( locale, editingView, undefined, { useMenuBar: true } );
+			viewWithMenuBar.editable.name = editingViewRoot.rootName;
+			viewWithMenuBar.render();
+		} );
+
+		afterEach( () => {
+			viewWithMenuBar.destroy();
+		} );
+
+		describe( '#menuBarView', () => {
+			it( 'is created', () => {
+				expect( viewWithMenuBar.menuBarView ).to.be.instanceof( MenuBarView );
+			} );
+
+			it( 'is given a locale object', () => {
+				expect( viewWithMenuBar.menuBarView.locale ).to.equal( locale );
+			} );
+
+			it( 'is put into the "panel.content" collection', () => {
+				expect( viewWithMenuBar.panel.content.get( 0 ) ).to.equal( viewWithMenuBar.menuBarView );
+				expect( viewWithMenuBar.panel.content.get( 1 ) ).to.equal( viewWithMenuBar.toolbar );
 			} );
 		} );
 	} );

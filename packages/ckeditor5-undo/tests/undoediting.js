@@ -1,13 +1,13 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-import ModelTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/modeltesteditor';
+import ModelTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/modeltesteditor.js';
 
-import UndoEditing from '../src/undoediting';
-import env from '@ckeditor/ckeditor5-utils/src/env';
-import { keyCodes } from '@ckeditor/ckeditor5-utils/src/keyboard';
+import UndoEditing from '../src/undoediting.js';
+import env from '@ckeditor/ckeditor5-utils/src/env.js';
+import { keyCodes } from '@ckeditor/ckeditor5-utils/src/keyboard.js';
 
 describe( 'UndoEditing', () => {
 	let editor, undo, model, root;
@@ -24,6 +24,30 @@ describe( 'UndoEditing', () => {
 
 	afterEach( () => {
 		undo.destroy();
+	} );
+
+	it( 'should have a name', () => {
+		expect( UndoEditing.pluginName ).to.equal( 'UndoEditing' );
+	} );
+
+	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+		expect( UndoEditing.isOfficialPlugin ).to.be.true;
+	} );
+
+	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+		expect( UndoEditing.isPremiumPlugin ).to.be.false;
+	} );
+
+	it( 'should add keystroke accessibility info', () => {
+		expect( editor.accessibility.keystrokeInfos.get( 'contentEditing' ).groups.get( 'common' ).keystrokes ).to.deep.include( {
+			label: 'Undo',
+			keystroke: 'CTRL+Z'
+		} );
+
+		expect( editor.accessibility.keystrokeInfos.get( 'contentEditing' ).groups.get( 'common' ).keystrokes ).to.deep.include( {
+			label: 'Redo',
+			keystroke: [ [ 'CTRL+Y' ], [ 'CTRL+SHIFT+Z' ] ]
+		} );
 	} );
 
 	it( 'should register undo command and redo command', () => {

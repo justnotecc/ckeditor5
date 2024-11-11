@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -84,6 +84,14 @@ function newLinePadding(
 	if ( smallPaddingElements.includes( element.name ) || smallPaddingElements.includes( previous.name ) ) {
 		// Add small padding between selected container elements.
 		return '\n';
+	}
+
+	// Do not add padding around the elements that won't be rendered.
+	if (
+		element.is( 'element' ) && element.getCustomProperty( 'dataPipeline:transparentRendering' ) ||
+		previous.is( 'element' ) && previous.getCustomProperty( 'dataPipeline:transparentRendering' )
+	) {
+		return '';
 	}
 
 	// Add empty lines between container elements.

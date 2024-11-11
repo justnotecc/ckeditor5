@@ -1,31 +1,31 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 /* global document, window, btoa */
 
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
-import BoldEditing from '@ckeditor/ckeditor5-basic-styles/src/bold/boldediting';
-import HeadingEditing from '@ckeditor/ckeditor5-heading/src/headingediting';
-import LinkEditing from '@ckeditor/ckeditor5-link/src/linkediting';
-import LinkImageEditing from '@ckeditor/ckeditor5-link/src/linkimageediting';
-import PictureEditing from '@ckeditor/ckeditor5-image/src/pictureediting';
-import ImageUploadEditing from '@ckeditor/ckeditor5-image/src/imageupload/imageuploadediting';
-import ImageUploadProgress from '@ckeditor/ckeditor5-image/src/imageupload/imageuploadprogress';
-import ImageBlockEditing from '@ckeditor/ckeditor5-image/src/image/imageblockediting';
-import ImageInlineEditing from '@ckeditor/ckeditor5-image/src/image/imageinlineediting';
-import ImageCaptionEditing from '@ckeditor/ckeditor5-image/src/imagecaption/imagecaptionediting';
-import CloudServices from '@ckeditor/ckeditor5-cloud-services/src/cloudservices';
-import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor';
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
-import CloudServicesCoreMock from './_utils/cloudservicescoremock';
-import { getData as getModelData, setData as setModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
-import TokenMock from '@ckeditor/ckeditor5-cloud-services/tests/_utils/tokenmock';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
+import BoldEditing from '@ckeditor/ckeditor5-basic-styles/src/bold/boldediting.js';
+import HeadingEditing from '@ckeditor/ckeditor5-heading/src/headingediting.js';
+import LinkEditing from '@ckeditor/ckeditor5-link/src/linkediting.js';
+import LinkImageEditing from '@ckeditor/ckeditor5-link/src/linkimageediting.js';
+import PictureEditing from '@ckeditor/ckeditor5-image/src/pictureediting.js';
+import ImageUploadEditing from '@ckeditor/ckeditor5-image/src/imageupload/imageuploadediting.js';
+import ImageUploadProgress from '@ckeditor/ckeditor5-image/src/imageupload/imageuploadprogress.js';
+import ImageBlockEditing from '@ckeditor/ckeditor5-image/src/image/imageblockediting.js';
+import ImageInlineEditing from '@ckeditor/ckeditor5-image/src/image/imageinlineediting.js';
+import ImageCaptionEditing from '@ckeditor/ckeditor5-image/src/imagecaption/imagecaptionediting.js';
+import CloudServices from '@ckeditor/ckeditor5-cloud-services/src/cloudservices.js';
+import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor.js';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
+import CloudServicesCoreMock from './_utils/cloudservicescoremock.js';
+import { getData as getModelData, setData as setModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model.js';
+import TokenMock from '@ckeditor/ckeditor5-cloud-services/tests/_utils/tokenmock.js';
 
-import CKBoxEditing from '../src/ckboxediting';
-import CKBoxCommand from '../src/ckboxcommand';
-import { blurHashToDataUrl } from '../src/utils';
+import CKBoxEditing from '../src/ckboxediting.js';
+import CKBoxCommand from '../src/ckboxcommand.js';
+import { blurHashToDataUrl } from '../src/utils.js';
 
 describe( 'CKBoxCommand', () => {
 	let editor, model, command, originalCKBox;
@@ -215,7 +215,28 @@ describe( 'CKBoxCommand', () => {
 						language: 'es',
 						serviceOrigin: 'https://service.ckeditor.com',
 						tokenUrl: 'token-url',
-						unsupportedOption: 'bar'
+						forceDemoLabel: true,
+						unsupportedOption: 'bar',
+						choosableFileExtensions: [ 'jpg' ],
+						dialog: {
+							width: 500,
+							height: 500
+						},
+						categories: {
+							icons: {
+								key: 'svg'
+							}
+						},
+						view: {
+							openLastView: true,
+							startupFolderId: 'id',
+							startupCategoryId: 'id2',
+							hideMaximizeButton: false
+						},
+						upload: {
+							componentsHideTimeout: 3000,
+							dialogMinimizeTimeout: 5000
+						}
 					}
 				} );
 
@@ -232,6 +253,17 @@ describe( 'CKBoxCommand', () => {
 				expect( options ).to.have.property( 'language', 'es' );
 				expect( options ).to.have.property( 'serviceOrigin', 'https://service.ckeditor.com' );
 				expect( options ).to.have.property( 'tokenUrl', 'token-url' );
+				expect( options ).to.have.property( 'forceDemoLabel', true );
+				expect( options.dialog ).to.have.property( 'width', 500 );
+				expect( options.dialog ).to.have.property( 'height', 500 );
+				expect( options.categories.icons ).to.have.property( 'key', 'svg' );
+				expect( options.view ).to.have.property( 'openLastView', true );
+				expect( options.view ).to.have.property( 'startupFolderId', 'id' );
+				expect( options.view ).to.have.property( 'startupCategoryId', 'id2' );
+				expect( options.view ).to.have.property( 'hideMaximizeButton', false );
+				expect( options.upload ).to.have.property( 'componentsHideTimeout', 3000 );
+				expect( options.upload ).to.have.property( 'dialogMinimizeTimeout', 5000 );
+				expect( options ).to.have.deep.property( 'choosableFileExtensions', [ 'jpg' ] );
 				expect( options ).to.not.have.property( 'defaultUploadCategories' );
 				expect( options ).to.not.have.property( 'ignoreDataId' );
 				expect( options ).to.not.have.property( 'unsupportedOption' );

@@ -1,16 +1,16 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 /* globals console */
 
-import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor';
-import MediaEmbedEditing from '../src/mediaembedediting';
-import { setData as setModelData, getData as getModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
-import { getData as getViewData } from '@ckeditor/ckeditor5-engine/src/dev-utils/view';
-import normalizeHtml from '@ckeditor/ckeditor5-utils/tests/_utils/normalizehtml';
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
+import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor.js';
+import MediaEmbedEditing from '../src/mediaembedediting.js';
+import { setData as setModelData, getData as getModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model.js';
+import { getData as getViewData } from '@ckeditor/ckeditor5-engine/src/dev-utils/view.js';
+import normalizeHtml from '@ckeditor/ckeditor5-utils/tests/_utils/normalizehtml.js';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
 import { escapeRegExp } from 'lodash-es';
 
 describe( 'MediaEmbedEditing', () => {
@@ -63,6 +63,14 @@ describe( 'MediaEmbedEditing', () => {
 
 	it( 'should be named', () => {
 		expect( MediaEmbedEditing.pluginName ).to.equal( 'MediaEmbedEditing' );
+	} );
+
+	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+		expect( MediaEmbedEditing.isOfficialPlugin ).to.be.true;
+	} );
+
+	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+		expect( MediaEmbedEditing.isPremiumPlugin ).to.be.false;
 	} );
 
 	describe( 'constructor()', () => {
@@ -147,7 +155,9 @@ describe( 'MediaEmbedEditing', () => {
 							testMediaUpcast( [
 								'https://www.dailymotion.com/video/foo',
 								'www.dailymotion.com/video/foo',
-								'dailymotion.com/video/foo'
+								'dailymotion.com/video/foo',
+								'https://dai.ly/foo',
+								'dai.ly/foo'
 							],
 							'<div style="position: relative; padding-bottom: 100%; height: 0; ">' +
 								'<iframe src="https://www.dailymotion.com/embed/video/foo" ' +
@@ -203,6 +213,10 @@ describe( 'MediaEmbedEditing', () => {
 
 						it( 'upcasts the URL (youtube)', () => {
 							testMediaUpcast( [
+								'https://www.youtube.com/shorts/foo',
+								'www.youtube.com/shorts/foo',
+								'youtube.com/shorts/foo',
+
 								'https://www.youtube.com/watch?v=foo',
 								'www.youtube.com/watch?v=foo',
 								'youtube.com/watch?v=foo',
@@ -299,7 +313,11 @@ describe( 'MediaEmbedEditing', () => {
 							testMediaUpcast( [
 								'https://www.instagram.com/p/foo',
 								'www.instagram.com/p/foo',
-								'instagram.com/p/foo'
+								'instagram.com/p/foo',
+
+								'https://www.instagram.com/reel/Foo/',
+								'www.instagram.com/reel/Foo/',
+								'instagram.com/reel/Foo/'
 							] );
 						} );
 
@@ -307,7 +325,11 @@ describe( 'MediaEmbedEditing', () => {
 							testMediaUpcast( [
 								'https://www.twitter.com/foo/bar',
 								'www.twitter.com/foo/bar',
-								'twitter.com/foo/bar'
+								'twitter.com/foo/bar',
+
+								'https://www.x.com/foo/bar',
+								'www.x.com/foo/bar',
+								'x.com/foo/bar'
 							] );
 						} );
 

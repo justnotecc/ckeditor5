@@ -1,11 +1,11 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor';
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
-import DataSchema from '../src/dataschema';
+import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor.js';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
+import DataSchema from '../src/dataschema.js';
 
 describe( 'DataSchema', () => {
 	let editor, dataSchema;
@@ -26,6 +26,14 @@ describe( 'DataSchema', () => {
 
 	afterEach( () => {
 		return editor.destroy();
+	} );
+
+	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+		expect( DataSchema.isOfficialPlugin ).to.be.true;
+	} );
+
+	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+		expect( DataSchema.isPremiumPlugin ).to.be.false;
 	} );
 
 	describe( 'registerInlineElement()', () => {

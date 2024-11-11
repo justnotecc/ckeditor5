@@ -1,11 +1,11 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor';
-import ImageTextAlternativeEditing from '../../src/imagetextalternative/imagetextalternativeediting';
-import ImageTextAlternativeCommand from '../../src/imagetextalternative/imagetextalternativecommand';
+import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor.js';
+import ImageTextAlternativeEditing from '../../src/imagetextalternative/imagetextalternativeediting.js';
+import ImageTextAlternativeCommand from '../../src/imagetextalternative/imagetextalternativecommand.js';
 
 describe( 'ImageTextAlternativeEditing', () => {
 	let editor;
@@ -22,6 +22,14 @@ describe( 'ImageTextAlternativeEditing', () => {
 
 	it( 'should have pluginName', () => {
 		expect( ImageTextAlternativeEditing.pluginName ).to.equal( 'ImageTextAlternativeEditing' );
+	} );
+
+	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+		expect( ImageTextAlternativeEditing.isOfficialPlugin ).to.be.true;
+	} );
+
+	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+		expect( ImageTextAlternativeEditing.isPremiumPlugin ).to.be.false;
 	} );
 
 	it( 'should register ImageAlternativeTextCommand', () => {

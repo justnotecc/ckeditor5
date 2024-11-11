@@ -1,13 +1,13 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 /* globals console:false, document, window */
 
-import BalloonEditor from '../../src/ballooneditor';
-import ArticlePluginSet from '@ckeditor/ckeditor5-core/tests/_utils/articlepluginset';
-import { createObserver } from '@ckeditor/ckeditor5-utils/tests/_utils/utils';
+import BalloonEditor from '../../src/ballooneditor.js';
+import ArticlePluginSet from '@ckeditor/ckeditor5-core/tests/_utils/articlepluginset.js';
+import { createObserver } from '@ckeditor/ckeditor5-utils/tests/_utils/utils.js';
 
 window.editors = {};
 window.editables = [];
@@ -23,7 +23,7 @@ function initEditors() {
 				plugins: [ ArticlePluginSet ],
 				toolbar: [ 'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote' ],
 				image: {
-					toolbar: [ 'imageStyle:inline', 'imageStyle:block', 'imageStyle:side', '|', 'imageTextAlternative' ]
+					toolbar: [ 'imageStyle:inline', 'imageStyle:block', 'imageStyle:wrapText', '|', 'imageTextAlternative' ]
 				}
 			} )
 			.then( editor => {
@@ -32,6 +32,9 @@ function initEditors() {
 
 				window.editors[ selector ] = editor;
 				window.editables.push( editor.editing.view.document.getRoot() );
+
+				const editorNumber = selector.split( '-' )[ 1 ];
+				document.querySelector( `#menubar-container-${ editorNumber }` ).appendChild( editor.ui.view.menuBarView.element );
 
 				const observer = createObserver();
 
@@ -51,7 +54,11 @@ function initEditors() {
 
 function destroyEditors() {
 	for ( const selector in window.editors ) {
-		window.editors[ selector ].destroy().then( () => {
+		const editor = window.editors[ selector ];
+
+		editor.destroy().then( () => {
+			editor.ui.view.menuBarView.element.remove();
+
 			console.log( `${ selector } was destroyed.` );
 		} );
 	}

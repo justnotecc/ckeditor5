@@ -1,18 +1,12 @@
-# Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+# Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
 #
-#                                     !!! IMPORTANT !!!
+# Want to contribute to this file? Submit your changes via a GitHub Pull Request.
 #
-#         Before you edit this file, please keep in mind that contributing to the project
-#                translations is possible ONLY via the Transifex online service.
-#
-#         To submit your translations, visit https://www.transifex.com/ckeditor/ckeditor5.
-#
-#                   To learn more, check out the official contributor's guide:
-#     https://ckeditor.com/docs/ckeditor5/latest/framework/guides/contributing/contributing.html
+# Check out the official contributor's guide:
+# https://ckeditor.com/docs/ckeditor5/latest/framework/guides/contributing/contributing.html
 #
 msgid ""
 msgstr ""
-"Language-Team: Bengali (https://app.transifex.com/ckeditor/teams/11143/bn/)\n"
 "Language: bn\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -117,6 +111,10 @@ msgctxt "The label of the input allowing to change the start index of a numbered
 msgid "Start at"
 msgstr "শুরু হবে"
 
+msgctxt "The error message displayed when the numbered list start index input value is not a valid number."
+msgid "Invalid start index value."
+msgstr "ইনভ্যালিড স্টার্ট ইনডেক্সের মান"
+
 msgctxt "The error message displayed when the numbered list start index input value is invalid."
 msgid "Start index must be greater than 0."
 msgstr "স্টার্ট ইনডেক্স অবশ্যই 0-এর বেশি হতে হবে।"
@@ -124,3 +122,23 @@ msgstr "স্টার্ট ইনডেক্স অবশ্যই 0-এর 
 msgctxt "The label of the switch button that reverses the order of the numbered list."
 msgid "Reversed order"
 msgstr "উল্টো ক্রম"
+
+msgctxt "Accessibility help dialog header text displayed before the list of keystrokes that can be used in a list."
+msgid "Keystrokes that can be used in a list"
+msgstr "যে কীস্ট্রোকগুলি কোনো তালিকায় ব্যবহার করা যেতে পারে"
+
+msgctxt "Keystroke description for assistive technologies: keystroke for increasing list item indentation."
+msgid "Increase list item indent"
+msgstr "তালিকার আইটেমের ইন্ডেন্ট বাড়ান"
+
+msgctxt "Keystroke description for assistive technologies: keystroke for decreasing list item indentation."
+msgid "Decrease list item indent"
+msgstr "তালিকার আইটেমের ইন্ডেন্ট কমান"
+
+msgctxt "Assistive technologies label for entering the to-do list."
+msgid "Entering a to-do list"
+msgstr "একটি টু-ডু তালিকা প্রবেশ করা হচ্ছে"
+
+msgctxt "Assistive technologies label for leaving the to-do list."
+msgid "Leaving a to-do list"
+msgstr "একটি টু-ডু তালিকা ছেড়ে যাচ্ছে"

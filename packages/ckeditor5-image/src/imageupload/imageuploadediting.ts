@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -7,7 +7,7 @@
  * @module image/imageupload/imageuploadediting
  */
 
-import { Plugin, type Editor } from 'ckeditor5/src/core';
+import { Plugin, type Editor } from 'ckeditor5/src/core.js';
 
 import {
 	UpcastWriter,
@@ -17,17 +17,17 @@ import {
 	type DataTransfer,
 	type ViewElement,
 	type NodeAttributes
-} from 'ckeditor5/src/engine';
+} from 'ckeditor5/src/engine.js';
 
-import { Notification } from 'ckeditor5/src/ui';
-import { ClipboardPipeline, type ViewDocumentClipboardInputEvent } from 'ckeditor5/src/clipboard';
-import { FileRepository, type UploadResponse, type FileLoader } from 'ckeditor5/src/upload';
-import { env } from 'ckeditor5/src/utils';
+import { Notification } from 'ckeditor5/src/ui.js';
+import { ClipboardPipeline, type ViewDocumentClipboardInputEvent } from 'ckeditor5/src/clipboard.js';
+import { FileRepository, type UploadResponse, type FileLoader } from 'ckeditor5/src/upload.js';
+import { env } from 'ckeditor5/src/utils.js';
 
-import ImageUtils from '../imageutils';
-import UploadImageCommand from './uploadimagecommand';
-import { fetchLocalImage, isLocalImage } from '../../src/imageupload/utils';
-import { createImageTypeRegExp } from './utils';
+import ImageUtils from '../imageutils.js';
+import UploadImageCommand from './uploadimagecommand.js';
+import { fetchLocalImage, isLocalImage } from '../../src/imageupload/utils.js';
+import { createImageTypeRegExp } from './utils.js';
 
 /**
  * The editing part of the image upload feature. It registers the `'uploadImage'` command
@@ -46,6 +46,13 @@ export default class ImageUploadEditing extends Plugin {
 
 	public static get pluginName() {
 		return 'ImageUploadEditing' as const;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public static override get isOfficialPlugin(): true {
+		return true;
 	}
 
 	/**
@@ -135,6 +142,18 @@ export default class ImageUploadEditing extends Plugin {
 
 				editor.execute( 'uploadImage', { file: images } );
 			} );
+
+			const uploadImageCommand = editor.commands.get( 'uploadImage' )!;
+
+			if ( !uploadImageCommand.isAccessAllowed ) {
+				const notification: Notification = editor.plugins.get( 'Notification' );
+				const t = editor.locale.t;
+
+				// eslint-disable-next-line max-len
+				notification.showWarning( t( 'You have no image upload permissions.' ), {
+					namespace: 'image'
+				} );
+			}
 		} );
 
 		// Handle HTML pasted with images with base64 or blob sources.
@@ -320,6 +339,10 @@ export default class ImageUploadEditing extends Plugin {
 					} );
 				}
 
+				if ( editor.ui ) {
+					editor.ui.ariaLiveAnnouncer.announce( t( 'Uploading image' ) );
+				}
+
 				model.enqueueChange( { isUndoable: false }, writer => {
 					writer.setAttribute( 'uploadStatus', 'uploading', imageElement );
 				} );
@@ -332,12 +355,20 @@ export default class ImageUploadEditing extends Plugin {
 
 					writer.setAttribute( 'uploadStatus', 'complete', imageElement );
 
+					if ( editor.ui ) {
+						editor.ui.ariaLiveAnnouncer.announce( t( 'Image upload complete' ) );
+					}
+
 					this.fire<ImageUploadCompleteEvent>( 'uploadComplete', { data, imageElement } );
 				} );
 
 				clean();
 			} )
 			.catch( error => {
+				if ( editor.ui ) {
+					editor.ui.ariaLiveAnnouncer.announce( t( 'Error during image upload' ) );
+				}
+
 				// If status is not 'error' nor 'aborted' - throw error because it means that something else went wrong,
 				// it might be generic error and it would be real pain to find what is going on.
 				if ( loader.status !== 'error' && loader.status !== 'aborted' ) {

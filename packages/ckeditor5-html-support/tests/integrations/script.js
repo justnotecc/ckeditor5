@@ -1,13 +1,14 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor';
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
-import GeneralHtmlSupport from '../../src/generalhtmlsupport';
-import { getModelDataWithAttributes } from '../_utils/utils';
-import { getData as getModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
+import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor.js';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
+import GeneralHtmlSupport from '../../src/generalhtmlsupport.js';
+import { getModelDataWithAttributes } from '../_utils/utils.js';
+import { getData as getModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model.js';
+import ScriptElementSupport from '../../src/integrations/script.js';
 
 /* global console, document */
 
@@ -37,6 +38,14 @@ describe( 'ScriptElementSupport', () => {
 		editorElement.remove();
 
 		return editor.destroy();
+	} );
+
+	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+		expect( ScriptElementSupport.isOfficialPlugin ).to.be.true;
+	} );
+
+	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+		expect( ScriptElementSupport.isPremiumPlugin ).to.be.false;
 	} );
 
 	it( 'should be named', () => {

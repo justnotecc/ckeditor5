@@ -1,23 +1,24 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 /* global document */
 
-import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor';
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
-import Image from '../../src/image';
-import DropdownView from '@ckeditor/ckeditor5-ui/src/dropdown/dropdownview';
-import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
-import View from '@ckeditor/ckeditor5-ui/src/view';
-import ImageResizeButtons from '../../src/imageresize/imageresizebuttons';
-import ImageStyle from '../../src/imagestyle';
-import Undo from '@ckeditor/ckeditor5-undo/src/undo';
-import Table from '@ckeditor/ckeditor5-table/src/table';
+import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor.js';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
+import Image from '../../src/image.js';
+import DropdownView from '@ckeditor/ckeditor5-ui/src/dropdown/dropdownview.js';
+import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview.js';
+import View from '@ckeditor/ckeditor5-ui/src/view.js';
+import ImageResizeButtons from '../../src/imageresize/imageresizebuttons.js';
+import ImageCustomResizeUI from '../../src/imageresize/imagecustomresizeui.js';
+import ImageStyle from '../../src/imagestyle.js';
+import Undo from '@ckeditor/ckeditor5-undo/src/undo.js';
+import Table from '@ckeditor/ckeditor5-table/src/table.js';
 
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
-import { expectToThrowCKEditorError } from '@ckeditor/ckeditor5-utils/tests/_utils/utils';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
+import { expectToThrowCKEditorError } from '@ckeditor/ckeditor5-utils/tests/_utils/utils.js';
 
 import iconSmall from '@ckeditor/ckeditor5-core/theme/icons/object-size-small.svg';
 import iconMedium from '@ckeditor/ckeditor5-core/theme/icons/object-size-medium.svg';
@@ -30,6 +31,10 @@ describe( 'ImageResizeButtons', () => {
 	const resizeOptions = [ {
 		name: 'resizeImage:original',
 		value: null
+	},
+	{
+		name: 'resizeImage:custom',
+		value: 'custom'
 	},
 	{
 		name: 'resizeImage:25',
@@ -52,7 +57,7 @@ describe( 'ImageResizeButtons', () => {
 
 		editor = await ClassicTestEditor
 			.create( editorElement, {
-				plugins: [ Image, ImageStyle, Paragraph, Undo, Table, ImageResizeButtons ],
+				plugins: [ Image, ImageStyle, Paragraph, Undo, Table, ImageResizeButtons, ImageCustomResizeUI ],
 				image: {
 					resizeOptions
 				}
@@ -75,6 +80,14 @@ describe( 'ImageResizeButtons', () => {
 	describe( 'plugin', () => {
 		it( 'should be named', () => {
 			expect( ImageResizeButtons.pluginName ).to.equal( 'ImageResizeButtons' );
+		} );
+
+		it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+			expect( ImageResizeButtons.isOfficialPlugin ).to.be.true;
+		} );
+
+		it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+			expect( ImageResizeButtons.isPremiumPlugin ).to.be.false;
 		} );
 	} );
 
@@ -122,7 +135,7 @@ describe( 'ImageResizeButtons', () => {
 			expect( dropdownCreator.callback ).to.equal( dropdownAliasCreator.callback );
 		} );
 
-		it( 'should have 4 resize options in the `resizeImage` dropdown', () => {
+		it( 'should have 5 resize options in the `resizeImage` dropdown', () => {
 			const dropdownView = editor.ui.componentFactory.create( 'resizeImage' );
 
 			// Make sure that list view is not created before first dropdown open.
@@ -131,9 +144,10 @@ describe( 'ImageResizeButtons', () => {
 			// Trigger list view creation (lazy init).
 			dropdownView.isOpen = true;
 
-			expect( dropdownView.listView.items.length ).to.equal( 4 );
+			expect( dropdownView.listView.items.length ).to.equal( 5 );
 			expect( dropdownView.listView.items.first.element.textContent ).to.equal( 'Original' );
-			expect( dropdownView.listView.items._items[ 1 ].element.textContent ).to.equal( '25%' );
+			expect( dropdownView.listView.items._items[ 1 ].element.textContent ).to.equal( 'Custom' );
+			expect( dropdownView.listView.items._items[ 2 ].element.textContent ).to.equal( '25%' );
 			expect( dropdownView.listView.items.last.element.textContent ).to.equal( '75%' );
 		} );
 
@@ -187,7 +201,7 @@ describe( 'ImageResizeButtons', () => {
 			// Trigger list view creation (lazy init).
 			dropdownView.isOpen = true;
 
-			const resizeBy50Percent = dropdownView.listView.items._items[ 1 ].children._items[ 0 ];
+			const resizeBy50Percent = dropdownView.listView.items._items[ 2 ].children._items[ 0 ];
 
 			command.isEnabled = true;
 
@@ -206,13 +220,18 @@ describe( 'ImageResizeButtons', () => {
 		beforeEach( async () => {
 			editor = await ClassicTestEditor
 				.create( editorElement, {
-					plugins: [ Image, ImageStyle, Paragraph, Undo, Table, ImageResizeButtons ],
+					plugins: [ Image, ImageStyle, Paragraph, Undo, Table, ImageResizeButtons, ImageCustomResizeUI ],
 					image: {
 						resizeUnit: '%',
 						resizeOptions: [ {
 							name: 'resizeImage:original',
 							value: null,
 							icon: 'original'
+						},
+						{
+							name: 'resizeImage:custom',
+							value: 'custom',
+							icon: 'custom'
 						},
 						{
 							name: 'resizeImage:25',
@@ -229,7 +248,7 @@ describe( 'ImageResizeButtons', () => {
 							value: '75',
 							icon: 'large'
 						} ],
-						toolbar: [ 'resizeImage:original', 'resizeImage:25', 'resizeImage:50', 'resizeImage:75' ]
+						toolbar: [ 'resizeImage:original', 'resizeImage:custom', 'resizeImage:25', 'resizeImage:50', 'resizeImage:75' ]
 					}
 				} );
 
@@ -241,7 +260,7 @@ describe( 'ImageResizeButtons', () => {
 				editorElement.remove();
 			}
 
-			if ( editor ) {
+			if ( editor && editor.state !== 'destroyed' ) {
 				await editor.destroy();
 			}
 		} );
@@ -285,7 +304,7 @@ describe( 'ImageResizeButtons', () => {
 			expect( buttonView.label ).to.equal( 'Resize image: 30%' );
 			expect( buttonView.labelView ).to.be.instanceOf( View );
 
-			editor.destroy();
+			await editor.destroy();
 		} );
 
 		it( 'should be created with invisible "Resize image to 50%" label when is not provided', async () => {
@@ -296,7 +315,15 @@ describe( 'ImageResizeButtons', () => {
 			expect( buttonView.label ).to.equal( 'Resize image to 50%' );
 			expect( buttonView.labelView ).to.be.instanceOf( View );
 
-			editor.destroy();
+			await editor.destroy();
+		} );
+
+		it( 'should be created with a proper tooltip in custom option', () => {
+			const buttonViewCustom = editor.ui.componentFactory.create( 'resizeImage:custom' );
+
+			buttonViewCustom.render();
+
+			expect( buttonViewCustom.tooltip ).to.equal( 'Custom image size' );
 		} );
 
 		it( 'should be created with a proper tooltip, depends on the set value', () => {
@@ -321,6 +348,20 @@ describe( 'ImageResizeButtons', () => {
 
 			sinon.assert.calledOnce( commandSpy );
 			expect( command.value.width ).to.equal( '50%' );
+		} );
+
+		it( 'should open custom size balloon on click custom item', () => {
+			const customResizeUI = editor.plugins.get( 'ImageCustomResizeUI' );
+			const buttonView = editor.ui.componentFactory.create( 'resizeImage:custom' );
+			const command = editor.commands.get( 'resizeImage' );
+			const commandSpy = sinon.spy( command, 'execute' );
+			const showFormSpy = sinon.stub( customResizeUI, '_showForm' );
+
+			command.isEnabled = true;
+			buttonView.fire( 'execute' );
+
+			expect( commandSpy ).not.to.be.called;
+			expect( showFormSpy ).to.be.called;
 		} );
 
 		it( 'should have set a proper icon', () => {
@@ -353,7 +394,7 @@ describe( 'ImageResizeButtons', () => {
 				editor.ui.componentFactory.create( 'resizeImage:noicon' );
 			}, 'imageresizebuttons-missing-icon', editor );
 
-			editor.destroy();
+			await editor.destroy();
 		} );
 	} );
 } );

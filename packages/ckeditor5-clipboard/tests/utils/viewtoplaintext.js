@@ -1,11 +1,11 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-import viewToPlainText from '../../src/utils/viewtoplaintext';
+import viewToPlainText from '../../src/utils/viewtoplaintext.js';
 
-import { parse as parseView } from '@ckeditor/ckeditor5-engine/src/dev-utils/view';
+import { parse as parseView } from '@ckeditor/ckeditor5-engine/src/dev-utils/view.js';
 
 describe( 'viewToPlainText()', () => {
 	function testViewToPlainText( viewString, expectedText ) {
@@ -32,6 +32,18 @@ describe( 'viewToPlainText()', () => {
 
 			'Header\n\nFoo\n\nBar\n\nAbc\n\nXyz'
 		);
+	} );
+
+	it( 'should not put empty line before or after the element with `dataPipeline:transparentRendering` property', () => {
+		const viewString = 'Abc <container:h1>Header</container:h1> xyz';
+		const expectedText = 'Abc Header xyz';
+
+		const view = parseView( viewString );
+		view.getChild( 1 )._setCustomProperty( 'dataPipeline:transparentRendering', true );
+
+		const text = viewToPlainText( view );
+
+		expect( text ).to.equal( expectedText );
 	} );
 
 	it( 'should turn a soft break into a single empty line', () => {

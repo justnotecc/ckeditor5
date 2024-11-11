@@ -16,7 +16,7 @@ Use the block quote toolbar button {@icon @ckeditor/ckeditor5-core/theme/icons/q
 {@snippet features/block-quote}
 
 <info-box info>
-	This demo only presents a limited set of features. Visit the {@link examples/builds/full-featured-editor feature-rich editor example} to see more in action.
+	This demo presents a limited set of features. Visit the {@link examples/builds/full-featured-editor feature-rich editor example} to see more in action.
 </info-box>
 
 ## Nested block quotes
@@ -34,19 +34,15 @@ Support for nested block quotes is provided as backward compatibility for loadin
 ## Installation
 
 <info-box info>
-	This feature is enabled by default in all {@link installation/getting-started/predefined-builds predefined builds}. The installation instructions are for developers interested in building their own, custom editor.
+	⚠️ **New import paths**
+
+	Starting with {@link updating/update-to-42 version 42.0.0}, we changed the format of import paths. This guide uses the new, shorter format. Refer to the {@link getting-started/legacy-getting-started/legacy-imports Packages in the legacy setup} guide if you use an older version of CKEditor&nbsp;5.
 </info-box>
 
-To add this feature to your rich-text editor, install the [`@ckeditor/ckeditor5-block-quote`](https://www.npmjs.com/package/@ckeditor/ckeditor5-block-quote) package:
-
-```plaintext
-npm install --save @ckeditor/ckeditor5-block-quote
-```
-
-And add it to your plugin list configuration:
+After {@link getting-started/quick-start installing the editor}, add the feature to your plugin list and toolbar configuration:
 
 ```js
-import { BlockQuote } from '@ckeditor/ckeditor5-block-quote';
+import { ClassicEditor, BlockQuote } from 'ckeditor5';
 
 ClassicEditor
 	.create( document.querySelector( '#editor' ), {
@@ -56,10 +52,6 @@ ClassicEditor
 	.then( /* ... */ )
 	.catch( /* ... */ );
 ```
-
-<info-box info>
-	Read more about {@link installation/plugins/installing-plugins installing plugins}.
-</info-box>
 
 ## Configuration
 
@@ -111,7 +103,7 @@ The {@link module:block-quote/blockquote~BlockQuote} plugin registers:
 * the `'blockQuote'` UI button component implemented by the {@link module:block-quote/blockquoteui~BlockQuoteUI block quote UI feature},
 * the `'blockQuote'` command implemented by the {@link module:block-quote/blockquoteediting~BlockQuoteEditing block quote editing feature}.
 
-The command can be executed using the {@link module:core/editor/editor~Editor#execute `editor.execute()`} method:
+You can execute the command using the {@link module:core/editor/editor~Editor#execute `editor.execute()`} method:
 
 ```js
 // Applies block quote to the selected content.

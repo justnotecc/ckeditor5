@@ -1,14 +1,14 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-import FontFamilyEditing from './../../src/fontfamily/fontfamilyediting';
+import FontFamilyEditing from './../../src/fontfamily/fontfamilyediting.js';
 
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
 
-import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor';
-import { getData as getModelData, setData as setModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
+import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor.js';
+import { getData as getModelData, setData as setModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model.js';
 
 describe( 'FontFamilyEditing', () => {
 	let editor, doc;
@@ -25,12 +25,20 @@ describe( 'FontFamilyEditing', () => {
 			} );
 	} );
 
-	afterEach( () => {
-		editor.destroy();
+	afterEach( async () => {
+		await editor.destroy();
 	} );
 
 	it( 'should have pluginName', () => {
 		expect( FontFamilyEditing.pluginName ).to.equal( 'FontFamilyEditing' );
+	} );
+
+	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+		expect( FontFamilyEditing.isOfficialPlugin ).to.be.true;
+	} );
+
+	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+		expect( FontFamilyEditing.isPremiumPlugin ).to.be.false;
 	} );
 
 	it( 'should set proper schema rules', () => {

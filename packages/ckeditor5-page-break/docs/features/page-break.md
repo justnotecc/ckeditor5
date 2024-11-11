@@ -15,25 +15,21 @@ Use the insert page break toolbar button {@icon @ckeditor/ckeditor5-page-break/t
 {@snippet features/page-break}
 
 <info-box info>
-	This demo only presents a limited set of features. Visit the {@link examples/builds/full-featured-editor feature-rich editor example} to see more in action.
+	This demo presents a limited set of features. Visit the {@link examples/builds/full-featured-editor feature-rich editor example} to see more in action.
 </info-box>
 
 ## Installation
 
 <info-box info>
-	The Page break feature is enabled by default in the {@link installation/getting-started/predefined-builds#superbuild superbuild} only.
+	⚠️ **New import paths**
+
+	Starting with {@link updating/update-to-42 version 42.0.0}, we changed the format of import paths. This guide uses the new, shorter format. Refer to the {@link getting-started/legacy-getting-started/legacy-imports Packages in the legacy setup} guide if you use an older version of CKEditor&nbsp;5.
 </info-box>
 
-To add this feature to your rich-text editor, install the [`@ckeditor/ckeditor5-page-break`](https://www.npmjs.com/package/@ckeditor/ckeditor5-page-break) package:
-
-```plaintext
-npm install --save @ckeditor/ckeditor5-page-break
-```
-
-And add it to your plugin list configuration:
+After {@link getting-started/quick-start installing the editor}, add the feature to your plugin list and toolbar configuration:
 
 ```js
-import { PageBreak } from '@ckeditor/ckeditor5-page-break';
+import { ClassicEditor, PageBreak } from 'ckeditor5';
 
 ClassicEditor
 	.create( document.querySelector( '#editor' ), {
@@ -43,10 +39,6 @@ ClassicEditor
 	.then( /* ... */ )
 	.catch( /* ... */ );
 ```
-
-<info-box info>
-	Read more about {@link installation/plugins/installing-plugins installing plugins}.
-</info-box>
 
 ## Related features
 
@@ -63,7 +55,7 @@ The {@link module:page-break/pagebreak~PageBreak} plugin registers:
 * the UI button component (`'pageBreak'`),
 * the `'pageBreak'` command implemented by {@link module:page-break/pagebreakcommand~PageBreakCommand}.
 
-The command can be executed using the {@link module:core/editor/editor~Editor#execute `editor.execute()`} method:
+You can execute the command using the {@link module:core/editor/editor~Editor#execute `editor.execute()`} method:
 
 ```js
 // Inserts a page break into the selected content.

@@ -1,23 +1,23 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
-import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor';
-import ModelTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/modeltesteditor';
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
-import { getData as getModelData, setData as setModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
-import { getData as getViewData } from '@ckeditor/ckeditor5-engine/src/dev-utils/view';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
+import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor.js';
+import ModelTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/modeltesteditor.js';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
+import { getData as getModelData, setData as setModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model.js';
+import { getData as getViewData } from '@ckeditor/ckeditor5-engine/src/dev-utils/view.js';
 
-import ImageStyleEditing from '../../src/imagestyle/imagestyleediting';
-import ImageBlockEditing from '../../src/image/imageblockediting';
-import ImageInlineEditing from '../../src/image/imageinlineediting';
-import ImageStyleCommand from '../../src/imagestyle/imagestylecommand';
-import imageStyleUtils from '../../src/imagestyle/utils';
-import ImageEditing from '../../src/image/imageediting';
-import ImageResizeEditing from '../../src/imageresize/imageresizeediting';
-import ImageUtils from '../../src/imageutils';
+import ImageStyleEditing from '../../src/imagestyle/imagestyleediting.js';
+import ImageBlockEditing from '../../src/image/imageblockediting.js';
+import ImageInlineEditing from '../../src/image/imageinlineediting.js';
+import ImageStyleCommand from '../../src/imagestyle/imagestylecommand.js';
+import imageStyleUtils from '../../src/imagestyle/utils.js';
+import ImageEditing from '../../src/image/imageediting.js';
+import ImageResizeEditing from '../../src/imageresize/imageresizeediting.js';
+import ImageUtils from '../../src/imageutils.js';
 
 describe( 'ImageStyleEditing', () => {
 	describe( 'plugin', () => {
@@ -37,12 +37,20 @@ describe( 'ImageStyleEditing', () => {
 			expect( ImageStyleEditing.pluginName ).to.equal( 'ImageStyleEditing' );
 		} );
 
+		it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+			expect( ImageStyleEditing.isOfficialPlugin ).to.be.true;
+		} );
+
+		it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+			expect( ImageStyleEditing.isPremiumPlugin ).to.be.false;
+		} );
+
 		it( 'requires ImageUtils ', () => {
 			expect( ImageStyleEditing.requires ).to.deep.equal( [ ImageUtils ] );
 		} );
 
-		afterEach( () => {
-			editor.destroy();
+		afterEach( async () => {
+			await editor.destroy();
 		} );
 	} );
 
@@ -87,7 +95,7 @@ describe( 'ImageStyleEditing', () => {
 						]
 					} );
 
-					editor.destroy();
+					await editor.destroy();
 				} );
 
 				it( 'should not set a default config if neither image editing plugins are loaded', async () => {
@@ -201,7 +209,7 @@ describe( 'ImageStyleEditing', () => {
 
 			expect( editor.commands.get( 'imageStyle' ) ).to.be.instanceOf( ImageStyleCommand );
 
-			editor.destroy();
+			await editor.destroy();
 		} );
 	} );
 
@@ -225,8 +233,8 @@ describe( 'ImageStyleEditing', () => {
 			document = model.document;
 		} );
 
-		afterEach( () => {
-			editor.destroy();
+		afterEach( async () => {
+			await editor.destroy();
 		} );
 
 		it( 'should remove imageStyle attribute with invalid value', () => {

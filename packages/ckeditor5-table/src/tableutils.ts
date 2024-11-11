@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -7,8 +7,8 @@
  * @module table/tableutils
  */
 
-import { CKEditorError } from 'ckeditor5/src/utils';
-import { Plugin } from 'ckeditor5/src/core';
+import { CKEditorError } from 'ckeditor5/src/utils.js';
+import { Plugin } from 'ckeditor5/src/core.js';
 import type {
 	DocumentSelection,
 	Element,
@@ -17,12 +17,12 @@ import type {
 	Range,
 	Selection,
 	Writer
-} from 'ckeditor5/src/engine';
+} from 'ckeditor5/src/engine.js';
 
-import TableWalker, { type TableWalkerOptions } from './tablewalker';
-import { createEmptyTableCell, updateNumericAttribute } from './utils/common';
-import { removeEmptyColumns, removeEmptyRows } from './utils/structure';
-import { getTableColumnElements } from './tablecolumnresize/utils';
+import TableWalker, { type TableWalkerOptions } from './tablewalker.js';
+import { createEmptyTableCell, updateNumericAttribute } from './utils/common.js';
+import { removeEmptyColumns, removeEmptyRows } from './utils/structure.js';
+import { getTableColumnElements } from './tablecolumnresize/utils.js';
 
 type Cell = { cell: Element; rowspan: number };
 type CellsToMove = Map<number, Cell>;
@@ -39,6 +39,13 @@ export default class TableUtils extends Plugin {
 	 */
 	public static get pluginName() {
 		return 'TableUtils' as const;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public static override get isOfficialPlugin(): true {
+		return true;
 	}
 
 	/**
@@ -725,6 +732,12 @@ export default class TableUtils extends Plugin {
 					newCellsAttributes.colspan = colspan;
 				}
 
+				// Accumulator that stores distance from the last inserted cell span.
+				// It helps with evenly splitting larger cell spans (for example 10 cells collapsing into 3 cells).
+				// We split these cells into 3, 3, 4 cells and we have to call `createCells` only when distance between
+				// these cells is equal or greater than the new cells span size.
+				let distanceFromLastCellSpan = 0;
+
 				for ( const tableSlot of tableMap ) {
 					const { column, row } = tableSlot;
 
@@ -733,13 +746,23 @@ export default class TableUtils extends Plugin {
 					//
 					// 1. It's a row after split cell + it's height.
 					const isAfterSplitCell = row >= splitCellRow + updatedSpan;
+
 					// 2. Is on the same column.
 					const isOnSameColumn = column === cellColumn;
-					// 3. And it's row index is after previous cell height.
-					const isInEvenlySplitRow = ( row + splitCellRow + updatedSpan ) % newCellsSpan === 0;
 
-					if ( isAfterSplitCell && isOnSameColumn && isInEvenlySplitRow ) {
-						createCells( 1, writer, tableSlot.getPositionBefore(), newCellsAttributes );
+					// Reset distance from the last cell span if we are on the same column and we exceeded the new cells span size.
+					if ( distanceFromLastCellSpan >= newCellsSpan && isOnSameColumn ) {
+						distanceFromLastCellSpan = 0;
+					}
+
+					if ( isAfterSplitCell && isOnSameColumn ) {
+						// Create new cells only if the distance from the last cell span is equal or greater than the new cells span.
+						if ( !distanceFromLastCellSpan ) {
+							createCells( 1, writer, tableSlot.getPositionBefore(), newCellsAttributes );
+						}
+
+						// Increase the distance from the last cell span.
+						distanceFromLastCellSpan++;
 					}
 				}
 			}
@@ -799,11 +822,14 @@ export default class TableUtils extends Plugin {
 		// that table will have only tableRow model elements at the beginning.
 		const row = table.getChild( 0 ) as Element;
 
-		return [ ...row.getChildren() ].reduce( ( columns, row ) => {
-			const columnWidth = parseInt( row.getAttribute( 'colspan' ) as string || '1' );
+		return [ ...row.getChildren() ]
+			// $marker elements can also be children of a row too (when TrackChanges is on). Don't include them in the count.
+			.filter( node => node.is( 'element', 'tableCell' ) )
+			.reduce( ( columns, row ) => {
+				const columnWidth = parseInt( row.getAttribute( 'colspan' ) as string || '1' );
 
-			return columns + columnWidth;
-		}, 0 );
+				return columns + columnWidth;
+			}, 0 );
 	}
 
 	/**

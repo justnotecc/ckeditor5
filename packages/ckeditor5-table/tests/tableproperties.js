@@ -1,15 +1,15 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-import global from '@ckeditor/ckeditor5-utils/src/dom/global';
-import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor';
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
+import global from '@ckeditor/ckeditor5-utils/src/dom/global.js';
+import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor.js';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
 
-import TableEditing from '../src/tableediting';
-import TableProperties from '../src/tableproperties';
-import TablePropertiesEditing from '../src/tableproperties/tablepropertiesediting';
+import TableEditing from '../src/tableediting.js';
+import TableProperties from '../src/tableproperties.js';
+import TablePropertiesEditing from '../src/tableproperties/tablepropertiesediting.js';
 
 describe( 'table properties', () => {
 	describe( 'TableProperties', () => {
@@ -39,6 +39,14 @@ describe( 'table properties', () => {
 
 		it( 'should have pluginName', () => {
 			expect( TableProperties.pluginName ).to.equal( 'TableProperties' );
+		} );
+
+		it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+			expect( TableProperties.isOfficialPlugin ).to.be.true;
+		} );
+
+		it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+			expect( TableProperties.isPremiumPlugin ).to.be.false;
 		} );
 	} );
 } );

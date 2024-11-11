@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -9,12 +9,10 @@
 
 import {
 	Editor,
-	Context,
-	DataApiMixin,
 	secureSourceElement,
 	type EditorConfig,
 	type EditorReadyEvent
-} from 'ckeditor5/src/core';
+} from 'ckeditor5/src/core.js';
 
 import {
 	CKEditorError,
@@ -23,12 +21,10 @@ import {
 	logWarning,
 	type CollectionAddEvent,
 	type DecoratedMethodEvent
-} from 'ckeditor5/src/utils';
+} from 'ckeditor5/src/utils.js';
 
-import { ContextWatchdog, EditorWatchdog } from 'ckeditor5/src/watchdog';
-
-import MultiRootEditorUI from './multirooteditorui';
-import MultiRootEditorUIView from './multirooteditoruiview';
+import MultiRootEditorUI from './multirooteditorui.js';
+import MultiRootEditorUIView from './multirooteditoruiview.js';
 
 import { isElement as _isElement } from 'lodash-es';
 import {
@@ -36,10 +32,10 @@ import {
 	type ViewRootEditableElement,
 	type Writer,
 	type ModelCanEditAtEvent
-} from 'ckeditor5/src/engine';
+} from 'ckeditor5/src/engine.js';
 
 /**
- * The {@glink installation/getting-started/predefined-builds#multi-root-editor multi-root editor} implementation.
+ * The multi-root editor implementation.
  *
  * The multi-root editor provides multiple inline editable elements and a toolbar. All editable areas are controlled by one editor
  * instance, which means that they share common configuration, document ID, or undo stack.
@@ -51,24 +47,8 @@ import {
  * {@link module:editor-multi-root/multirooteditor~MultiRootEditor.create `MultiRootEditor.create()`} method.
  *
  * Note that you will need to attach the editor toolbar to your web page manually, in a desired place, after the editor is initialized.
- *
- * # Multi-root editor and multi-root editor build
- *
- * The multi-root editor can be used directly from source (if you installed the
- * [`@ckeditor/ckeditor5-editor-multi-root`](https://www.npmjs.com/package/@ckeditor/ckeditor5-editor-multi-root) package)
- * but it is also available in the
- * {@glink installation/getting-started/predefined-builds#multi-root-editor multi-root editor build}.
- *
- * {@glink installation/getting-started/predefined-builds Builds} are ready-to-use editors with plugins bundled in.
- *
- * When using the editor from source you need to take care of loading all plugins by yourself
- * (through the {@link module:core/editor/editorconfig~EditorConfig#plugins `config.plugins`} option).
- * Using the editor from source gives much better flexibility and allows for easier customization.
- *
- * Read more about initializing the editor from source or as a build in
- * {@link module:editor-multi-root/multirooteditor~MultiRootEditor.create `MultiRootEditor.create()`}.
  */
-export default class MultiRootEditor extends DataApiMixin( Editor ) {
+export default class MultiRootEditor extends Editor {
 	/**
 	 * @inheritDoc
 	 */
@@ -209,7 +189,8 @@ export default class MultiRootEditor extends DataApiMixin( Editor ) {
 
 		const options = {
 			shouldToolbarGroupWhenFull: !this.config.get( 'toolbar.shouldNotGroupWhenFull' ),
-			editableElements: sourceIsData ? undefined : sourceElementsOrData as Record<string, HTMLElement>
+			editableElements: sourceIsData ? undefined : sourceElementsOrData as Record<string, HTMLElement>,
+			label: this.config.get( 'label' )
 		};
 
 		const view = new MultiRootEditorUIView( this.locale, this.editing.view, rootNames, options );
@@ -505,10 +486,11 @@ export default class MultiRootEditor extends DataApiMixin( Editor ) {
 	 * @param root Root for which the editable element should be created.
 	 * @param placeholder Placeholder for the editable element. If not set, placeholder value from the
 	 * {@link module:core/editor/editorconfig~EditorConfig#placeholder editor configuration} will be used (if it was provided).
+	 * @param label The accessible label text describing the editable to the assistive technologies.
 	 * @returns The created DOM element. Append it in a desired place in your application.
 	 */
-	public createEditable( root: RootElement, placeholder?: string ): HTMLElement {
-		const editable = this.ui.view.createEditable( root.rootName );
+	public createEditable( root: RootElement, placeholder?: string, label?: string ): HTMLElement {
+		const editable = this.ui.view.createEditable( root.rootName, undefined, label );
 
 		this.ui.addEditable( editable, placeholder );
 
@@ -857,18 +839,6 @@ export default class MultiRootEditor extends DataApiMixin( Editor ) {
 	 * See the {@link module:core/editor/editorconfig~EditorConfig editor configuration documentation} to learn more about
 	 * customizing plugins, toolbar and more.
 	 *
-	 * # Using the editor from source
-	 *
-	 * The code samples listed in the previous sections of this documentation assume that you are using an
-	 * {@glink installation/getting-started/predefined-builds editor build}
-	 * (for example – `@ckeditor/ckeditor5-build-multi-root`).
-	 *
-	 * If you want to use the multi-root editor from source (`@ckeditor/ckeditor5-editor-multi-root-editor/src/multirooteditor`),
-	 * you need to define the list of
-	 * {@link module:core/editor/editorconfig~EditorConfig#plugins plugins to be initialized} and
-	 * {@link module:core/editor/editorconfig~EditorConfig#toolbar toolbar items}. Read more about using the editor from
-	 * source in the {@glink installation/advanced/alternative-setups/integrating-from-source-webpack dedicated guide}.
-	 *
 	 * @param sourceElementsOrData The DOM elements that will be the source for the created editor
 	 * or the editor's initial data. The editor will initialize multiple roots with names according to the keys in the passed object.
 	 *
@@ -914,27 +884,6 @@ export default class MultiRootEditor extends DataApiMixin( Editor ) {
 			);
 		} );
 	}
-
-	/**
-	 * The {@link module:core/context~Context} class.
-	 *
-	 * Exposed as static editor field for easier access in editor builds.
-	 */
-	public static Context = Context;
-
-	/**
-	 * The {@link module:watchdog/editorwatchdog~EditorWatchdog} class.
-	 *
-	 * Exposed as static editor field for easier access in editor builds.
-	 */
-	public static EditorWatchdog = EditorWatchdog;
-
-	/**
-	 * The {@link module:watchdog/contextwatchdog~ContextWatchdog} class.
-	 *
-	 * Exposed as static editor field for easier access in editor builds.
-	 */
-	public static ContextWatchdog = ContextWatchdog;
 
 	/**
 	 * @internal

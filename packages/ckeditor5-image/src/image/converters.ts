@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -15,9 +15,9 @@ import type {
 	ViewElement,
 	ViewElementAttributes,
 	DowncastAttributeEvent
-} from 'ckeditor5/src/engine';
-import { first, type GetCallback } from 'ckeditor5/src/utils';
-import type ImageUtils from '../imageutils';
+} from 'ckeditor5/src/engine.js';
+import { first, type GetCallback } from 'ckeditor5/src/utils.js';
+import type ImageUtils from '../imageutils.js';
 
 /**
  * Returns a function that converts the image view representation:
@@ -229,13 +229,6 @@ export function downcastSourcesAttribute( imageUtils: ImageUtils ): ( dispatcher
 		const attributeNewValue = data.attributeNewValue as null | Array<ViewElementAttributes>;
 
 		if ( attributeNewValue && attributeNewValue.length ) {
-			// Make sure <picture> does not break attribute elements, for instance <a> in linked images.
-			const pictureElement = viewWriter.createContainerElement( 'picture', null,
-				attributeNewValue.map( sourceAttributes => {
-					return viewWriter.createEmptyElement( 'source', sourceAttributes );
-				} )
-			);
-
 			// Collect all wrapping attribute elements.
 			const attributeElements = [];
 			let viewElement = imgElement.parent;
@@ -249,8 +242,23 @@ export function downcastSourcesAttribute( imageUtils: ImageUtils ): ( dispatcher
 				viewElement = parentElement;
 			}
 
-			// Insert the picture and move img into it.
-			viewWriter.insert( viewWriter.createPositionBefore( imgElement ), pictureElement );
+			const hasPictureElement = imgElement.parent!.is( 'element', 'picture' );
+
+			// Reuse existing <picture> element (ckeditor5#17192) or create a new one.
+			const pictureElement = hasPictureElement ? imgElement.parent : viewWriter.createContainerElement( 'picture', null );
+
+			if ( !hasPictureElement ) {
+				viewWriter.insert( viewWriter.createPositionBefore( imgElement ), pictureElement );
+			}
+
+			viewWriter.remove( viewWriter.createRangeIn( pictureElement ) );
+
+			viewWriter.insert( viewWriter.createPositionAt( pictureElement, 'end' ),
+				attributeNewValue.map( sourceAttributes => {
+					return viewWriter.createEmptyElement( 'source', sourceAttributes );
+				} )
+			);
+
 			viewWriter.move( viewWriter.createRangeOn( imgElement ), viewWriter.createPositionAt( pictureElement, 'end' ) );
 
 			// Apply collected attribute elements over the new picture element.

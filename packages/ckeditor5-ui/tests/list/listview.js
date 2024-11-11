@@ -1,18 +1,19 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 /* global document */
 
-import ViewCollection from '../../src/viewcollection';
-import ListView from '../../src/list/listview';
-import KeystrokeHandler from '@ckeditor/ckeditor5-utils/src/keystrokehandler';
-import FocusTracker from '@ckeditor/ckeditor5-utils/src/focustracker';
-import FocusCycler from '../../src/focuscycler';
-import { keyCodes } from '@ckeditor/ckeditor5-utils/src/keyboard';
-import View from '../../src/view';
-import { ListItemGroupView } from '../../src';
+import ViewCollection from '../../src/viewcollection.js';
+import ListView from '../../src/list/listview.js';
+import KeystrokeHandler from '@ckeditor/ckeditor5-utils/src/keystrokehandler.js';
+import FocusTracker from '@ckeditor/ckeditor5-utils/src/focustracker.js';
+import FocusCycler from '../../src/focuscycler.js';
+import { keyCodes } from '@ckeditor/ckeditor5-utils/src/keyboard.js';
+import View from '../../src/view.js';
+import { ListItemGroupView, ListItemView } from '../../src/index.js';
+import ListSeparatorView from '../../src/list/listseparatorview.js';
 
 describe( 'ListView', () => {
 	let view;
@@ -220,6 +221,15 @@ describe( 'ListView', () => {
 				assertFocusables( view, [ item21, item22, item1 ] );
 			} );
 
+			it( 'doesn\'t register list separator', () => {
+				const item = listSeparator();
+
+				view.items.add( item );
+				view.render();
+
+				sinon.assert.notCalled( spyAdd );
+			} );
+
 			it( 'deregisters items upon removal', () => {
 				const item1 = focusable();
 				const item2 = focusable();
@@ -297,6 +307,16 @@ describe( 'ListView', () => {
 				sinon.assert.calledWithExactly( spyRemove.secondCall, item22.element );
 
 				assertFocusables( view, [ item1 ] );
+			} );
+
+			it( 'doesn\'t deregister list separator', () => {
+				const item = listSeparator();
+
+				view.items.add( item );
+				view.render();
+				view.items.remove( 0 );
+
+				sinon.assert.notCalled( spyRemove );
 			} );
 
 			function assertFocusables( view, expected ) {
@@ -499,10 +519,8 @@ describe( 'ListView', () => {
 } );
 
 function focusable( name ) {
-	const view = nonFocusable();
-
+	const view = new ListItemView();
 	view.name = name;
-	view.focus = () => {};
 
 	return view;
 }
@@ -510,6 +528,12 @@ function focusable( name ) {
 function nonFocusable() {
 	const view = new View();
 	view.element = document.createElement( 'li' );
+
+	return view;
+}
+
+function listSeparator() {
+	const view = new ListSeparatorView();
 
 	return view;
 }

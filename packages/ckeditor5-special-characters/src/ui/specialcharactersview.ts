@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -7,11 +7,11 @@
  * @module special-characters/ui/specialcharactersview
  */
 
-import { View, FocusCycler, type ViewCollection } from 'ckeditor5/src/ui';
-import { FocusTracker, KeystrokeHandler, type Locale } from 'ckeditor5/src/utils';
-import type CharacterGridView from './charactergridview';
-import type CharacterInfoView from './characterinfoview';
-import type SpecialCharactersNavigationView from './specialcharactersnavigationview';
+import { View, FocusCycler, type ViewCollection, type FocusableView } from 'ckeditor5/src/ui.js';
+import { FocusTracker, KeystrokeHandler, type Locale } from 'ckeditor5/src/utils.js';
+import type CharacterGridView from './charactergridview.js';
+import type CharacterInfoView from './characterinfoview.js';
+import type SpecialCharactersCategoriesView from './specialcharacterscategoriesview.js';
 
 /**
  * A view that glues pieces of the special characters dropdown panel together:
@@ -24,7 +24,7 @@ export default class SpecialCharactersView extends View<HTMLDivElement> {
 	/**
 	 * A collection of the focusable children of the view.
 	 */
-	public readonly items: ViewCollection;
+	public readonly items: ViewCollection<FocusableView>;
 
 	/**
 	 * Tracks information about the DOM focus in the view.
@@ -42,9 +42,9 @@ export default class SpecialCharactersView extends View<HTMLDivElement> {
 	protected readonly _focusCycler: FocusCycler;
 
 	/**
-	 * An instance of the `SpecialCharactersNavigationView`.
+	 * An instance of the `SpecialCharactersCategoriesView`.
 	 */
-	public navigationView: SpecialCharactersNavigationView;
+	public categoriesView: SpecialCharactersCategoriesView;
 
 	/**
 	 * An instance of the `CharacterGridView`.
@@ -61,13 +61,13 @@ export default class SpecialCharactersView extends View<HTMLDivElement> {
 	 */
 	constructor(
 		locale: Locale,
-		navigationView: SpecialCharactersNavigationView,
+		categoriesView: SpecialCharactersCategoriesView,
 		gridView: CharacterGridView,
 		infoView: CharacterInfoView
 	) {
 		super( locale );
 
-		this.navigationView = navigationView;
+		this.categoriesView = categoriesView;
 		this.gridView = gridView;
 		this.infoView = infoView;
 		this.items = this.createCollection();
@@ -87,7 +87,7 @@ export default class SpecialCharactersView extends View<HTMLDivElement> {
 		this.setTemplate( {
 			tag: 'div',
 			children: [
-				this.navigationView,
+				this.categoriesView,
 				this.gridView,
 				this.infoView
 			],
@@ -98,7 +98,7 @@ export default class SpecialCharactersView extends View<HTMLDivElement> {
 			}
 		} );
 
-		this.items.add( this.navigationView.groupDropdownView.buttonView );
+		this.items.add( this.categoriesView );
 		this.items.add( this.gridView );
 	}
 
@@ -108,7 +108,7 @@ export default class SpecialCharactersView extends View<HTMLDivElement> {
 	public override render(): void {
 		super.render();
 
-		this.focusTracker.add( this.navigationView.groupDropdownView.buttonView.element! );
+		this.focusTracker.add( this.categoriesView.element! );
 		this.focusTracker.add( this.gridView.element! );
 
 		// Start listening for the keystrokes coming from #element.
@@ -129,6 +129,6 @@ export default class SpecialCharactersView extends View<HTMLDivElement> {
 	 * Focuses the first focusable in {@link #items}.
 	 */
 	public focus(): void {
-		this.navigationView.focus();
+		this._focusCycler.focusFirst();
 	}
 }

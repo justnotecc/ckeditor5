@@ -1,14 +1,14 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-import Node from '../../src/model/node';
-import Element from '../../src/model/element';
-import Text from '../../src/model/text';
-import TextProxy from '../../src/model/textproxy';
-import count from '@ckeditor/ckeditor5-utils/src/count';
-import { expectToThrowCKEditorError } from '@ckeditor/ckeditor5-utils/tests/_utils/utils';
+import Node from '../../src/model/node.js';
+import Element from '../../src/model/element.js';
+import Text from '../../src/model/text.js';
+import TextProxy from '../../src/model/textproxy.js';
+import count from '@ckeditor/ckeditor5-utils/src/count.js';
+import { expectToThrowCKEditorError } from '@ckeditor/ckeditor5-utils/tests/_utils/utils.js';
 
 describe( 'Element', () => {
 	describe( 'constructor()', () => {
@@ -298,6 +298,28 @@ describe( 'Element', () => {
 			expect( element.getChildStartOffset( p ) ).to.equal( 0 );
 			expect( element.getChildStartOffset( bar ) ).to.equal( 1 );
 			expect( element.getChildStartOffset( h ) ).to.equal( 4 );
+		} );
+	} );
+
+	describe( 'getChildAtOffset', () => {
+		it( 'should return child at given offset', () => {
+			const element = new Element( 'elem', [], [ new Element( 'p' ), new Text( 'bar' ), new Element( 'h' ) ] );
+			const p = element.getChild( 0 );
+			const bar = element.getChild( 1 );
+			const h = element.getChild( 2 );
+
+			expect( element.getChildAtOffset( 0 ) ).to.equal( p );
+			expect( element.getChildAtOffset( 1 ) ).to.equal( bar );
+			expect( element.getChildAtOffset( 2 ) ).to.equal( bar );
+			expect( element.getChildAtOffset( 3 ) ).to.equal( bar );
+			expect( element.getChildAtOffset( 4 ) ).to.equal( h );
+		} );
+
+		it( 'should return null for incorrect offset', () => {
+			const element = new Element( 'elem', [], [ new Element( 'p' ), new Text( 'bar' ), new Element( 'h' ) ] );
+
+			expect( element.getChildAtOffset( -1 ) ).to.be.null;
+			expect( element.getChildAtOffset( 5 ) ).to.be.null;
 		} );
 	} );
 

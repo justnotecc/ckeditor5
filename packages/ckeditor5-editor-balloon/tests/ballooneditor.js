@@ -1,33 +1,32 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 /* globals document, console */
 
-import BalloonEditor from '../src/ballooneditor';
-import BalloonEditorUI from '../src/ballooneditorui';
-import BalloonEditorUIView from '../src/ballooneditoruiview';
+import BalloonEditor from '../src/ballooneditor.js';
+import BalloonEditorUI from '../src/ballooneditorui.js';
+import BalloonEditorUIView from '../src/ballooneditoruiview.js';
 
-import HtmlDataProcessor from '@ckeditor/ckeditor5-engine/src/dataprocessor/htmldataprocessor';
+import HtmlDataProcessor from '@ckeditor/ckeditor5-engine/src/dataprocessor/htmldataprocessor.js';
 
-import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
-import Context from '@ckeditor/ckeditor5-core/src/context';
-import EditorWatchdog from '@ckeditor/ckeditor5-watchdog/src/editorwatchdog';
-import ContextWatchdog from '@ckeditor/ckeditor5-watchdog/src/contextwatchdog';
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
-import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold';
-import BalloonToolbar from '@ckeditor/ckeditor5-ui/src/toolbar/balloon/balloontoolbar';
-import DataApiMixin from '@ckeditor/ckeditor5-core/src/editor/utils/dataapimixin';
-import ElementApiMixin from '@ckeditor/ckeditor5-core/src/editor/utils/elementapimixin';
-import RootElement from '@ckeditor/ckeditor5-engine/src/model/rootelement';
+import Plugin from '@ckeditor/ckeditor5-core/src/plugin.js';
+import Context from '@ckeditor/ckeditor5-core/src/context.js';
+import EditorWatchdog from '@ckeditor/ckeditor5-watchdog/src/editorwatchdog.js';
+import ContextWatchdog from '@ckeditor/ckeditor5-watchdog/src/contextwatchdog.js';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
+import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold.js';
+import BalloonToolbar from '@ckeditor/ckeditor5-ui/src/toolbar/balloon/balloontoolbar.js';
+import ElementApiMixin from '@ckeditor/ckeditor5-core/src/editor/utils/elementapimixin.js';
+import RootElement from '@ckeditor/ckeditor5-engine/src/model/rootelement.js';
 
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
 
-import ArticlePluginSet from '@ckeditor/ckeditor5-core/tests/_utils/articlepluginset';
-import { describeMemoryUsage, testMemoryUsage } from '@ckeditor/ckeditor5-core/tests/_utils/memory';
-import { assertCKEditorError } from '@ckeditor/ckeditor5-utils/tests/_utils/utils';
-import CKEditorError from '@ckeditor/ckeditor5-utils/src/ckeditorerror';
+import ArticlePluginSet from '@ckeditor/ckeditor5-core/tests/_utils/articlepluginset.js';
+import { describeMemoryUsage, testMemoryUsage } from '@ckeditor/ckeditor5-core/tests/_utils/memory.js';
+import { assertCKEditorError } from '@ckeditor/ckeditor5-utils/tests/_utils/utils.js';
+import CKEditorError from '@ckeditor/ckeditor5-utils/src/ckeditorerror.js';
 
 describe( 'BalloonEditor', () => {
 	let editor, editorElement;
@@ -55,6 +54,11 @@ describe( 'BalloonEditor', () => {
 			} );
 		} );
 
+		afterEach( async () => {
+			editor.fire( 'ready' );
+			await editor.destroy();
+		} );
+
 		it( 'pushes BalloonToolbar to the list of plugins', () => {
 			expect( editor.config.get( 'plugins' ) ).to.include( BalloonToolbar );
 		} );
@@ -65,10 +69,6 @@ describe( 'BalloonEditor', () => {
 
 		it( 'uses HTMLDataProcessor', () => {
 			expect( editor.data.processor ).to.be.instanceof( HtmlDataProcessor );
-		} );
-
-		it( 'has a Data Interface', () => {
-			testUtils.isMixed( BalloonEditor, DataApiMixin );
 		} );
 
 		it( 'has a Element Interface', () => {
@@ -107,28 +107,37 @@ describe( 'BalloonEditor', () => {
 		} );
 
 		describe( 'config.initialData', () => {
-			it( 'if not set, is set using DOM element data', () => {
+			it( 'if not set, is set using DOM element data', async () => {
 				const editorElement = document.createElement( 'div' );
 				editorElement.innerHTML = '<p>Foo</p>';
 
 				const editor = new BalloonEditor( editorElement );
 
 				expect( editor.config.get( 'initialData' ) ).to.equal( '<p>Foo</p>' );
+
+				editor.fire( 'ready' );
+				await editor.destroy();
 			} );
 
-			it( 'if not set, is set using data passed in constructor', () => {
+			it( 'if not set, is set using data passed in constructor', async () => {
 				const editor = new BalloonEditor( '<p>Foo</p>' );
 
 				expect( editor.config.get( 'initialData' ) ).to.equal( '<p>Foo</p>' );
+
+				editor.fire( 'ready' );
+				await editor.destroy();
 			} );
 
-			it( 'if set, is not overwritten with DOM element data', () => {
+			it( 'if set, is not overwritten with DOM element data', async () => {
 				const editorElement = document.createElement( 'div' );
 				editorElement.innerHTML = '<p>Foo</p>';
 
 				const editor = new BalloonEditor( editorElement, { initialData: '<p>Bar</p>' } );
 
 				expect( editor.config.get( 'initialData' ) ).to.equal( '<p>Bar</p>' );
+
+				editor.fire( 'ready' );
+				await editor.destroy();
 			} );
 
 			it( 'it should throw if config.initialData is set and initial data is passed in constructor', () => {
@@ -151,8 +160,10 @@ describe( 'BalloonEditor', () => {
 				} );
 		} );
 
-		afterEach( () => {
-			return editor.destroy();
+		afterEach( async () => {
+			if ( editor.state !== 'destroyed' ) {
+				await editor.destroy();
+			}
 		} );
 
 		it( 'creates an instance which inherits from the BalloonEditor', () => {
@@ -279,6 +290,106 @@ describe( 'BalloonEditor', () => {
 				)
 				.then( done )
 				.catch( done );
+		} );
+
+		describe( 'configurable editor label (aria-label)', () => {
+			it( 'should be set to the defaut value if not configured', () => {
+				expect( editor.editing.view.getDomRoot().getAttribute( 'aria-label' ) ).to.equal(
+					'Rich Text Editor. Editing area: main'
+				);
+			} );
+
+			it( 'should support the string format', async () => {
+				await editor.destroy();
+
+				editor = await BalloonEditor.create( editorElement, {
+					plugins: [ Paragraph, Bold ],
+					label: 'Custom label'
+				} );
+
+				expect( editor.editing.view.getDomRoot().getAttribute( 'aria-label' ) ).to.equal(
+					'Custom label'
+				);
+			} );
+
+			it( 'should support object format', async () => {
+				await editor.destroy();
+
+				editor = await BalloonEditor.create( editorElement, {
+					plugins: [ Paragraph, Bold ],
+					label: {
+						main: 'Custom label'
+					}
+				} );
+
+				expect( editor.editing.view.getDomRoot().getAttribute( 'aria-label' ) ).to.equal(
+					'Custom label'
+				);
+			} );
+
+			it( 'should keep an existing value from the source DOM element', async () => {
+				await editor.destroy();
+
+				editorElement.setAttribute( 'aria-label', 'Pre-existing value' );
+				const newEditor = await BalloonEditor.create( editorElement, {
+					plugins: [ Paragraph, Bold ]
+				} );
+
+				expect( newEditor.editing.view.getDomRoot().getAttribute( 'aria-label' ), 'Keep value' ).to.equal(
+					'Pre-existing value'
+				);
+
+				await newEditor.destroy();
+
+				expect( editorElement.getAttribute( 'aria-label' ), 'Restore value' ).to.equal( 'Pre-existing value' );
+			} );
+
+			it( 'should override the existing value from the source DOM element', async () => {
+				await editor.destroy();
+
+				editorElement.setAttribute( 'aria-label', 'Pre-existing value' );
+				editor = await BalloonEditor.create( editorElement, {
+					plugins: [ Paragraph, Bold ],
+					label: 'Custom label'
+				} );
+
+				expect( editor.editing.view.getDomRoot().getAttribute( 'aria-label' ), 'Override value' ).to.equal(
+					'Custom label'
+				);
+
+				await editor.destroy();
+
+				expect( editorElement.getAttribute( 'aria-label' ), 'Restore value' ).to.equal( 'Pre-existing value' );
+			} );
+
+			it( 'should use default label when creating an editor from initial data rather than a DOM element', async () => {
+				await editor.destroy();
+
+				editor = await BalloonEditor.create( '<p>Initial data</p>', {
+					plugins: [ Paragraph, Bold ]
+				} );
+
+				expect( editor.editing.view.getDomRoot().getAttribute( 'aria-label' ), 'Override value' ).to.equal(
+					'Rich Text Editor. Editing area: main'
+				);
+
+				await editor.destroy();
+			} );
+
+			it( 'should set custom label when creating an editor from initial data rather than a DOM element', async () => {
+				await editor.destroy();
+
+				editor = await BalloonEditor.create( '<p>Initial data</p>', {
+					plugins: [ Paragraph, Bold ],
+					label: 'Custom label'
+				} );
+
+				expect( editor.editing.view.getDomRoot().getAttribute( 'aria-label' ), 'Override value' ).to.equal(
+					'Custom label'
+				);
+
+				await editor.destroy();
+			} );
 		} );
 	} );
 
@@ -417,7 +528,7 @@ describe( 'BalloonEditor', () => {
 					plugins: [ ArticlePluginSet ],
 					toolbar: [ 'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote' ],
 					image: {
-						toolbar: [ 'imageStyle:block', 'imageStyle:side', '|', 'imageTextAlternative' ]
+						toolbar: [ 'imageStyle:block', 'imageStyle:wrapText', '|', 'imageTextAlternative' ]
 					}
 				} ) );
 	} );

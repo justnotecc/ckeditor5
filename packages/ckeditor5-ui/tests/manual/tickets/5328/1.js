@@ -1,14 +1,14 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 /* globals window, document, console:false */
 
-import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor';
-import ArticlePluginSet from '@ckeditor/ckeditor5-core/tests/_utils/articlepluginset';
+import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor.js';
+import ArticlePluginSet from '@ckeditor/ckeditor5-core/tests/_utils/articlepluginset.js';
 import { TableCaption, TableCellProperties, TableColumnResize, TableProperties, TableToolbar } from '@ckeditor/ckeditor5-table';
-import BalloonPanelView from '../../../../src/panel/balloon/balloonpanelview';
+import BalloonPanelView from '../../../../src/panel/balloon/balloonpanelview.js';
 
 // Set initial scroll for the outer container element.
 document.querySelector( '.container-outer:not( .container-outer--large )' ).scrollTop = 420;
@@ -17,7 +17,7 @@ document.querySelector( '.container-outer:not( .container-outer--large )' ).scro
 ClassicEditor
 	.create( document.querySelector( '#editor-stick' ), {
 		image: {
-			toolbar: [ 'imageStyle:inline', 'imageStyle:block', 'imageStyle:side', '|', 'imageTextAlternative' ]
+			toolbar: [ 'imageStyle:inline', 'imageStyle:block', 'imageStyle:wrapText', '|', 'imageTextAlternative' ]
 		},
 		plugins: [ ArticlePluginSet, TableToolbar, TableCaption, TableCellProperties, TableColumnResize, TableProperties ],
 		toolbar: [ 'undo', 'redo', '|', 'bold', 'italic', 'link', '|', 'insertTable' ],
@@ -58,7 +58,7 @@ ClassicEditor
 ClassicEditor
 	.create( document.querySelector( '#editor-with-scroll' ), {
 		image: {
-			toolbar: [ 'imageStyle:inline', 'imageStyle:block', 'imageStyle:side', '|', 'imageTextAlternative' ]
+			toolbar: [ 'imageStyle:inline', 'imageStyle:block', 'imageStyle:wrapText', '|', 'imageTextAlternative' ]
 		},
 		plugins: [ ArticlePluginSet, TableToolbar, TableCaption, TableCellProperties, TableColumnResize, TableProperties ],
 		toolbar: [ 'undo', 'redo', '|', 'bold', 'italic', 'link', '|', 'insertTable' ],
@@ -96,7 +96,7 @@ ClassicEditor
 ClassicEditor
 	.create( document.querySelector( '#editor-out-of-the-box' ), {
 		image: {
-			toolbar: [ 'imageStyle:inline', 'imageStyle:block', 'imageStyle:side', '|', 'imageTextAlternative' ]
+			toolbar: [ 'imageStyle:inline', 'imageStyle:block', 'imageStyle:wrapText', '|', 'imageTextAlternative' ]
 		},
 		plugins: [ ArticlePluginSet, TableToolbar, TableCaption, TableCellProperties, TableColumnResize, TableProperties ],
 		toolbar: [ 'undo', 'redo', '|', 'bold', 'italic', 'link', '|', 'insertTable' ],

@@ -26,7 +26,7 @@ To learn how to set up the project and run tests see the {@link framework/contri
 
 Read more in the {@link framework/contributing/code-style code style} guide, where you can also check the {@link framework/contributing/code-style#naming naming} and {@link framework/contributing/code-style#file-names file name} guidelines.
 
-Every package repository installs Git hooks that automatically lint and check the code for code style on commit. However, not every code style issue can be discovered this way, so please do not rely on tools too much :).
+Every package repository installs Git hooks that automatically lint and check the code for code style on commit. However, not every code style issue can be discovered this way, so please do not rely on tools too much.
 
 ### Tests
 
@@ -87,7 +87,7 @@ Assuming that you would like to propose some changes, these are the steps you sh
 
 Some additional things you should keep in mind:
 
-* Your pull request should be minimal &ndash; i.e. change only things described in the ticket. Do not squeeze unrelated changes into your pull request.
+* Your pull request should be minimal. It should change only things described in the ticket. Do not squeeze unrelated changes into your pull request.
 * When making a pull request on GitHub, make sure to specify which ticket(s) your pull request resolves. It is also recommended to provide more information, like how to test the patch, issues that you encountered, decisions you had to make, known problems, etc.
 * Make sure you signed the [Contributor License Agreement (CLA)](#contributor-license-agreement-cla) and that tests pass. Test your changes!
 
@@ -95,16 +95,16 @@ Some additional things you should keep in mind:
 
 CKEditor&nbsp;5 is a project with global impact, so contributing translations is both an easy and powerful way to help.
 
-We use the Transifex service for translations at the following address: [https://www.transifex.com/ckeditor/ckeditor5/dashboard/](https://www.transifex.com/ckeditor/ckeditor5/dashboard/).
+To make CKEditor&nbsp;5 available in multiple languages, we use `.po` files for storing translations. These are text files commonly used in software development to translate interface texts. Each CKEditor&nbsp;5 package keeps translation files in the `lang/translations` directory. To provide missing translations, just edit the `.po` file and prepare a [pull request](#creating-a-pull-request).
 
 Here as well, having a CLA in place is a requirement to become an official translator (see below).
 
 ## Reporting issues and requesting features
 
-Read the {@link support/reporting-issues reporting issues} guide to learn more.
+Read the {@link support/index#reporting-issues reporting issues} guide to learn more.
 
 ## Contributor License Agreement (CLA)
 
-To accept contributions sent to us in the form of code, documentation, or translations, a Contributor License Agreement (CLA) must be in place in order to clarify the intellectual property license granted with them. This license is for your protection as a contributor as well as the protection of us and our users; it does not change your rights to use your own contributions for any other purpose.
+To accept contributions sent to us in the form of code, documentation, or translations, a Contributor License Agreement (CLA) must be in place to clarify the intellectual property license granted with them. This license is for your protection as a contributor as well as the protection of us and our users; it does not change your rights to use your own contributions for any other purpose.
 
-To sign the CLA and to get more information, please follow this link: [https://cla.ckeditor.com/](https://cla.ckeditor.com/).
+To sign the CLA and to get more information, follow this link: [https://cla.ckeditor.com/](https://cla.ckeditor.com/).

@@ -1,32 +1,34 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-/* globals window, document, Event */
+/* globals window, document, console, Event */
 
-import ClipboardPipeline from '../src/clipboardpipeline';
-import DragDrop from '../src/dragdrop';
-import DragDropTarget from '../src/dragdroptarget';
-import PastePlainText from '../src/pasteplaintext';
-import DragDropBlockToolbar from '../src/dragdropblocktoolbar';
+import ClipboardPipeline from '../src/clipboardpipeline.js';
+import DragDrop from '../src/dragdrop.js';
+import DragDropTarget from '../src/dragdroptarget.js';
+import PastePlainText from '../src/pasteplaintext.js';
+import DragDropBlockToolbar from '../src/dragdropblocktoolbar.js';
 
-import Widget from '@ckeditor/ckeditor5-widget/src/widget';
-import WidgetToolbarRepository from '@ckeditor/ckeditor5-widget/src/widgettoolbarrepository';
-import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor';
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
-import Table from '@ckeditor/ckeditor5-table/src/table';
-import HorizontalLine from '@ckeditor/ckeditor5-horizontal-line/src/horizontalline';
-import ShiftEnter from '@ckeditor/ckeditor5-enter/src/shiftenter';
-import BlockQuote from '@ckeditor/ckeditor5-block-quote/src/blockquote';
-import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold';
+import Widget from '@ckeditor/ckeditor5-widget/src/widget.js';
+import WidgetToolbarRepository from '@ckeditor/ckeditor5-widget/src/widgettoolbarrepository.js';
+import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor.js';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
+import Table from '@ckeditor/ckeditor5-table/src/table.js';
+import HorizontalLine from '@ckeditor/ckeditor5-horizontal-line/src/horizontalline.js';
+import ShiftEnter from '@ckeditor/ckeditor5-enter/src/shiftenter.js';
+import BlockQuote from '@ckeditor/ckeditor5-block-quote/src/blockquote.js';
+import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold.js';
 import { Image, ImageCaption } from '@ckeditor/ckeditor5-image';
-import env from '@ckeditor/ckeditor5-utils/src/env';
+import env from '@ckeditor/ckeditor5-utils/src/env.js';
 import { Rect } from '@ckeditor/ckeditor5-utils';
 
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
-import { getData as getModelData, setData as setModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
-import { getData as getViewData, stringify as stringifyView } from '@ckeditor/ckeditor5-engine/src/dev-utils/view';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
+import { getData as getModelData, setData as setModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model.js';
+import { getData as getViewData, stringify as stringifyView } from '@ckeditor/ckeditor5-engine/src/dev-utils/view.js';
+
+import { CustomTitle } from './utils/customtitleplugin.js';
 
 describe( 'Drag and Drop', () => {
 	let editorElement, editor, model, view, viewDocument, root, mapper, domConverter;
@@ -39,6 +41,14 @@ describe( 'Drag and Drop', () => {
 
 	it( 'has proper name', () => {
 		expect( DragDrop.pluginName ).to.equal( 'DragDrop' );
+	} );
+
+	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+		expect( DragDrop.isOfficialPlugin ).to.be.true;
+	} );
+
+	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+		expect( DragDrop.isPremiumPlugin ).to.be.false;
 	} );
 
 	it( 'should be disabled on Android', async () => {
@@ -77,7 +87,8 @@ describe( 'Drag and Drop', () => {
 					BlockQuote,
 					Bold,
 					Image,
-					ImageCaption
+					ImageCaption,
+					CustomTitle
 				]
 			} );
 
@@ -1296,6 +1307,72 @@ describe( 'Drag and Drop', () => {
 				` );
 			} );
 
+			it( 'should start dragging text from title to paragraph', () => {
+				setModelData( model, trim`
+					<title><title-content>[Foo] Bar</title-content></title>
+					<paragraph>Bar</paragraph>
+				` );
+
+				const dataTransferMock = createDataTransfer();
+				const viewElement = viewDocument.getRoot().getChild( 1 );
+				const position = model.createPositionAt( root.getChild( 1 ), 'after' );
+
+				viewDocument.fire( 'dragstart', {
+					domTarget: domConverter.mapViewToDom( viewElement ),
+					target: viewElement,
+					domEvent: {},
+					dataTransfer: dataTransferMock,
+					stopPropagation: () => {}
+				} );
+
+				expect( dataTransferMock.getData( 'text/html' ) ).to.equal( 'Foo' );
+
+				fireDragging( dataTransferMock, position );
+				expectDraggingMarker( position );
+
+				fireDrop(
+					dataTransferMock,
+					model.createPositionAt( root.getChild( 1 ), 3 )
+				);
+
+				expect( getModelData( model ) ).to.equal( trim`
+					<title><title-content> Bar</title-content></title>
+					<paragraph>BarFoo[]</paragraph>
+				` );
+			} );
+
+			it( 'should start dragging text from paragraph to title', () => {
+				setModelData( model, trim`
+					<title><title-content>Foo Bar</title-content></title>
+					<paragraph>[Baz]</paragraph>
+				` );
+
+				const dataTransferMock = createDataTransfer();
+				const viewElement = viewDocument.getRoot().getChild( 0 );
+
+				viewDocument.fire( 'dragstart', {
+					domTarget: domConverter.mapViewToDom( viewElement ),
+					target: viewElement,
+					domEvent: {},
+					dataTransfer: dataTransferMock,
+					stopPropagation: () => {}
+				} );
+
+				expect( dataTransferMock.getData( 'text/html' ) ).to.equal( '<p>Baz</p>' );
+
+				fireDragging( dataTransferMock, model.createPositionAt( root.getChild( 0 ).getChild( 0 ), 3 ) );
+
+				fireDrop(
+					dataTransferMock,
+					model.createPositionAt( root.getChild( 0 ).getChild( 0 ), 3 )
+				);
+
+				expect( getModelData( model ) ).to.equal( trim`
+					<paragraph>Baz[]</paragraph>
+					<title><title-content>Foo Bar</title-content></title>
+				` );
+			} );
+
 			it( 'should not drag parent paragraph when only portion of content is selected', () => {
 				setModelData( model,
 					'<paragraph>foobar</paragraph>' +
@@ -2363,11 +2440,82 @@ describe( 'Drag and Drop', () => {
 		} );
 	} );
 
+	describe( '_updatePreview', () => {
+		let targetElement, dragDrop, warnStub;
+
+		beforeEach( async () => {
+			editorElement = document.createElement( 'div' );
+			document.body.appendChild( editorElement );
+
+			editor = await ClassicTestEditor.create( editorElement, {
+				useInlineRoot: true,
+				plugins: [ DragDrop, PastePlainText, Paragraph, Bold ]
+			} );
+
+			dragDrop = editor.plugins.get( DragDrop );
+
+			targetElement = document.createElement( 'div' );
+			warnStub = sinon.stub( console, 'warn' );
+		} );
+
+		afterEach( async () => {
+			await editor.destroy();
+
+			editorElement.remove();
+			targetElement.remove();
+			warnStub.restore();
+		} );
+
+		it( 'should not append unsafe html tags from malformed data transfer object to the preview', () => {
+			dragDrop._updatePreview( {
+				target: targetElement,
+				clientX: 10,
+				dataTransfer: createDataTransfer( {
+					'text/html': [
+						'<script>console.log("hello");</script>',
+						'<strong>Test</strong>',
+						'<style>body { color: red; }</style>'
+					].join( ' ' )
+				} )
+			} );
+
+			expect( dragDrop._previewContainer.querySelector( 'script' ) ).to.be.null;
+			expect( dragDrop._previewContainer.querySelector( 'style' ) ).to.be.null;
+			expect( dragDrop._previewContainer.querySelector( 'strong' ) ).not.to.be.null;
+		} );
+
+		it( 'should not append unsafe attributes to the preview', () => {
+			dragDrop._updatePreview( {
+				target: targetElement,
+				clientX: 10,
+				dataTransfer: createDataTransfer( {
+					'text/html': '<strong onclick="alert(\'abc\')">Test</strong>'
+				} )
+			} );
+
+			const insertedElement = dragDrop._previewContainer.querySelector( 'strong' );
+
+			expect( insertedElement.getAttribute( 'onclick' ) ).to.be.null;
+
+			sinon.assert.calledOnce( warnStub );
+			sinon.assert.calledWithExactly( warnStub,
+				sinon.match( /^domconverter-unsafe-attribute-detected/ ),
+				{
+					domElement: insertedElement,
+					key: 'onclick',
+					value: 'alert(\'abc\')'
+				},
+				sinon.match.string // Link to the documentation
+			);
+		} );
+	} );
+
 	function fireDragStart( dataTransferMock, preventDefault = () => {}, domTarget ) {
 		const eventData = prepareEventData( model.document.selection.getLastPosition(), domTarget );
 
 		viewDocument.fire( 'mousedown', {
-			...eventData
+			...eventData,
+			preventDefault
 		} );
 
 		viewDocument.fire( 'dragstart', {

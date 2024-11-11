@@ -1,15 +1,14 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-/* globals CustomEvent, document */
+/* globals CustomEvent, document, customElements */
 
-import ColorPickerView from './../../src/colorpicker/colorpickerview';
-import 'vanilla-colorful/hex-color-picker.js';
-import env from '@ckeditor/ckeditor5-utils/src/env';
+import ColorPickerView from './../../src/colorpicker/colorpickerview.js';
+import env from '@ckeditor/ckeditor5-utils/src/env.js';
 
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
 import { Locale } from '@ckeditor/ckeditor5-utils';
 
 describe( 'ColorPickerView', () => {
@@ -302,6 +301,10 @@ describe( 'ColorPickerView', () => {
 	} );
 
 	describe( 'render()', () => {
+		it( 'should register the hex-color-picker custom element', () => {
+			expect( customElements.get( 'hex-color-picker' ) ).to.be.a( 'function' );
+		} );
+
 		it( 'should render color picker component', () => {
 			expect( view.picker.tagName ).to.equal( document.createElement( 'hex-color-picker' ).tagName );
 		} );
@@ -366,6 +369,36 @@ describe( 'ColorPickerView', () => {
 
 			view.destroy();
 			view.element.remove();
+		} );
+	} );
+
+	describe( 'isValid()', () => {
+		let hexInputElement;
+
+		beforeEach( () => {
+			hexInputElement = view.hexInputRow.inputView.fieldView.element;
+		} );
+
+		it( 'should return true for a valid color', () => {
+			hexInputElement.value = '#000';
+
+			expect( view.isValid() ).to.be.true;
+		} );
+
+		it( 'should return false for an invalid color', () => {
+			hexInputElement.value = 'Foo Bar';
+
+			expect( view.isValid() ).to.be.false;
+		} );
+
+		it( 'should return true if the hex input is not shown', () => {
+			const view = new ColorPickerView( locale, { format: 'hex', hideInput: true } );
+
+			view.render();
+
+			expect( view.isValid() ).to.be.true;
+
+			view.destroy();
 		} );
 	} );
 

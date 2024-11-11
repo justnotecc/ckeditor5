@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -7,7 +7,7 @@
  * @module html-support/htmlpagedataprocessor
  */
 
-import { HtmlDataProcessor, UpcastWriter, type ViewDocumentFragment } from 'ckeditor5/src/engine';
+import { HtmlDataProcessor, UpcastWriter, type ViewDocumentFragment } from 'ckeditor5/src/engine.js';
 
 /**
  * The full page HTML data processor class.
@@ -19,7 +19,7 @@ export default class HtmlPageDataProcessor extends HtmlDataProcessor {
 	 */
 	public override toView( data: string ): ViewDocumentFragment {
 		// Ignore content that is not a full page source.
-		if ( !data.match( /<(?:html|body|head|meta)(?:\s[^>]*)?>/i ) ) {
+		if ( !/<(?:html|body|head|meta)(?:\s[^>]*)?>/i.test( data.trim().slice( 0, 10_000 ) ) ) {
 			return super.toView( data );
 		}
 
@@ -27,14 +27,14 @@ export default class HtmlPageDataProcessor extends HtmlDataProcessor {
 		let docType = '';
 		let xmlDeclaration = '';
 
-		data = data.replace( /<!DOCTYPE[^>]*>/i, match => {
-			docType = match;
+		data = data.trim().replace( /<\?xml\s[^?]*\?>/i, match => {
+			xmlDeclaration = match;
 
 			return '';
 		} );
 
-		data = data.replace( /<\?xml\s[^?]*\?>/i, match => {
-			xmlDeclaration = match;
+		data = data.trim().replace( /^<!DOCTYPE\s[^>]*?>/i, match => {
+			docType = match;
 
 			return '';
 		} );

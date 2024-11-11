@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -7,12 +7,12 @@
  * @module engine/model/element
  */
 
-import Node, { type NodeAttributes } from './node';
-import NodeList from './nodelist';
-import Text from './text';
-import TextProxy from './textproxy';
+import Node, { type NodeAttributes } from './node.js';
+import NodeList from './nodelist.js';
+import Text from './text.js';
+import TextProxy from './textproxy.js';
 
-import type Item from './item';
+import type Item from './item.js';
 
 import { isIterable } from '@ckeditor/ckeditor5-utils';
 
@@ -82,10 +82,23 @@ export default class Element extends Node {
 	}
 
 	/**
-	 * Gets the child at the given index.
+	 * Gets the child at the given index. Returns `null` if incorrect index was passed.
+	 *
+	 * @param index Index in this element.
+	 * @returns Child node.
 	 */
 	public getChild( index: number ): Node | null {
 		return this._children.getNode( index );
+	}
+
+	/**
+	 * Gets the child at the given offset. Returns `null` if incorrect index was passed.
+	 *
+	 * @param offset Offset in this element.
+	 * @returns Child node.
+	 */
+	public getChildAtOffset( offset: number ): Node | null {
+		return this._children.getNodeAtOffset( offset );
 	}
 
 	/**
@@ -153,8 +166,8 @@ export default class Element extends Node {
 		// eslint-disable-next-line @typescript-eslint/no-this-alias, consistent-this
 		let node: Node = this;
 
-		for ( const index of relativePath ) {
-			node = ( node as Element ).getChild( ( node as Element ).offsetToIndex( index ) )!;
+		for ( const offset of relativePath ) {
+			node = ( node as Element ).getChildAtOffset( offset )!;
 		}
 
 		return node;

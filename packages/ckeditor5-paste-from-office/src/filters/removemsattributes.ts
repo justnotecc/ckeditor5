@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -7,7 +7,7 @@
  * @module paste-from-office/filters/removemsattributes
  */
 
-import { UpcastWriter, type ViewDocumentFragment } from 'ckeditor5/src/engine';
+import { UpcastWriter, type ViewDocumentFragment, type ViewElement } from 'ckeditor5/src/engine.js';
 
 /**
  * Cleanup MS attributes like styles, attributes and elements.
@@ -15,7 +15,8 @@ import { UpcastWriter, type ViewDocumentFragment } from 'ckeditor5/src/engine';
  * @param documentFragment element `data.content` obtained from clipboard.
  */
 export default function removeMSAttributes( documentFragment: ViewDocumentFragment ): void {
-	const elementsToUnwrap = [];
+	const elementsToUnwrap: Array<ViewElement> = [];
+
 	const writer = new UpcastWriter( documentFragment.document );
 
 	for ( const { item } of writer.createRangeIn( documentFragment ) ) {
@@ -35,7 +36,11 @@ export default function removeMSAttributes( documentFragment: ViewDocumentFragme
 			}
 		}
 
-		if ( item.is( 'element', 'w:sdt' ) ) {
+		if (
+			item.is( 'element', 'w:sdt' ) ||
+			item.is( 'element', 'w:sdtpr' ) && item.isEmpty ||
+			item.is( 'element', 'o:p' ) && item.isEmpty
+		) {
 			elementsToUnwrap.push( item );
 		}
 	}

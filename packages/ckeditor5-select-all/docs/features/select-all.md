@@ -4,8 +4,6 @@ meta-title: Select all | CKEditor 5 Documentation
 category: features
 ---
 
-{@snippet features/build-select-all-source}
-
 The select all feature lets you select the entire content using the <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>A</kbd> keystroke or a toolbar button. This way you can clear or copy all the content in one move.
 
 ## Demo
@@ -19,25 +17,21 @@ Press <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>A</kbd> or use the toolbar button {@ic
 {@snippet features/select-all}
 
 <info-box info>
-	This demo only presents a limited set of features. Visit the {@link examples/builds/full-featured-editor feature-rich editor example} to see more in action.
+	This demo presents a limited set of features. Visit the {@link examples/builds/full-featured-editor feature-rich editor example} to see more in action.
 </info-box>
 
 ## Installation
 
 <info-box info>
-	This feature is enabled by default in all {@link installation/getting-started/predefined-builds predefined builds} (loaded by the {@link module:essentials/essentials~Essentials} plugin) as a keyboard shortcut. The installation instructions are for developers interested in building their own, custom rich text editor or willing to configure the toolbar button.
+	⚠️ **New import paths**
+
+	Starting with {@link updating/update-to-42 version 42.0.0}, we changed the format of import paths. This guide uses the new, shorter format. Refer to the {@link getting-started/legacy-getting-started/legacy-imports Packages in the legacy setup} guide if you use an older version of CKEditor&nbsp;5.
 </info-box>
 
-To add this feature to your editor, install the [`@ckeditor/ckeditor5-select-all`](https://www.npmjs.com/package/@ckeditor/ckeditor5-select-all) package:
-
-```
-npm install --save @ckeditor/ckeditor5-select-all
-```
-
-Then add the `SelectAll` plugin to your plugin list and to the toolbar:
+After {@link getting-started/quick-start installing the editor}, add the feature to your plugin list and toolbar configuration:
 
 ```js
-import { SelectAll } from '@ckeditor/ckeditor5-select-all';
+import { ClassicEditor, SelectAll } from 'ckeditor5';
 
 ClassicEditor
 	.create( document.querySelector( '#editor' ), {
@@ -52,18 +46,18 @@ ClassicEditor
 ```
 
 <info-box info>
-	Read more about {@link installation/plugins/installing-plugins installing plugins} and {@link features/toolbar toolbar configuration}.
+	Read more about {@link getting-started/setup/configuration installing plugins} and {@link getting-started/setup/toolbar toolbar configuration}.
 </info-box>
 
 ## Related features
 
-* {@link features/keyboard-support Keyboard shortcuts} &ndash; Check other popular keyboard shortcuts supported by CKEditor&nbsp;5.
+* {@link features/accessibility#keyboard-shortcuts Keyboard shortcuts} &ndash; Check other popular keyboard shortcuts supported by CKEditor&nbsp;5.
 
 ## Common API
 
 The {@link module:select-all/selectall~SelectAll} plugin registers the `'selectAll'` UI button component and the `'selectAll'` command implemented by {@link module:select-all/selectallcommand~SelectAllCommand}.
 
-The command can be executed using the {@link module:core/editor/editor~Editor#execute `editor.execute()`} method:
+You can execute the command using the {@link module:core/editor/editor~Editor#execute `editor.execute()`} method:
 
 ```js
 // Select the entire content of the editor.

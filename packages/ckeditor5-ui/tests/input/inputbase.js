@@ -1,13 +1,13 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 /* global Event */
 
-import FocusTracker from '@ckeditor/ckeditor5-utils/src/focustracker';
-import InputBase from '../../src/input/inputbase';
-import InputView from '../../src/input/inputview';
+import FocusTracker from '@ckeditor/ckeditor5-utils/src/focustracker.js';
+import InputBase from '../../src/input/inputbase.js';
+import InputView from '../../src/input/inputview.js';
 
 describe( 'InputBase', () => {
 	let view, ariaDescribedById;
@@ -216,6 +216,26 @@ describe( 'InputBase', () => {
 				view.hasError = true;
 
 				expect( view.element.getAttribute( 'aria-invalid' ) ).to.equal( 'true' );
+			} );
+		} );
+
+		describe( 'tabIndex', () => {
+			it( 'should react on view#tabIndex', () => {
+				expect( view.element.getAttribute( 'tabIndex' ) ).to.be.null;
+
+				view.tabIndex = 123;
+
+				expect( view.element.getAttribute( 'tabIndex' ) ).to.equal( '123' );
+			} );
+		} );
+
+		describe( 'aria-label', () => {
+			it( 'should react on view#ariaLabel', () => {
+				expect( view.element.getAttribute( 'aria-label' ) ).to.be.null;
+
+				view.ariaLabel = 'reader text';
+
+				expect( view.element.getAttribute( 'aria-label' ) ).to.equal( 'reader text' );
 			} );
 		} );
 

@@ -1,18 +1,12 @@
-# Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+# Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
 #
-#                                     !!! IMPORTANT !!!
+# Want to contribute to this file? Submit your changes via a GitHub Pull Request.
 #
-#         Before you edit this file, please keep in mind that contributing to the project
-#                translations is possible ONLY via the Transifex online service.
-#
-#         To submit your translations, visit https://www.transifex.com/ckeditor/ckeditor5.
-#
-#                   To learn more, check out the official contributor's guide:
-#     https://ckeditor.com/docs/ckeditor5/latest/framework/guides/contributing/contributing.html
+# Check out the official contributor's guide:
+# https://ckeditor.com/docs/ckeditor5/latest/framework/guides/contributing/contributing.html
 #
 msgid ""
 msgstr ""
-"Language-Team: Nepali (Nepal) (https://app.transifex.com/ckeditor/teams/11143/ne_NP/)\n"
 "Language: ne_NP\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -28,6 +22,10 @@ msgstr "लिङ्क"
 msgctxt "Label for the URL input in the Link URL editing balloon."
 msgid "Link URL"
 msgstr "लिङ्क यूआरएल"
+
+msgctxt "An error text displayed when user attempted to enter an empty URL."
+msgid "Link URL must not be empty."
+msgstr ""
 
 msgctxt "Label for the image link button."
 msgid "Link image"
@@ -52,3 +50,11 @@ msgstr "नयाँ ट्याबमा खोल्न"
 msgctxt "The label of the switch button that controls whether the edited link refers to downloadable resource."
 msgid "Downloadable"
 msgstr "डाउनलोड योग्य"
+
+msgctxt "Keystroke description for assistive technologies: keystroke for creating a link."
+msgid "Create link"
+msgstr ""
+
+msgctxt "Keystroke description for assistive technologies: keystroke for moving out of a link."
+msgid "Move out of a link"
+msgstr ""

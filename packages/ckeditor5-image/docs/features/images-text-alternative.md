@@ -18,7 +18,7 @@ The editor below has the base image feature enabled. Click any of the images and
 {@snippet features/image-text-alternative}
 
 <info-box info>
-	This demo only presents a limited set of features. Visit the {@link examples/builds/full-featured-editor feature-rich editor example} to see more in action.
+	This demo presents a limited set of features. Visit the {@link examples/builds/full-featured-editor feature-rich editor example} to see more in action.
 </info-box>
 
 ## Additional feature information
@@ -48,7 +48,13 @@ When using the {@link features/ckbox CKBox file manager}, you can utilize its {@
 
 ## Installation
 
-This feature is available in all {@link installation/getting-started/predefined-builds ready-to-use editor builds}. If your integration uses a custom editor build, check out the {@link features/images-installation image features installation guide} to learn how to enable this feature.
+<info-box info>
+	⚠️ **New import paths**
+
+	Starting with {@link updating/update-to-42 version 42.0.0}, we changed the format of import paths. This guide uses the new, shorter format. Refer to the {@link getting-started/legacy-getting-started/legacy-imports Packages in the legacy setup} guide if you use an older version of CKEditor&nbsp;5.
+</info-box>
+
+Check out the {@link features/images-installation image features installation guide} to learn how to enable this feature.
 
 ## Common API
 

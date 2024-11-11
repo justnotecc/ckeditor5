@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -9,14 +9,14 @@
 
 /* globals DOMParser */
 
-import BasicHtmlWriter from './basichtmlwriter';
-import DomConverter from '../view/domconverter';
+import BasicHtmlWriter from './basichtmlwriter.js';
+import DomConverter from '../view/domconverter.js';
 
-import type DataProcessor from './dataprocessor';
-import type HtmlWriter from './htmlwriter';
-import type ViewDocument from '../view/document';
-import type ViewDocumentFragment from '../view/documentfragment';
-import type { MatcherPattern } from '../view/matcher';
+import type DataProcessor from './dataprocessor.js';
+import type HtmlWriter from './htmlwriter.js';
+import type ViewDocument from '../view/document.js';
+import type ViewDocumentFragment from '../view/documentfragment.js';
+import type { MatcherPattern } from '../view/matcher.js';
 
 /**
  * The HTML data processor class.
@@ -115,7 +115,7 @@ export default class HtmlDataProcessor implements DataProcessor {
 		// Wrap data with a <body> tag so leading non-layout nodes (like <script>, <style>, HTML comment)
 		// will be preserved in the body collection.
 		// Do it only for data that is not a full HTML document.
-		if ( !data.match( /<(?:html|body|head|meta)(?:\s[^>]*)?>/i ) ) {
+		if ( !/<(?:html|body|head|meta)(?:\s[^>]*)?>/i.test( data.trim().slice( 0, 10_000 ) ) ) {
 			data = `<body>${ data }</body>`;
 		}
 

@@ -1,27 +1,27 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 /* global document, Event, console */
 
-import ToolbarView from '../../src/toolbar/toolbarview';
-import ToolbarSeparatorView from '../../src/toolbar/toolbarseparatorview';
-import KeystrokeHandler from '@ckeditor/ckeditor5-utils/src/keystrokehandler';
-import ComponentFactory from '../../src/componentfactory';
-import FocusTracker from '@ckeditor/ckeditor5-utils/src/focustracker';
-import FocusCycler from '../../src/focuscycler';
-import { keyCodes } from '@ckeditor/ckeditor5-utils/src/keyboard';
-import ViewCollection from '../../src/viewcollection';
-import global from '@ckeditor/ckeditor5-utils/src/dom/global';
-import View from '../../src/view';
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
-import { add as addTranslations, _clear as clearTranslations } from '@ckeditor/ckeditor5-utils/src/translation-service';
-import Rect from '@ckeditor/ckeditor5-utils/src/dom/rect';
-import Locale from '@ckeditor/ckeditor5-utils/src/locale';
-import ResizeObserver from '@ckeditor/ckeditor5-utils/src/dom/resizeobserver';
-import ToolbarLineBreakView from '../../src/toolbar/toolbarlinebreakview';
-import DropdownView from '../../src/dropdown/dropdownview';
+import ToolbarView from '../../src/toolbar/toolbarview.js';
+import ToolbarSeparatorView from '../../src/toolbar/toolbarseparatorview.js';
+import KeystrokeHandler from '@ckeditor/ckeditor5-utils/src/keystrokehandler.js';
+import ComponentFactory from '../../src/componentfactory.js';
+import FocusTracker from '@ckeditor/ckeditor5-utils/src/focustracker.js';
+import FocusCycler from '../../src/focuscycler.js';
+import { keyCodes } from '@ckeditor/ckeditor5-utils/src/keyboard.js';
+import ViewCollection from '../../src/viewcollection.js';
+import global from '@ckeditor/ckeditor5-utils/src/dom/global.js';
+import View from '../../src/view.js';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
+import { add as addTranslations, _clear as clearTranslations } from '@ckeditor/ckeditor5-utils/src/translation-service.js';
+import Rect from '@ckeditor/ckeditor5-utils/src/dom/rect.js';
+import Locale from '@ckeditor/ckeditor5-utils/src/locale.js';
+import ResizeObserver from '@ckeditor/ckeditor5-utils/src/dom/resizeobserver.js';
+import ToolbarLineBreakView from '../../src/toolbar/toolbarlinebreakview.js';
+import DropdownView from '../../src/dropdown/dropdownview.js';
 
 import { icons } from '@ckeditor/ckeditor5-core';
 
@@ -256,28 +256,36 @@ describe( 'ToolbarView', () => {
 
 			view.render();
 
-			sinon.assert.calledOnce( spyAdd );
+			sinon.assert.calledOnceWithExactly( spyAdd, view.element );
 			sinon.assert.notCalled( spyRemove );
 
 			view.destroy();
 		} );
 
-		it( 'registers #items in #focusTracker', () => {
+		// https://github.com/cksource/ckeditor5-commercial/issues/6633
+		it( 'registers #items in #focusTracker as View instances (not just DOM elements) to alow for complex Views scattered across ' +
+			'multiple DOM sub-trees',
+		() => {
 			const view = new ToolbarView( locale );
 			const spyAdd = sinon.spy( view.focusTracker, 'add' );
 			const spyRemove = sinon.spy( view.focusTracker, 'remove' );
 
-			view.items.add( focusable() );
-			view.items.add( focusable() );
+			const focusableViewA = focusable();
+			const focusableViewB = focusable();
+
+			view.items.add( focusableViewA );
+			view.items.add( focusableViewB );
 			sinon.assert.notCalled( spyAdd );
 
 			view.render();
 
 			// 2 for items and 1 for toolbar itself.
 			sinon.assert.calledThrice( spyAdd );
+			sinon.assert.calledWithExactly( spyAdd.secondCall, focusableViewA );
+			sinon.assert.calledWithExactly( spyAdd.thirdCall, focusableViewB );
 
 			view.items.remove( 1 );
-			sinon.assert.calledOnce( spyRemove );
+			sinon.assert.calledOnceWithExactly( spyRemove, focusableViewB );
 
 			view.destroy();
 		} );

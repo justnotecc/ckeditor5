@@ -1,28 +1,28 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor';
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
-import ItalicEditing from '@ckeditor/ckeditor5-basic-styles/src/italic/italicediting';
-import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
-import LinkImageEditing from '@ckeditor/ckeditor5-link/src/linkimageediting';
+import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor.js';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
+import ItalicEditing from '@ckeditor/ckeditor5-basic-styles/src/italic/italicediting.js';
+import Plugin from '@ckeditor/ckeditor5-core/src/plugin.js';
+import LinkImageEditing from '@ckeditor/ckeditor5-link/src/linkimageediting.js';
 
-import global from '@ckeditor/ckeditor5-utils/src/dom/global';
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
-import { getData as getModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
-import { getData as getViewData } from '@ckeditor/ckeditor5-engine/src/dev-utils/view';
-import { NativeFileReaderMock, UploadAdapterMock } from '@ckeditor/ckeditor5-upload/tests/_utils/mocks';
+import global from '@ckeditor/ckeditor5-utils/src/dom/global.js';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
+import { getData as getModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model.js';
+import { getData as getViewData } from '@ckeditor/ckeditor5-engine/src/dev-utils/view.js';
+import { NativeFileReaderMock, UploadAdapterMock } from '@ckeditor/ckeditor5-upload/tests/_utils/mocks.js';
 
-import ImageInlineEditing from '../src/image/imageinlineediting';
-import ImageBlockEditing from '../src/image/imageblockediting';
-import PictureEditing from '../src/pictureediting';
-import ImageEditing from '../src/image/imageediting';
-import ImageUtils from '../src/imageutils';
-import ImageResizeEditing from '../src/imageresize/imageresizeediting';
-import ImageCaptionEditing from '../src/imagecaption/imagecaptionediting';
-import ImageUploadEditing from '../src/imageupload/imageuploadediting';
+import ImageInlineEditing from '../src/image/imageinlineediting.js';
+import ImageBlockEditing from '../src/image/imageblockediting.js';
+import PictureEditing from '../src/pictureediting.js';
+import ImageEditing from '../src/image/imageediting.js';
+import ImageUtils from '../src/imageutils.js';
+import ImageResizeEditing from '../src/imageresize/imageresizeediting.js';
+import ImageCaptionEditing from '../src/imagecaption/imagecaptionediting.js';
+import ImageUploadEditing from '../src/imageupload/imageuploadediting.js';
 
 describe( 'PictureEditing', () => {
 	let editor, model, modelDocument, view, imageUtils;
@@ -52,6 +52,14 @@ describe( 'PictureEditing', () => {
 
 	it( 'should have pluginName', () => {
 		expect( PictureEditing.pluginName ).to.equal( 'PictureEditing' );
+	} );
+
+	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+		expect( PictureEditing.isOfficialPlugin ).to.be.true;
+	} );
+
+	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+		expect( PictureEditing.isPremiumPlugin ).to.be.false;
 	} );
 
 	it( 'should be loaded', () => {
@@ -1049,7 +1057,8 @@ describe( 'PictureEditing', () => {
 									'class="ck-editor__editable ck-editor__nested-editable" ' +
 									'contenteditable="true" ' +
 									'data-placeholder="Enter image caption" ' +
-									'role="textbox"' +
+									'role="textbox" ' +
+									'tabindex="-1"' +
 								'>' +
 									'Caption' +
 								'</figcaption>' +
@@ -1221,7 +1230,8 @@ describe( 'PictureEditing', () => {
 									'class="ck-editor__editable ck-editor__nested-editable" ' +
 									'contenteditable="true" ' +
 									'data-placeholder="Enter image caption" ' +
-									'role="textbox"' +
+									'role="textbox" ' +
+									'tabindex="-1"' +
 								'>' +
 									'Text of the caption' +
 								'</figcaption>' +
@@ -1385,7 +1395,8 @@ describe( 'PictureEditing', () => {
 										'class="ck-editor__editable ck-editor__nested-editable" ' +
 										'contenteditable="true" ' +
 										'data-placeholder="Enter image caption" ' +
-										'role="textbox"' +
+										'role="textbox" ' +
+										'tabindex="-1"' +
 									'>' +
 										'Caption' +
 									'</figcaption>' +
@@ -1431,7 +1442,8 @@ describe( 'PictureEditing', () => {
 										'class="ck-editor__editable ck-editor__nested-editable" ' +
 										'contenteditable="true" ' +
 										'data-placeholder="Enter image caption" ' +
-										'role="textbox"' +
+										'role="textbox" ' +
+										'tabindex="-1"' +
 									'>' +
 										'Text of the caption' +
 									'</figcaption>' +
@@ -1473,7 +1485,8 @@ describe( 'PictureEditing', () => {
 										'class="ck-editor__editable ck-editor__nested-editable" ' +
 										'contenteditable="true" ' +
 										'data-placeholder="Enter image caption" ' +
-										'role="textbox"' +
+										'role="textbox" ' +
+										'tabindex="-1"' +
 									'>' +
 										'Text of the caption' +
 									'</figcaption>' +
@@ -1851,6 +1864,158 @@ describe( 'PictureEditing', () => {
 					);
 
 					expect( editor.getData() ).to.equal( '<p>foo<img src="/assets/sample.png">bar</p>' );
+				} );
+
+				it( 'should downcast changed "sources" attribute on an existing picture element', () => {
+					editor.setData(
+						'<figure class="image">' +
+							'<picture>' +
+								'<source srcset="">' +
+								'<img src="/assets/sample.png">' +
+							'</picture>' +
+							'<figcaption>Caption</figcaption>' +
+						'</figure>'
+					);
+
+					model.change( writer => {
+						writer.setAttribute(
+							'sources',
+							[
+								{
+									srcset: '/assets/sample2.png'
+								}
+							],
+							modelDocument.getRoot().getChild( 0 )
+						);
+					} );
+
+					expect( getViewData( view, { withoutSelection: true } ) ).to.equal(
+						'<figure class="ck-widget image" contenteditable="false">' +
+							'<picture>' +
+								'<source srcset="/assets/sample2.png"></source>' +
+								'<img src="/assets/sample.png"></img>' +
+							'</picture>' +
+							'<figcaption ' +
+								'aria-label="Caption for the image" ' +
+								'class="ck-editor__editable ck-editor__nested-editable" ' +
+								'contenteditable="true" ' +
+								'data-placeholder="Enter image caption" ' +
+								'role="textbox" ' +
+								'tabindex="-1">' +
+									'Caption' +
+							'</figcaption>' +
+						'</figure>'
+					);
+				} );
+
+				it( 'should downcast changed "sources" attribute on an existing linked picture element', () => {
+					editor.setData(
+						'<figure class="image">' +
+							'<a href="https://ckeditor.com">' +
+								'<picture>' +
+									'<source srcset="/assets/sample.png">' +
+									'<img src="/assets/sample.png">' +
+								'</picture>' +
+							'</a>' +
+							'<figcaption>Caption</figcaption>' +
+						'</figure>'
+					);
+
+					model.change( writer => {
+						writer.setAttribute(
+							'sources',
+							[
+								{
+									srcset: '/assets/sample2.png'
+								}
+							],
+							modelDocument.getRoot().getChild( 0 )
+						);
+					} );
+
+					expect( getViewData( view, { withoutSelection: true } ) ).to.equal(
+						'<figure class="ck-widget image" contenteditable="false">' +
+							'<a href="https://ckeditor.com">' +
+								'<picture>' +
+									'<source srcset="/assets/sample2.png"></source>' +
+									'<img src="/assets/sample.png"></img>' +
+								'</picture>' +
+							'</a>' +
+							'<figcaption ' +
+								'aria-label="Caption for the image" ' +
+								'class="ck-editor__editable ck-editor__nested-editable" ' +
+								'contenteditable="true" ' +
+								'data-placeholder="Enter image caption" ' +
+								'role="textbox" ' +
+								'tabindex="-1">' +
+									'Caption' +
+							'</figcaption>' +
+						'</figure>'
+					);
+				} );
+
+				it( 'should keep existing picture element attributes when downcasting "sources" attribute', () => {
+					editor.model.schema.extend( 'imageBlock', {
+						allowAttributes: [ 'pictureClass' ]
+					} );
+
+					editor.conversion.for( 'upcast' ).add( dispatcher => {
+						dispatcher.on( 'element:picture', ( _evt, data, conversionApi ) => {
+							const viewItem = data.viewItem;
+							const modelElement = data.modelCursor.parent;
+
+							conversionApi.writer.setAttribute( 'pictureClass', viewItem.getAttribute( 'class' ), modelElement );
+						} );
+					} );
+
+					editor.conversion.for( 'downcast' ).add( dispatcher => {
+						dispatcher.on( 'attribute:pictureClass:imageBlock', ( evt, data, conversionApi ) => {
+							const element = conversionApi.mapper.toViewElement( data.item );
+							const pictureElement = element.getChild( 0 );
+
+							conversionApi.writer.setAttribute( 'class', data.attributeNewValue, pictureElement );
+						} );
+					} );
+
+					editor.setData(
+						'<figure class="image">' +
+							'<picture class="test-class">' +
+								'<source srcset="">' +
+								'<img src="/assets/sample.png">' +
+							'</picture>' +
+							'<figcaption>Caption</figcaption>' +
+						'</figure>'
+					);
+
+					model.change( writer => {
+						writer.setAttribute(
+							'sources',
+							[
+								{
+									srcset: '/assets/sample2.png'
+								}
+							],
+							modelDocument.getRoot().getChild( 0 )
+						);
+					} );
+
+					expect( getViewData( view, { withoutSelection: true } ) ).to.equal(
+						'<figure class="ck-widget image" contenteditable="false">' +
+							'<picture class="test-class">' +
+								'<source srcset="/assets/sample2.png"></source>' +
+								'<img src="/assets/sample.png"></img>' +
+							'</picture>' +
+							'<figcaption ' +
+								'aria-label="Caption for the image" ' +
+								'class="ck-editor__editable ck-editor__nested-editable" ' +
+								'contenteditable="true" ' +
+								'data-placeholder="Enter image caption" ' +
+								'role="textbox" ' +
+								'tabindex="-1">' +
+									'Caption' +
+							'</figcaption>' +
+						'</figure>'
+					);
 				} );
 			} );
 		} );

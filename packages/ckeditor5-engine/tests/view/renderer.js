@@ -1,36 +1,36 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 /* globals document, window, NodeFilter, MutationObserver, HTMLImageElement, console */
 
-import View from '../../src/view/view';
-import ViewElement from '../../src/view/element';
-import ViewEditableElement from '../../src/view/editableelement';
-import ViewContainerElement from '../../src/view/containerelement';
-import ViewAttributeElement from '../../src/view/attributeelement';
-import ViewRawElement from '../../src/view/rawelement';
-import ViewUIElement from '../../src/view/uielement';
-import ViewText from '../../src/view/text';
-import ViewRange from '../../src/view/range';
-import ViewPosition from '../../src/view/position';
-import DocumentSelection from '../../src/view/documentselection';
-import DomConverter from '../../src/view/domconverter';
-import Renderer from '../../src/view/renderer';
-import DocumentFragment from '../../src/view/documentfragment';
-import ViewDocument from '../../src/view/document';
-import DowncastWriter from '../../src/view/downcastwriter';
+import View from '../../src/view/view.js';
+import ViewElement from '../../src/view/element.js';
+import ViewEditableElement from '../../src/view/editableelement.js';
+import ViewContainerElement from '../../src/view/containerelement.js';
+import ViewAttributeElement from '../../src/view/attributeelement.js';
+import ViewRawElement from '../../src/view/rawelement.js';
+import ViewUIElement from '../../src/view/uielement.js';
+import ViewText from '../../src/view/text.js';
+import ViewRange from '../../src/view/range.js';
+import ViewPosition from '../../src/view/position.js';
+import DocumentSelection from '../../src/view/documentselection.js';
+import DomConverter from '../../src/view/domconverter.js';
+import Renderer from '../../src/view/renderer.js';
+import DocumentFragment from '../../src/view/documentfragment.js';
+import ViewDocument from '../../src/view/document.js';
+import DowncastWriter from '../../src/view/downcastwriter.js';
 
-import { parse, stringify, setData as setViewData, getData as getViewData } from '../../src/dev-utils/view';
-import { BR_FILLER, INLINE_FILLER, INLINE_FILLER_LENGTH } from '../../src/view/filler';
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
-import createViewRoot from './_utils/createroot';
-import createElement from '@ckeditor/ckeditor5-utils/src/dom/createelement';
-import normalizeHtml from '@ckeditor/ckeditor5-utils/tests/_utils/normalizehtml';
-import env from '@ckeditor/ckeditor5-utils/src/env';
-import { expectToThrowCKEditorError } from '@ckeditor/ckeditor5-utils/tests/_utils/utils';
-import { StylesProcessor } from '../../src/view/stylesmap';
+import { parse, stringify, setData as setViewData, getData as getViewData } from '../../src/dev-utils/view.js';
+import { BR_FILLER, INLINE_FILLER, INLINE_FILLER_LENGTH } from '../../src/view/filler.js';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
+import createViewRoot from './_utils/createroot.js';
+import createElement from '@ckeditor/ckeditor5-utils/src/dom/createelement.js';
+import normalizeHtml from '@ckeditor/ckeditor5-utils/tests/_utils/normalizehtml.js';
+import env from '@ckeditor/ckeditor5-utils/src/env.js';
+import { expectToThrowCKEditorError } from '@ckeditor/ckeditor5-utils/tests/_utils/utils.js';
+import { StylesProcessor } from '../../src/view/stylesmap.js';
 
 describe( 'Renderer', () => {
 	let selection, domConverter, renderer, viewDocument;
@@ -762,6 +762,56 @@ describe( 'Renderer', () => {
 			expect( domSelection.rangeCount ).to.equal( 1 );
 			expect( domSelection.getRangeAt( 0 ).startContainer ).to.equal( domP.childNodes[ 0 ].childNodes[ 0 ] );
 			expect( domSelection.getRangeAt( 0 ).startOffset ).to.equal( 3 );
+			expect( domSelection.getRangeAt( 0 ).collapsed ).to.be.true;
+
+			// Step 4: No mutation on second render
+			renderer.markToSync( 'children', viewP );
+			renderAndExpectNoChanges( renderer, domRoot );
+		} );
+
+		// See https://github.com/ckeditor/ckeditor5/issues/14028.
+		it( 'should add and remove inline filler in case <p><br>[]</p>', () => {
+			const domSelection = document.getSelection();
+
+			// Step 1: <p><br>{}</p>
+			const { view: viewP, selection: newSelection } = parse(
+				'<container:p><empty:br/>[]</container:p>' );
+
+			viewRoot._appendChild( viewP );
+			selection._setTo( newSelection );
+
+			renderer.markToSync( 'children', viewRoot );
+			renderer.render();
+
+			const domP = domRoot.childNodes[ 0 ];
+
+			expect( domP.childNodes.length ).to.equal( 3 );
+			expect( domP.childNodes[ 0 ].tagName.toLowerCase() ).to.equal( 'br' );
+			expect( domP.childNodes[ 1 ].data ).to.equal( INLINE_FILLER );
+			expect( domConverter.isBlockFiller( domP.childNodes[ 2 ] ) ).to.be.true;
+
+			expect( domSelection.rangeCount ).to.equal( 1 );
+			expect( domSelection.getRangeAt( 0 ).startContainer ).to.equal( domP.childNodes[ 1 ] );
+			expect( domSelection.getRangeAt( 0 ).startOffset ).to.equal( INLINE_FILLER_LENGTH );
+			expect( domSelection.getRangeAt( 0 ).collapsed ).to.be.true;
+
+			// Step 2: No mutation on second render
+			renderer.markToSync( 'children', viewP );
+			renderAndExpectNoChanges( renderer, domRoot );
+
+			// Step 3: <p>{}<br></p>
+			selection._setTo( ViewRange._createFromParentsAndOffsets(
+				viewP.getChild( 0 ), 0, viewP.getChild( 0 ), 0 ) );
+
+			renderer.render();
+
+			expect( domP.childNodes.length ).to.equal( 2 );
+			expect( domP.childNodes[ 0 ].tagName.toLowerCase() ).to.equal( 'br' );
+			expect( domConverter.isBlockFiller( domP.childNodes[ 1 ] ) ).to.be.true;
+
+			expect( domSelection.rangeCount ).to.equal( 1 );
+			expect( domSelection.getRangeAt( 0 ).startContainer ).to.equal( domP.childNodes[ 0 ].childNodes[ 0 ] );
+			expect( domSelection.getRangeAt( 0 ).startOffset ).to.equal( INLINE_FILLER_LENGTH );
 			expect( domSelection.getRangeAt( 0 ).collapsed ).to.be.true;
 
 			// Step 4: No mutation on second render
@@ -5582,29 +5632,6 @@ describe( 'Renderer', () => {
 	} );
 
 	describe( 'Blocking rendering while composing (IME)', () => {
-		it( 'should call #render() as soon as the user end composition in the document', () => {
-			const viewDocument = new ViewDocument( new StylesProcessor() );
-			const selection = new DocumentSelection();
-			const domConverter = new DomConverter( viewDocument, { renderingMode: 'editing' } );
-			const renderer = new Renderer( domConverter, selection );
-
-			renderer.domDocuments.add( document );
-
-			const renderSpy = sinon.spy( renderer, 'render' );
-
-			expect( renderer.isComposing ).to.be.false;
-
-			renderer.isComposing = true;
-
-			sinon.assert.notCalled( renderSpy );
-
-			renderer.isComposing = false;
-
-			sinon.assert.calledOnce( renderSpy );
-
-			viewDocument.destroy();
-		} );
-
 		describe( 'render()', () => {
 			let viewRoot, domRoot;
 
@@ -6086,6 +6113,34 @@ describe( 'Renderer', () => {
 			expect( domRoot.childNodes[ 0 ].tagName ).to.equal( 'B' );
 			expect( domRoot.childNodes[ 0 ].childNodes.length ).to.equal( 1 );
 			expect( domRoot.childNodes[ 0 ].childNodes[ 0 ].data ).to.equal( 'bar' );
+		} );
+
+		it( 'should not update text on Android if only NBSPs are changed while composing', () => {
+			testUtils.sinon.stub( env, 'isAndroid' ).value( true );
+
+			const viewText = new ViewText( viewDocument, 'foo  bar' );
+			viewRoot._appendChild( viewText );
+
+			renderer.markToSync( 'children', viewRoot );
+			renderer.render();
+
+			expect( domRoot.childNodes.length ).to.equal( 1 );
+			expect( domRoot.childNodes[ 0 ].data ).to.equal( 'foo \u00A0bar' );
+
+			// Browser modified NBSP while composing.
+			renderer.isComposing = true;
+			domRoot.childNodes[ 0 ].data = 'foo\u00A0 bar';
+			renderer._updateText( viewText, {} );
+
+			expect( domRoot.childNodes.length ).to.equal( 1 );
+			expect( domRoot.childNodes[ 0 ].data ).to.equal( 'foo\u00A0 bar' );
+
+			// Rendering after composition.
+			renderer.isComposing = false;
+			renderer._updateText( viewText, {} );
+
+			expect( domRoot.childNodes.length ).to.equal( 1 );
+			expect( domRoot.childNodes[ 0 ].data ).to.equal( 'foo \u00A0bar' );
 		} );
 	} );
 

@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -17,10 +17,10 @@ import {
 	View,
 	ViewCollection,
 	createLabeledInputNumber
-} from '../../../src';
-import Locale from '@ckeditor/ckeditor5-utils/src/locale';
-import { keyCodes } from '@ckeditor/ckeditor5-utils/src/keyboard';
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
+} from '../../../src/index.js';
+import Locale from '@ckeditor/ckeditor5-utils/src/locale.js';
+import { keyCodes } from '@ckeditor/ckeditor5-utils/src/keyboard.js';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
 
 describe( 'SearchTextView', () => {
 	let view, filteredView;
@@ -531,6 +531,16 @@ describe( 'SearchTextView', () => {
 			view.reset();
 
 			sinon.assert.calledOnceWithExactly( spy, '' );
+		} );
+
+		it( 'resets the list scroll', () => {
+			const list = view.filteredView;
+			const spy = sinon.spy( list.element, 'scrollTo' );
+
+			view.reset();
+
+			sinon.assert.calledOnce( spy );
+			sinon.assert.calledWith( spy, 0, 0 );
 		} );
 	} );
 

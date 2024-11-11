@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -7,22 +7,20 @@
  * @module ui/colorselector/colorgridsfragmentview
  */
 
-import View from '../view';
-import ButtonView from '../button/buttonview';
-import ColorGridView, { type ColorDefinition } from '../colorgrid/colorgridview';
-import ColorTileView from '../colorgrid/colortileview';
-import LabelView from '../label/labelview';
-import Template from '../template';
+import View from '../view.js';
+import ButtonView from '../button/buttonview.js';
+import ColorGridView, { type ColorDefinition } from '../colorgrid/colorgridview.js';
+import ColorTileView from '../colorgrid/colortileview.js';
+import Template from '../template.js';
 
-import DocumentColorCollection from './documentcolorcollection';
+import DocumentColorCollection from './documentcolorcollection.js';
 
 import type { Model } from '@ckeditor/ckeditor5-engine';
 import type { FocusTracker, Locale } from '@ckeditor/ckeditor5-utils';
-import type ViewCollection from '../viewcollection';
-import type { ColorSelectorExecuteEvent, ColorSelectorColorPickerShowEvent } from './colorselectorview';
-
-import removeButtonIcon from '@ckeditor/ckeditor5-core/theme/icons/eraser.svg';
-import colorPaletteIcon from '../../theme/icons/color-palette.svg';
+import type ViewCollection from '../viewcollection.js';
+import type { FocusableView } from '../focuscycler.js';
+import type { ColorSelectorExecuteEvent, ColorSelectorColorPickerShowEvent } from './colorselectorview.js';
+import { icons } from '@ckeditor/ckeditor5-core';
 
 /**
  * One of the fragments of {@link module:ui/colorselector/colorselectorview~ColorSelectorView}.
@@ -118,7 +116,7 @@ export default class ColorGridsFragmentView extends View {
 	 *
 	 * @readonly
 	 */
-	protected _focusables: ViewCollection;
+	protected _focusables: ViewCollection<FocusableView>;
 
 	/**
 	 * Document color section's label.
@@ -163,7 +161,7 @@ export default class ColorGridsFragmentView extends View {
 			documentColorsLabel?: string;
 			documentColorsCount?: number;
 			focusTracker: FocusTracker;
-			focusables: ViewCollection;
+			focusables: ViewCollection<FocusableView>;
 		}
 	) {
 		super( locale );
@@ -260,16 +258,21 @@ export default class ColorGridsFragmentView extends View {
 		if ( this.documentColorsCount ) {
 			// Create a label for document colors.
 			const bind = Template.bind( this.documentColors, this.documentColors );
-			const label = new LabelView( this.locale );
-			label.text = this._documentColorsLabel;
-			label.extendTemplate( {
+			const label = new View( this.locale );
+			label.setTemplate( {
+				tag: 'span',
 				attributes: {
 					class: [
 						'ck',
 						'ck-color-grid__label',
 						bind.if( 'isEmpty', 'ck-hidden' )
 					]
-				}
+				},
+				children: [
+					{
+						text: this._documentColorsLabel
+					}
+				]
 			} );
 			this.items.add( label );
 			this.documentColorsGrid = this._createDocumentColorsGrid();
@@ -279,7 +282,6 @@ export default class ColorGridsFragmentView extends View {
 		this._createColorPickerButton();
 
 		this._addColorSelectorElementsToFocusTracker();
-		this.focus();
 	}
 
 	/**
@@ -334,7 +336,7 @@ export default class ColorGridsFragmentView extends View {
 		this.colorPickerButtonView.set( {
 			label: this._colorPickerLabel,
 			withText: true,
-			icon: colorPaletteIcon,
+			icon: icons.colorPalette,
 			class: 'ck-color-selector__color-picker'
 		} );
 
@@ -351,7 +353,7 @@ export default class ColorGridsFragmentView extends View {
 
 		buttonView.set( {
 			withText: true,
-			icon: removeButtonIcon,
+			icon: icons.eraser,
 			label: this._removeButtonLabel
 		} );
 

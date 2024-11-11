@@ -1,15 +1,15 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-/* global document */
+/* global document, window */
 
-import CharacterGridView from '../../src/ui/charactergridview';
-import ViewCollection from '@ckeditor/ckeditor5-ui/src/viewcollection';
-import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview';
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
-import { keyCodes } from '@ckeditor/ckeditor5-utils/src/keyboard';
+import CharacterGridView from '../../src/ui/charactergridview.js';
+import ViewCollection from '@ckeditor/ckeditor5-ui/src/viewcollection.js';
+import ButtonView from '@ckeditor/ckeditor5-ui/src/button/buttonview.js';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
+import { keyCodes } from '@ckeditor/ckeditor5-utils/src/keyboard.js';
 
 describe( 'CharacterGridView', () => {
 	let view;
@@ -62,7 +62,7 @@ describe( 'CharacterGridView', () => {
 				view.destroy();
 			} );
 
-			describe( 'Default grid - 10 tiles in a row', () => {
+			describe( 'Default grid - responsive number of tiles depending on width', () => {
 				it( '"arrow right" should focus the next focusable grid item', () => {
 					const keyEvtData = {
 						keyCode: keyCodes.arrowright,
@@ -83,6 +83,12 @@ describe( 'CharacterGridView', () => {
 				} );
 
 				it( '"arrow down" should focus the focusable grid item in the second row', () => {
+					const numberOfColumns = window
+						.getComputedStyle( view.element.firstChild ) // Responsive .ck-character-grid__tiles
+						.getPropertyValue( 'grid-template-columns' )
+						.split( ' ' )
+						.length;
+
 					const keyEvtData = {
 						keyCode: keyCodes.arrowdown,
 						preventDefault: sinon.spy(),
@@ -93,7 +99,7 @@ describe( 'CharacterGridView', () => {
 					view.focusTracker.isFocused = true;
 					view.focusTracker.focusedElement = view.tiles.first.element;
 
-					const spy = sinon.spy( view.tiles.get( 10 ), 'focus' );
+					const spy = sinon.spy( view.tiles.get( numberOfColumns ), 'focus' );
 
 					view.keystrokes.press( keyEvtData );
 					sinon.assert.calledOnce( keyEvtData.preventDefault );
@@ -230,7 +236,7 @@ describe( 'CharacterGridView', () => {
 	} );
 
 	function createTilesForGrid( gridView ) {
-		for ( let i = 0; i < 11; i++ ) {
+		for ( let i = 0; i < 51; i++ ) {
 			gridView.tiles.add( gridView.createTile( 'ε', 'foo bar baz' ) );
 		}
 	}

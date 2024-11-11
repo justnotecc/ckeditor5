@@ -1,13 +1,13 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-import Element from '../../src/model/element';
-import Text from '../../src/model/text';
-import TextProxy from '../../src/model/textproxy';
-import DocumentFragment from '../../src/model/documentfragment';
-import { expectToThrowCKEditorError } from '@ckeditor/ckeditor5-utils/tests/_utils/utils';
+import Element from '../../src/model/element.js';
+import Text from '../../src/model/text.js';
+import TextProxy from '../../src/model/textproxy.js';
+import DocumentFragment from '../../src/model/documentfragment.js';
+import { expectToThrowCKEditorError } from '@ckeditor/ckeditor5-utils/tests/_utils/utils.js';
 
 describe( 'DocumentFragment', () => {
 	describe( 'constructor()', () => {
@@ -259,6 +259,29 @@ describe( 'DocumentFragment', () => {
 			const p = new Element( 'p' );
 
 			expect( frag.getChildStartOffset( p ) ).to.equal( null );
+		} );
+	} );
+
+	describe( 'getChildAtOffset', () => {
+		it( 'should return child at given offset', () => {
+			const frag = new DocumentFragment( [ new Element( 'p' ), new Text( 'bar' ), new Element( 'h' ) ] );
+
+			const p = frag.getChild( 0 );
+			const textBAR = frag.getChild( 1 );
+			const h = frag.getChild( 2 );
+
+			expect( frag.getChildAtOffset( 0 ) ).to.equal( p );
+			expect( frag.getChildAtOffset( 1 ) ).to.equal( textBAR );
+			expect( frag.getChildAtOffset( 2 ) ).to.equal( textBAR );
+			expect( frag.getChildAtOffset( 3 ) ).to.equal( textBAR );
+			expect( frag.getChildAtOffset( 4 ) ).to.equal( h );
+		} );
+
+		it( 'should return null for incorrect offset', () => {
+			const frag = new DocumentFragment( [ new Element( 'p' ), new Text( 'bar' ), new Element( 'h' ) ] );
+
+			expect( frag.getChildAtOffset( -1 ) ).to.be.null;
+			expect( frag.getChildAtOffset( 5 ) ).to.be.null;
 		} );
 	} );
 

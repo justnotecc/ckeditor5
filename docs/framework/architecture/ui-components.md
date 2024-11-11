@@ -2,7 +2,7 @@
 category: framework-architecture
 meta-title: UI Components | CKEditor 5 Framework Documentation
 order: 50
-modified_at: 2023-03-06
+modified_at: 2024-01-03
 ---
 
 # UI components
@@ -10,7 +10,7 @@ modified_at: 2023-03-06
 The CKEditor&nbsp;5 framework provides several UI components that can be helpful when developing a new user interface. All UI classes come with the {@link module:ui/view~View.set `set()`} method, which sets the properties of the components, such as labels, icons, placeholders, etc.
 
 <info-box>
-	This article lists all available components and their variants. If you want to understand the implementation details check {@link framework/architecture/ui-library the UI library guide}.
+	This article lists all available components and their variants. If you want to understand the implementation details, check the {@link framework/architecture/ui-library UI library} guide.
 </info-box>
 
 ## Balloon
@@ -20,7 +20,7 @@ The CKEditor&nbsp;5 framework provides several UI components that can be helpful
 A balloon panel is a floating component that can appear depending on the context. It can be pinned to a specific position or added dynamically at the caret position. You can use it to display any UI within the editor. You can create a balloon panel as an instance of the {@link module:ui/panel/balloon/balloonpanelview~BalloonPanelView `BalloonPanelView`} class.
 
 ```js
-import { BalloonPanelView, ButtonView } from '@ckeditor/ckeditor5-ui';
+import { BalloonPanelView, ButtonView } from 'ckeditor5';
 
 const balloonButton = new ButtonView();
 balloonButton.set( { label: 'Balloon button', withText: true } );
@@ -31,7 +31,7 @@ balloon.render();
 balloon.content.add( balloonButton );
 
 const positions = BalloonPanelView.defaultPositions;
-balloon.pin( { 
+balloon.pin( {
 	target: document.getElementById( 'balloon' ),
 	positions: [ positions.southArrowNorth ]
 } );
@@ -84,7 +84,7 @@ There are two basic buttons in the CKEditor&nbsp;5 UI library: a standard button
 To get an action button, add the `ck-button-action` class.
 
 ```js
-import { ButtonView } from '@ckeditor/ckeditor5-ui';
+import { ButtonView } from 'ckeditor5';
 
 const actionButton = new ButtonView();
 
@@ -103,7 +103,7 @@ document.getElementById( 'button-action' ).append( actionButton.element );
 To get a rounded button, add the `ck-rounded-corners` class.
 
 ```js
-import { ButtonView } from '@ckeditor/ckeditor5-ui';
+import { ButtonView } from 'ckeditor5';
 
 const roundedButton = new ButtonView();
 
@@ -122,7 +122,7 @@ document.getElementById( 'button-rounded' ).append( roundedButton.element );
 To get a bold button, add the `ck-button-bold` class.
 
 ```js
-import { ButtonView } from '@ckeditor/ckeditor5-ui';
+import { ButtonView } from 'ckeditor5';
 
 const boldButton = new ButtonView();
 
@@ -138,18 +138,17 @@ document.getElementById( 'button-bold' ).append( boldButton.element );
 
 ### Icon
 
-To get a button with an icon, import it first, then set the icon property on the button. There are also classes you can use to style icons appropriately.
+To get a button with an icon, import it first. Then set the `icon` property on the button. You can also add a custom icon to the dropdown by {@link framework/architecture/ui-library#setting-label-icon-and-tooltip providing the entire XML string of the icon}. There are also classes you can use to style icons appropriately.
 
 ```js
-import { ButtonView } from '@ckeditor/ckeditor5-ui';
-import checkIcon from '@ckeditor/ckeditor5-core/theme/icons/check.svg'
+import { ButtonView, icons } from 'ckeditor5';
 
 const saveButton = new ButtonView();
 
 saveButton.set( {
 	label: 'Save',
 	withText: false,
-	icon: checkIcon,
+	icon: icons.check,
 	class: 'ck-button-save'
 } );
 saveButton.render();
@@ -159,10 +158,10 @@ document.getElementById( 'button-icon' ).append( saveButton.element );
 
 ### Keystrokes
 
-To get a button with a shortcut, add the keystroke property. To display the shortcut on the button, set the {@link module:ui/button/button~Button#withKeystroke `withKeystroke`} property to `true`. If you also add a label, it will display next to the shortcut. You do not need to worry about different shortcuts for different OSes &ndash; the shortcut is relative to the OS. For example, Mac OS will display the <kbd>CTRL</kbd>+<kbd>I</kbd> shortcut as </kbd>⌘</kbd>+<kbd>I</kbd>.
+To get a button with a shortcut, add the `keystroke` property. To display the shortcut on the button, set the {@link module:ui/button/button~Button#withKeystroke `withKeystroke`} property to `true`. If you also add a label, it will display next to the shortcut. You do not need to worry about different shortcuts for different operating systems &ndash; the shortcut is relative to the OS. For example, macOS will display the <kbd>Ctrl</kbd>+<kbd>I</kbd> shortcut as </kbd>⌘</kbd>+<kbd>I</kbd>.
 
 ```js
-import { ButtonView } from '@ckeditor/ckeditor5-ui';
+import { ButtonView } from 'ckeditor5';
 
 const keystrokeButton = new ButtonView();
 
@@ -179,10 +178,10 @@ document.getElementById( 'button-keystroke' ).append( keystrokeButton.element );
 
 ### Tooltip
 
-To get a button with a tooltip, add the tooltip property. You can use it to display additional information on button hover. If you set it to true, a label value is displayed.
+To get a button with a tooltip, add the `tooltip` property. You can use it to display additional information on button hover. If you set it to `true`, a label value is displayed.
 
 ```js
-import { ButtonView } from '@ckeditor/ckeditor5-ui';
+import { ButtonView } from 'ckeditor5';
 
 const tooltipButton = new ButtonView();
 
@@ -197,7 +196,7 @@ tooltipButton.render();
 document.getElementById( 'button-tooltip' ).append( tooltipButton.element );
 ```
 
-By default, the tooltip will appear to the south of the button. However, you can adjust its position by the {@link module:ui/tooltipmanager~TooltipPosition `tooltipPosition`} property. You can set the property to:
+By default, the tooltip will appear to the south of the button. However, you can adjust its position with the {@link module:ui/tooltipmanager~TooltipPosition `tooltipPosition`} property. You can set the property to:
 
 * `n` &ndash; North
 * `w` &ndash; West
@@ -211,7 +210,7 @@ A tooltip needs the {@link module:ui/tooltipmanager~TooltipManager `TooltipManag
 ```js
 ClassicEditor
 	.create( document.getElementById( 'ui-editor' ), {
-		// Editor config.
+		// Editor configuration.
 		//
 	} )
 	.then( editor => {
@@ -234,7 +233,7 @@ There are properties you can set to get various button states.
 Buttons are enabled and clickable by default. You can also set the state explicitly by adding the {@link module:ui/button/button~Button#isEnabled `isEnabled`} property with a `true` value.
 
 ```js
-import { ButtonView } from '@ckeditor/ckeditor5-ui';
+import { ButtonView } from 'ckeditor5';
 
 const enabledButton = new ButtonView();
 
@@ -253,7 +252,7 @@ document.getElementById( 'button-enabled' ).append( enabledButton.element );
 To disable a button, set the {@link module:ui/button/button~Button#isEnabled `isEnabled`} property to `false`.
 
 ```js
-import { ButtonView } from '@ckeditor/ckeditor5-ui';
+import { ButtonView } from 'ckeditor5';
 
 const disabledButton = new ButtonView();
 
@@ -272,7 +271,7 @@ document.getElementById( 'button-disabled' ).append( disabledButton.element );
 Some actions in the editor can constantly be active. To indicate them, you can set the {@link module:ui/button/button~Button#isOn `isOn`} property to `true`.
 
 ```js
-import { ButtonView } from '@ckeditor/ckeditor5-ui';
+import { ButtonView } from 'ckeditor5';
 
 const onButton = new ButtonView();
 
@@ -286,10 +285,10 @@ document.getElementById( 'button-on' ).append( onButton.element );
 
 {@snippet framework/ui/ui-switch}
 
-You need a different class to instantiate a switch button &ndash; {@link module:ui/button/switchbuttonview~SwitchButtonView `SwitchButtonView`}. To make it work properly, you also need to add an event listener with the {@link module:ui/button/switchbuttonview~SwitchButtonView#on `on()`} method. Every click triggers the flip of the {@link module:ui/button/switchbuttonview~SwitchButtonView#isOn `isOn`} property &ndash; it is responsible for turning the button on and off.
+You need a different class to instantiate a switch button &ndash; {@link module:ui/button/switchbuttonview~SwitchButtonView `SwitchButtonView`}. To make it work properly, you also need to add an event listener with the {@link module:ui/button/switchbuttonview~SwitchButtonView#on `on()`} method. Every click triggers the flip of the {@link module:ui/button/switchbuttonview~SwitchButtonView#isOn `isOn`} property. It is responsible for turning the button on and off.
 
 ```js
-import { SwitchButtonView } from '@ckeditor/ckeditor5-ui';
+import { SwitchButtonView } from 'ckeditor5';
 
 const switchButton = new SwitchButtonView();
 
@@ -308,33 +307,36 @@ document.getElementById( 'button-switch' ).append( switchButton.element );
 
 {@snippet framework/ui/ui-dropdown}
 
-A dropdown consists of two elements: a button and a panel. The button expands the dropdown menu. The dropdown panel can hold any UI element. You can use the {@link module:ui/dropdown/utils#createDropdown `createDropdown()`} helper method to create a dropdown. By default, it uses the {@link module:ui/dropdown/button/dropdownbuttonview~DropdownButtonView `DropdownButtonView`} class. But you can replace it with the {@link module:ui/button/buttonview~ButtonView `ButtonView`} or {@link module:ui/dropdown/button/splitbuttonview~SplitButtonView `SplitButtonView`} class.
+A dropdown consists of two elements: a button and a panel. The button expands the dropdown menu. The dropdown panel can hold any UI element.
+
+You can use the {@link module:ui/dropdown/utils#createDropdown `createDropdown()`} helper method to create a dropdown. By default, it uses the {@link module:ui/dropdown/button/dropdownbuttonview~DropdownButtonView `DropdownButtonView`} class. You can replace it with the {@link module:ui/button/buttonview~ButtonView `ButtonView`} or {@link module:ui/dropdown/button/splitbuttonview~SplitButtonView `SplitButtonView`} class.
 
 ### List
 
 Inside a dropdown, you can put a list. To do so, you can use the {@link module:ui/dropdown/utils#addListToDropdown `addListToDropdown()`} helper function. Also, you must add items to a collection before putting them inside the dropdown.
 
 ```js
-import { 
-	addListToDropdown,
-	createDropdown,
-	Model
-} from '@ckeditor/ckeditor5-ui';
-import { Collection, Locale } from '@ckeditor/ckeditor5-utils';
+import {
+    addListToDropdown,
+    Collection,
+    createDropdown,
+    Locale,
+    ViewModel
+} from 'ckeditor5';
 
 const locale = new Locale();
 
 const collection = new Collection();
 collection.add( {
 	type: 'button',
-	model: new Model( {
+	model: new ViewModel( {
 		label: 'Button',
 		withText: true
 	} )
 } );
 collection.add( {
 	type: 'switchbutton',
-	model: new Model( {
+	model: new ViewModel( {
 		label: 'Switch button',
 		withText: true
 	} )
@@ -358,20 +360,19 @@ You can use the {@link module:ui/dropdown/utils#addToolbarToDropdown `addToolbar
 ```js
 import {
 	addToolbarToDropdown,
+	icons,
 	ButtonView,
-	createDropdown
-} from '@ckeditor/ckeditor5-ui';
-import { Locale } from '@ckeditor/ckeditor5-utils';
-import boldIcon from '@ckeditor/ckeditor5-core/theme/icons/bold.svg';
-import italicIcon from '@ckeditor/ckeditor5-basic-styles/theme/icons/italic.svg';
+	createDropdown,
+	Locale
+} from 'ckeditor5';
 
 const locale = new Locale();
 
 const bold = new ButtonView();
 const italic = new ButtonView();
 
-bold.set( { label: 'Bold', withText: false, icon: boldIcon  } );
-italic.set( { label: 'Italic', withText: false, icon: italicIcon  } );
+bold.set( { label: 'Bold', withText: false, icon: icons.bold  } );
+italic.set( { label: 'Italic', withText: false, icon: icons.italic  } );
 
 const buttons = [ bold, italic ];
 
@@ -386,6 +387,54 @@ toolbarDropdown.render();
 document.getElementById( 'toolbar-button' ).append( toolbarDropdown.element );
 ```
 
+### Menu
+
+Finally, you can add a multi-level menu to a dropdown. Use the {@link module:ui/dropdown/utils~addMenuToDropdown `addMenuToDropdown()`} helper function to simplify the process.
+
+```js
+import {
+	addMenuToDropdown,
+    createDropdown
+} from 'ckeditor5';
+
+const locale = new Locale(); // Can be `editor.locale`.
+const body = new BodyCollection(); // Can be `editor.ui.view.body`.
+
+const menuDropdown = createDropdown( locale );
+
+// The menu items definitions.
+const definition = [
+	{
+		id: 'menu_1',
+		menu: 'Menu 1',
+		children: [
+			{
+				id: 'menu_1_a',
+				label: 'Item A'
+			},
+			{
+				id: 'menu_1_b',
+				label: 'Item B'
+			}
+		]
+	},
+	{
+		id: 'top_a',
+		label: 'Top Item A'
+	},
+	{
+		id: 'top_b',
+		label: 'Top Item B'
+	}
+];
+
+addMenuToDropdown( menuDropdown, body, definition );
+
+menuDropdown.render();
+
+document.getElementById( 'menu-dropdown' ).append( menuDropdown.element );
+```
+
 ### Split button
 
 Besides the standard button, you can also use the split button for a dropdown. It has two clickable sections: one for the main action and a second for expanding the dropdown with more options.
@@ -395,19 +444,18 @@ import {
 	addToolbarToDropdown,
 	ButtonView,
 	createDropdown,
-	SplitButtonView
-} from '@ckeditor/ckeditor5-ui';
-import { Locale } from '@ckeditor/ckeditor5-utils';
-import boldIcon from '@ckeditor/ckeditor5-core/theme/icons/bold.svg';
-import italicIcon from '@ckeditor/ckeditor5-basic-styles/theme/icons/italic.svg';
+	icons,
+	SplitButtonViewm,
+	Locale
+} from 'ckeditor5';
 
 const locale = new Locale();
 
 const bold = new ButtonView();
 const italic = new ButtonView();
 
-bold.set( { label: 'Bold', withText: false, icon: boldIcon  } );
-italic.set( { label: 'Italic', withText: false, icon: italicIcon  } );
+bold.set( { label: 'Bold', withText: false, icon: icons.bold  } );
+italic.set( { label: 'Italic', withText: false, icon: icons.italic  } );
 
 const buttons = [ bold, italic ];
 
@@ -433,8 +481,7 @@ Dropdowns use buttons. Because of that, states and properties remain the same.
 Buttons in dropdowns are enabled and clickable by default. You can also set the state explicitly by adding the {@link module:ui/dropdown/button/dropdownbutton~DropdownButton#isEnabled `isEnabled`} property with a `true` value.
 
 ```js
-import { createDropdown } from '@ckeditor/ckeditor5-ui';
-import { Locale } from '@ckeditor/ckeditor5-utils';
+import { createDropdown, Locale } from 'ckeditor5';
 
 const locale = new Locale();
 
@@ -454,8 +501,7 @@ document.getElementById( 'dropdown-enabled' ).append( enabledDropdown.element );
 To disable a button, set the {@link module:ui/dropdown/button/dropdownbutton~DropdownButton#isEnabled `isEnabled`} property to `false`. It prevents the dropdown from being expanded.
 
 ```js
-import { createDropdown } from '@ckeditor/ckeditor5-ui';
-import { Locale } from '@ckeditor/ckeditor5-utils';
+import { createDropdown, Locale } from 'ckeditor5';
 
 const locale = new Locale();
 
@@ -470,6 +516,225 @@ disabledDropdown.render();
 document.getElementById( 'dropdown-disabled' ).append( disabledDropdown.element );
 ```
 
+## Dialog
+
+{@snippet framework/ui/ui-dialog}
+
+A dialog window is a draggable pop-up that you can display on top of the editor contents. It remains open when the user interacts with the editing area. You can use it to display any detached UI. Dialogs are brought by the {@link module:ui/dialog/dialog~Dialog `Dialog`} plugin.
+
+```js
+// Necessary imports. Remember to install the packages first.
+import {
+	ButtonView,
+	Dialog,
+	View,
+	Plugin,
+	ClassicEditor,
+	Paragraph,
+	Essentials,
+	Bold,
+	Italic
+} from 'ckeditor5';
+
+// Create a plugin that brings a button that toggles the visibility of a dialog window.
+// Read more about creating the plugins here: https://ckeditor.com/docs/ckeditor5/latest/framework/architecture/plugins.html.
+class MinimalisticDialog extends Plugin {
+	// Make sure the "Dialog" plugin is loaded.
+	get requires() {
+		return [ Dialog ];
+	}
+
+	init() {
+		// Add a button to the component factory so it is available for the editor.
+		this.editor.ui.componentFactory.add( 'showDialog', locale => {
+			const buttonView = new ButtonView( locale );
+
+			buttonView.set( {
+				label: 'Show a dialog',
+				tooltip: true,
+				withText: true
+			} );
+
+			// Define the button behavior on press.
+			buttonView.on( 'execute', () => {
+				const dialog = this.editor.plugins.get( 'Dialog' );
+
+				// If the button is turned on, hide the dialog.
+				if ( buttonView.isOn ) {
+					dialog.hide();
+					buttonView.isOn = false;
+
+					return;
+				}
+
+				buttonView.isOn = true;
+
+				// Otherwise, show the dialog.
+				// Create a view with some simple content. It will be displayed as a dialog's body.
+				const textView = new View( locale );
+
+				textView.setTemplate( {
+					tag: 'div',
+					attributes: {
+						style: {
+							padding: 'var(--ck-spacing-large)',
+							whiteSpace: 'initial',
+							width: '100%',
+							maxWidth: '500px'
+						},
+						tabindex: -1
+					},
+					children: [
+						'This is the content of the dialog.',
+						'You can put here text, images, inputs, buttons, etc.'
+					]
+				} );
+
+				// Tell the plugin to display a dialog with the title, content, and one action button.
+				dialog.show( {
+					title: 'Dialog with text',
+					content: textView,
+					actionButtons: [
+						{
+							label: 'OK',
+							class: 'ck-button-action',
+							withText: true,
+							onExecute: () => dialog.hide()
+						}
+					],
+					onHide() { buttonView.isOn = false; }
+				} );
+			} );
+
+			return buttonView;
+		} );
+	}
+}
+
+// Create an editor instance. Remember to have an element with the `[id="editor"]` attribute in the document.
+ClassicEditor
+	.create( document.querySelector( '#editor' ), {
+		plugins: [ Essentials, Paragraph, Bold, Italic, MinimalisticDialog, Dialog ],
+		toolbar: [ 'bold', 'italic', '|', 'showDialog' ]
+	} )
+	.catch( error => {
+		console.error( error.stack );
+	} );
+```
+
+See the guide about the {@link framework/architecture/ui-library#dialogs-and-modals API of the dialog system}.
+
+## Modal
+
+{@snippet framework/ui/ui-modal}
+
+Modal is a specific kind of dialog window. While open, it does not allow to interact with the editor content &ndash; it has to be closed first. You can use a modal to enforce the user interaction or interrupt them in some important situations.
+
+To create a modal, use the optional {@link module:ui/dialog/dialog~DialogDefinition#isModal `isModal`} property of the {@link module:ui/dialog/dialog~Dialog#show `Dialog#show()`} method.
+
+```js
+// Necessary imports. Remember to install the packages first.
+import {
+	ButtonView,
+	Dialog,
+	View,
+	Plugin,
+	ClassicEditor,
+	Paragraph,
+	Essentials,
+	Bold,
+	Italic
+} from 'ckeditor5';
+
+// Create a plugin that brings a button which toggles the visibility of a modal window.
+// Read more about creating the plugins here: https://ckeditor.com/docs/ckeditor5/latest/framework/architecture/plugins.html.
+class MinimalisticModal extends Plugin {
+	// Make sure the "Dialog" plugin is loaded.
+	get requires() {
+		return [ Dialog ];
+	}
+
+	init() {
+		// Add a button to the component factory so it is available for the editor.
+		this.editor.ui.componentFactory.add( 'showModal', locale => {
+			const buttonView = new ButtonView( locale );
+
+			buttonView.set( {
+				label: 'Show a modal',
+				tooltip: true,
+				withText: true
+			} );
+
+			// Define the button behavior on press.
+			buttonView.on( 'execute', () => {
+				const dialog = this.editor.plugins.get( 'Dialog' );
+
+				// If the button is turned on, hide the modal.
+				if ( buttonView.isOn ) {
+					dialog.hide();
+					buttonView.isOn = false;
+
+					return;
+				}
+
+				buttonView.isOn = true;
+
+				// Otherwise, show the modal.
+				// First, create a view with some simple content. It will be displayed as the dialog's body.
+				const textView = new View( locale );
+
+				textView.setTemplate( {
+					tag: 'div',
+					attributes: {
+						style: {
+							padding: 'var(--ck-spacing-large)',
+							whiteSpace: 'initial',
+							width: '100%',
+							maxWidth: '500px'
+						},
+						tabindex: -1
+					},
+					children: [
+						'This is a sample content of the modal.',
+						'You can put here text, images, inputs, buttons, etc.'
+					]
+				} );
+
+				// Tell the plugin to display a modal with the title, content, and one action button.
+				dialog.show( {
+					isModal: true,
+					title: 'Modal with text',
+					content: textView,
+					actionButtons: [
+						{
+							label: 'OK',
+							class: 'ck-button-action',
+							withText: true,
+							onExecute: () => dialog.hide()
+						}
+					],
+					onHide() { buttonView.isOn = false; }
+				} );
+			} );
+
+			return buttonView;
+		} );
+	}
+}
+
+// Create an editor instance. Remember to have an element with the `[id="editor"]` attribute in the document.
+ClassicEditor
+	.create( document.querySelector( '#editor' ), {
+		plugins: [ Essentials, Paragraph, Bold, Italic, MinimalisticDialog, Dialog ],
+		toolbar: [ 'bold', 'italic', '|', 'showModal' ]
+	} )
+	.catch( error => {
+		console.error( error.stack );
+	} );
+```
+
+See the guide about the {@link framework/architecture/ui-library#dialogs-and-modals API of the dialog system}.
+
 ## Icons
 
 {@snippet framework/ui/ui-icons}
@@ -477,137 +742,144 @@ document.getElementById( 'dropdown-disabled' ).append( disabledDropdown.element 
 The CKEditor&nbsp;5 library has a collection of icons representing different editor functionalities. Icons are SVG files and follow the style of the surrounding text. You can instantiate an icon with the {@link module:ui/icon/iconview~IconView `IconView`} class. The {@link module:ui/icon/iconview~IconView#content `content`} property stores the SVG source of the icon.
 
 ```js
-import { IconView } from '@ckeditor/ckeditor5-ui';
-import boldIcon from '@ckeditor/ckeditor5-core/theme/icons/bold.svg';
+import { icons, IconView } from 'ckeditor5';
 
 const icon = new IconView();
 
-icon.content = boldIcon;
+icon.content = icons.bold;
 icon.render();
 
 document.getElementById( 'icon-bold' ).append( icon.element );
 ```
 
-CKEditor&nbsp;5 features use different icons. You can find them in their respective packages. Here's a list of all available icons.
+CKEditor&nbsp;5 features use different icons. You can find them in their respective packages. Here is a list of all available icons.
 
 ```js
-import boldIcon from '@ckeditor/ckeditor5-core/theme/icons/bold.svg';
-import italic from '@ckeditor/ckeditor5-basic-styles/theme/icons/italic.svg';
-import underline from '@ckeditor/ckeditor5-basic-styles/theme/icons/underline.svg';
-import code from '@ckeditor/ckeditor5-basic-styles/theme/icons/code.svg';
-import strikethrough from '@ckeditor/ckeditor5-basic-styles/theme/icons/strikethrough.svg';
-import subscript from '@ckeditor/ckeditor5-basic-styles/theme/icons/subscript.svg';
-import superscript from '@ckeditor/ckeditor5-basic-styles/theme/icons/superscript.svg';
+import { icons } from 'ckeditor5';
 
-import browseFiles from '@ckeditor/ckeditor5-ckfinder/theme/icons/browse-files.svg';
+console.log( icons.bold );
+console.log( icons.italic );
+console.log( icons.underline );
+console.log( icons.code );
+console.log( icons.strikethrough );
+console.log( icons.subscript );
+console.log( icons.superscript );
 
-import codeBlock from '@ckeditor/ckeditor5-code-block/theme/icons/codeblock.svg';
+console.log( icons.browserFiles );
 
-import cancel from '@ckeditor/ckeditor5-core/theme/icons/cancel.svg';
-import caption from '@ckeditor/ckeditor5-core/theme/icons/caption.svg';
-import check from '@ckeditor/ckeditor5-core/theme/icons/check.svg';
-import cog from '@ckeditor/ckeditor5-core/theme/icons/cog.svg';
-import eraser from '@ckeditor/ckeditor5-core/theme/icons/eraser.svg';
-import lowVision from '@ckeditor/ckeditor5-core/theme/icons/low-vision.svg';
-import textAlternative from '@ckeditor/ckeditor5-core/theme/icons/text-alternative.svg';
-import image from '@ckeditor/ckeditor5-core/theme/icons/image.svg';
-import alignBottom from '@ckeditor/ckeditor5-core/theme/icons/align-bottom.svg';
-import alignMiddle from '@ckeditor/ckeditor5-core/theme/icons/align-middle.svg';
-import alignTop from '@ckeditor/ckeditor5-core/theme/icons/align-top.svg';
-import alignLeft from '@ckeditor/ckeditor5-core/theme/icons/align-left.svg';
-import alignCenter from '@ckeditor/ckeditor5-core/theme/icons/align-center.svg';
-import alignRight from '@ckeditor/ckeditor5-core/theme/icons/align-right.svg';
-import alignJustify from '@ckeditor/ckeditor5-core/theme/icons/align-justify.svg';
-import objectLeft from '@ckeditor/ckeditor5-core/theme/icons/object-left.svg';
-import objectCenter from '@ckeditor/ckeditor5-core/theme/icons/object-center.svg';
-import objectRight from '@ckeditor/ckeditor5-core/theme/icons/object-right.svg';
-import objectFullWidth from '@ckeditor/ckeditor5-core/theme/icons/object-full-width.svg';
-import objectInline from '@ckeditor/ckeditor5-core/theme/icons/object-inline.svg';
-import objectBlockLeft from '@ckeditor/ckeditor5-core/theme/icons/object-left.svg';
-import objectBlockRight from '@ckeditor/ckeditor5-core/theme/icons/object-right.svg';
-import objectSizeFull from '@ckeditor/ckeditor5-core/theme/icons/object-size-full.svg';
-import objectSizeLarge from '@ckeditor/ckeditor5-core/theme/icons/object-size-large.svg';
-import objectSizeSmall from '@ckeditor/ckeditor5-core/theme/icons/object-size-small.svg';
-import objectSizeMedium from '@ckeditor/ckeditor5-core/theme/icons/object-size-medium.svg';
-import pencil from '@ckeditor/ckeditor5-core/theme/icons/pencil.svg';
-import pilcrow from '@ckeditor/ckeditor5-core/theme/icons/pilcrow.svg';
-import quote from '@ckeditor/ckeditor5-core/theme/icons/quote.svg';
-import threeVerticalDots from '@ckeditor/ckeditor5-core/theme/icons/three-vertical-dots.svg';
+console.log( icons.codeBlock );
 
-import fontFamily from '@ckeditor/ckeditor5-font/theme/icons/font-family.svg';
-import fontSize from '@ckeditor/ckeditor5-font/theme/icons/font-size.svg';
-import fontColor from '@ckeditor/ckeditor5-font/theme/icons/font-color.svg';
-import fontBackground from '@ckeditor/ckeditor5-font/theme/icons/font-background.svg';
+console.log( icons.cancel );
+console.log( icons.caption );
+console.log( icons.check );
+console.log( icons.cog );
+console.log( icons.eraser );
+console.log( icons.lowVision );
+console.log( icons.textAlternative );
+console.log( icons.image );
+console.log( icons.alignBottom );
+console.log( icons.alignMiddle );
+console.log( icons.alignTop );
+console.log( icons.alignLeft );
+console.log( icons.alignCenter );
+console.log( icons.alignRight );
+console.log( icons.alignJustify );
+console.log( icons.objectLeft );
+console.log( icons.objectCenter );
+console.log( icons.objectRight );
+console.log( icons.objectFullWidth );
+console.log( icons.objectInline );
+console.log( icons.objectBlockLeft );
+console.log( icons.objectBlockRight );
+console.log( icons.objectFullSize );
+console.log( icons.objectSizeLarge );
+console.log( icons.objectSizeSmall );
+console.log( icons.objectSizeMedium );
+console.log( icons.pencil );
+console.log( icons.pilcrow );
+console.log( icons.quote );
+console.log( icons.threeVerticalDots );
 
-import heading1 from '@ckeditor/ckeditor5-heading/theme/icons/heading1.svg';
-import heading2 from '@ckeditor/ckeditor5-heading/theme/icons/heading2.svg';
-import heading3 from '@ckeditor/ckeditor5-heading/theme/icons/heading3.svg';
-import heading4 from '@ckeditor/ckeditor5-heading/theme/icons/heading4.svg';
-import heading5 from '@ckeditor/ckeditor5-heading/theme/icons/heading5.svg';
-import heading6 from '@ckeditor/ckeditor5-heading/theme/icons/heading6.svg';
+console.log( icons.fontFamily );
+console.log( icons.fontSize );
+console.log( icons.fontColor );
+console.log( icons.fontBackground );
 
-import indent from '@ckeditor/ckeditor5-indent/theme/icons/indent.svg';
-import outdent from '@ckeditor/ckeditor5-indent/theme/icons/outdent.svg';
+console.log( icons.heading1 );
+console.log( icons.heading2 );
+console.log( icons.heading3 );
+console.log( icons.heading4 );
+console.log( icons.heading5 );
+console.log( icons.heading6 );
 
-import marker from '@ckeditor/ckeditor5-highlight/theme/icons/marker.svg';
-import pen from '@ckeditor/ckeditor5-highlight/theme/icons/pen.svg';
+console.log( icons.indent );
+console.log( icons.outdent );
 
-import html from '@ckeditor/ckeditor5-html-embed/theme/icons/html.svg';
+console.log( icons.marker );
+console.log( icons.pen );
 
-import link from '@ckeditor/ckeditor5-link/theme/icons/link.svg';
-import unlink from '@ckeditor/ckeditor5-link/theme/icons/unlink.svg';
+console.log( icons.html );
 
-import bulletedList from '@ckeditor/ckeditor5-list/theme/icons/bulletedlist.svg';
-import numberedList from '@ckeditor/ckeditor5-list/theme/icons/numberedlist.svg';
-import todoList from '@ckeditor/ckeditor5-list/theme/icons/todolist.svg';
+console.log( icons.link );
+console.log( icons.unlink );
 
-import media from '@ckeditor/ckeditor5-media-embed/theme/icons/media.svg';
+console.log( icons.bulletedList );
+console.log( icons.numberedList );
+console.log( icons.todoList );
 
-import pageBreak from '@ckeditor/ckeditor5-page-break/theme/icons/pagebreak.svg';
+console.log( icons.media );
 
-import paragraph from '@ckeditor/ckeditor5-core/theme/icons/paragraph.svg';
+console.log( icons.pageBreak );
 
-import removeFormat from '@ckeditor/ckeditor5-remove-format/theme/icons/remove-format.svg';
+console.log( icons.paragraph );
 
-import contentLock from '@ckeditor/ckeditor5-restricted-editing/theme/icons/contentlock.svg';
-import contentUnlock from '@ckeditor/ckeditor5-restricted-editing/theme/icons/contentunlock.svg';
+console.log( icons.removeFormat );
 
-import selectAll from '@ckeditor/ckeditor5-select-all/theme/icons/select-all.svg';
+console.log( icons.contentLock );
+console.log( icons.contentUnlock );
 
-import sourceEditing from '@ckeditor/ckeditor5-source-editing/theme/icons/source-editing.svg';
+console.log( icons.selectAll );
 
-import specialCharacters from '@ckeditor/ckeditor5-special-characters/theme/icons/specialcharacters.svg';
+console.log( icons.sourceEditing );
 
-import table from '@ckeditor/ckeditor5-table/theme/icons/table.svg';
-import tableRow from '@ckeditor/ckeditor5-table/theme/icons/table-row.svg';
-import tableColumn from '@ckeditor/ckeditor5-table/theme/icons/table-column.svg';
-import tableMergeCell from '@ckeditor/ckeditor5-table/theme/icons/table-merge-cell.svg';
-import tableCellProperties from '@ckeditor/ckeditor5-table/theme/icons/table-cell-properties.svg';
-import tableProperties from '@ckeditor/ckeditor5-table/theme/icons/table-properties.svg';
+console.log( icons.specialCharacters );
 
-import nextArrow from '@ckeditor/ckeditor5-ui/theme/icons/next-arrow.svg';
-import previousArrow from '@ckeditor/ckeditor5-ui/theme/icons/previous-arrow.svg';
+console.log( icons.table );
+console.log( icons.tableRow );
+console.log( icons.tableColumn );
+console.log( icons.tableMergeCell );
+console.log( icons.tableCellProperties );
+console.log( icons.tableProperties );
 
-import undo from '@ckeditor/ckeditor5-undo/theme/icons/undo.svg';
-import redo from '@ckeditor/ckeditor5-undo/theme/icons/redo.svg';
+console.log( icons.nextArrow );
+console.log( icons.previousArrow );
 
-import history from '@ckeditor/ckeditor5-core/theme/icons/history.svg';
-import loupe from '@ckeditor/ckeditor5-core/theme/icons/loupe.svg';
+console.log( icons.undo );
+console.log( icons.redo );
+
+console.log( icons.history );
+console.log( icons.loupe );
 ```
+
+You can also {@link framework/architecture/ui-library#setting-label-icon-and-tooltip add a custom icon to the dropdown} by providing the entire XML string of the icon
 
 ## Input
 
 {@snippet framework/ui/ui-input}
 
-There are also inputs in the CKEditor&nbsp;5 UI library. There are a few use cases to put inputs inside a main toolbar, but you also can add them to balloon panels.
+The CKEditor&nbsp;5 UI library contains some input elements. Usually, they are used in dropdowns and balloon panels, but you can also use them in the main toolbar.
+
+To create them, use the {@link module:ui/labeledfield/labeledfieldview~LabeledFieldView `LabeledFieldView`} class, which takes two parameters:
+
+* An instance of the {@link module:ui/labeledfield/labeledfieldview~LabeledFieldView#locale `locale`} class.
+* A helper function, depending on the type of field you want to create.
 
 ### Text
 
-You can use the {@link module:ui/labeledfield/labeledfieldview~LabeledFieldView `LabaledFieldView`} class to instantiate an input. It takes two parameters: {@link module:ui/labeledfield/labeledfieldview~LabeledFieldView#locale `locale`} and a helper function. Pass the {@link module:ui/labeledfield/utils#createLabeledInputText `createLabeledInputText()`} helper function to create a text input.
+To create a text field, pass the {@link module:ui/labeledfield/utils#createLabeledInputText `createLabeledInputText()`} helper function as the second parameter to the {@link module:ui/labeledfield/labeledfieldview~LabeledFieldView `LabeledFieldView`} class.
 
 ```js
-import { createLabeledInputText, LabeledFieldView } from '@ckeditor/ckeditor5-ui';
-import { Locale } from '@ckeditor/ckeditor5-utils';
+import { createLabeledInputText, LabeledFieldView, Locale } from 'ckeditor5';
 
 const locale = new Locale();
 
@@ -620,11 +892,10 @@ document.getElementById( 'input-text' ).append( textInput.element );
 
 ### Number
 
-You can use the {@link module:ui/labeledfield/labeledfieldview~LabeledFieldView `LabaledFieldView`} class to instantiate an input. It takes two parameters: {@link module:ui/labeledfield/labeledfieldview~LabeledFieldView#locale `locale`} and a helper function. Pass the {@link module:ui/labeledfield/utils#createLabeledInputNumber `createLabeledInputNumber()`} helper function to create a number input.
+To create a number field, pass the {@link module:ui/labeledfield/utils#createLabeledInputNumber `createLabeledInputNumber()`} helper function as the second parameter to the {@link module:ui/labeledfield/labeledfieldview~LabeledFieldView `LabeledFieldView`} class.
 
 ```js
-import { createLabeledInputNumber, LabeledFieldView } from '@ckeditor/ckeditor5-ui';
-import { Locale } from '@ckeditor/ckeditor5-utils';
+import { createLabeledInputNumber, LabeledFieldView, Locale } from 'ckeditor5';
 
 const locale = new Locale();
 
@@ -646,8 +917,7 @@ Similarly to buttons, inputs can be enabled or disabled. The property names rema
 Inputs are enabled by default. You can also set the state explicitly by adding the {@link module:ui/labeledfield/labeledfieldview~LabeledFieldView#isEnabled `isEnabled`} property with a `true` value.
 
 ```js
-import { createLabeledInputText, LabeledFieldView } from '@ckeditor/ckeditor5-ui';
-import { Locale } from '@ckeditor/ckeditor5-utils';
+import { createLabeledInputText, LabeledFieldView, Locale } from 'ckeditor5';
 
 const locale = new Locale();
 
@@ -663,8 +933,7 @@ document.getElementById( 'input-enabled' ).append( enabledInput.element );
 To disable an input, set the {@link module:ui/labeledfield/labeledfieldview~LabeledFieldView#isEnabled `isEnabled`} property to `false`. It prevents the input from getting users' data.
 
 ```js
-import { createLabeledInputText, LabeledFieldView } from '@ckeditor/ckeditor5-ui';
-import { Locale } from '@ckeditor/ckeditor5-utils';
+import { createLabeledInputText, LabeledFieldView, Locale } from 'ckeditor5';
 
 const locale = new Locale();
 
@@ -686,7 +955,7 @@ A search component allows you to filter a list of items based on a specified que
 * The {@link module:ui/search/text/searchtextview~SearchTextView#infoView `infoView`} property displays additional information about the search results.
 * The {@link module:ui/search/text/searchtextview~SearchTextView#filteredView `filteredView`} is a view filtered by the search query. Remember to specify the {@link module:ui/search/filteredview~FilteredView#filter `filter()`} and {@link module:ui/search/filteredview~FilteredView#focus `focus()`} methods for this view.
 
-Some sub-components and classes that can help with better results presentation:
+Some sub-components and classes that can help with better presentation of the results:
 
 * The {@link module:ui/search/searchresultsview~SearchResultsView `SearchResultsView`} component hosts the filtered and the information views. It is a sub-component of the {@link module:ui/search/text/searchtextview~SearchTextView `SearchTextView`}.
 * The {@link module:ui/autocomplete/autocompleteview~AutocompleteView `AutocompleteView`} component lists proposed results when the user starts typing and hides them when it is out of focus. It extends the {@link module:ui/search/text/searchtextview~SearchTextView `SearchTextView`} class.
@@ -694,8 +963,7 @@ Some sub-components and classes that can help with better results presentation:
 * To highlight some results (or some text in general), you can use the {@link module:ui/highlightedtext/highlightedtextview~HighlightedTextView `HighlightedTextView`} class.
 
 ```js
-import { ListView, SearchTextView } from '@ckeditor/ckeditor5-ui';
-import { Locale } from '@ckeditor/ckeditor5-utils';
+import { ListView, SearchTextView, Locale } from 'ckeditor5';
 
 const locale = new Locale();
 
@@ -719,7 +987,7 @@ searchView.render();
 document.querySelector( '.ui-search' ).append( searchView.element );
 ```
 
-Check out the {@link features/ai-assistant AI Assistant} feature to see how all the UI pieces work together in a more complex setup.
+Check out the {@link features/ai-assistant-overview#demo AI Assistant} feature to see how all the UI pieces work together in a more complex setup.
 
 ## Spinner
 
@@ -728,7 +996,7 @@ Check out the {@link features/ai-assistant AI Assistant} feature to see how all 
 You can use a spinner to indicate some loading process. There is only one essential property here &ndash; {@link module:ui/spinner/spinnerview~SpinnerView#isVisible `isVisible`}. As the name suggests, it controls whether the component is visible. The default is `false`.
 
 ```js
-import { SpinnerView } from '@ckeditor/ckeditor5-ui';
+import { SpinnerView } from 'ckeditor5';
 
 const spinner = new SpinnerView();
 
@@ -745,7 +1013,7 @@ document.querySelector( '.ui-spinner' ).append( spinner.element );
 The textarea is a component for inserting long blocks of text. You can specify the visible height of the component using the {@link module:ui/textarea/textareaview~TextareaView#minRows `minRows`} property. Specify the {@link module:ui/textarea/textareaview~TextareaView#minRows `maxRows`} property if you do not want the component to exceed a certain height. Textarea dimensions do not need to be fixed, and you can allow users to change them with the {@link module:ui/textarea/textareaview~TextareaView#resize `resize`} option. By default, the property is set to `'none'`, and resizing is not allowed.
 
 ```js
-import { TextareaView } from '@ckeditor/ckeditor5-ui';
+import { TextareaView } from 'ckeditor5';
 
 const textarea = new TextareaView();
 
@@ -761,17 +1029,16 @@ document.querySelector( '.ui-textarea' ).append( textarea.element );
 
 ## Toolbar
 
-A toolbar is a base for other components. Usually, you would put other UI elements inside it. But it can also be nested inside a balloon or dropdown. You can use the {@link module:ui/toolbar/toolbarview~ToolbarView `ToolbarView`} class to instantiate a toolbar.
+A toolbar is a base for other components. Usually, you would put other UI elements inside it. It can also be nested inside a balloon or dropdown. You can use the {@link module:ui/toolbar/toolbarview~ToolbarView `ToolbarView`} class to instantiate a toolbar.
 
 ### Text
 
 {@snippet framework/ui/ui-toolbar-text}
 
-As mentioned earlier, you can put different UI elements inside a toolbar. A simple text node is one example. You can use the {@link module:ui/toolbar/toolbarview~ToolbarView#items `items`} property to add a component to a toolbar.
+You can put different UI elements inside a toolbar. A simple text node is one example. You can use the {@link module:ui/toolbar/toolbarview~ToolbarView#items `items`} property to add a component to a toolbar.
 
 ```js
-import { ToolbarView, View } from '@ckeditor/ckeditor5-ui';
-import { Locale } from '@ckeditor/ckeditor5-utils';
+import { ToolbarView, View,	Locale } from 'ckeditor5';
 
 const locale = new Locale();
 
@@ -792,8 +1059,7 @@ document.getElementById( 'toolbar-text' ).append( toolbarText.element );
 You can place any previously listed button inside a toolbar.
 
 ```js
-import { ButtonView, ToolbarView  } from '@ckeditor/ckeditor5-ui';
-import { Locale } from '@ckeditor/ckeditor5-utils';
+import { ButtonView, ToolbarView, Locale } from 'ckeditor5';
 
 const locale = new Locale();
 
@@ -814,8 +1080,7 @@ document.getElementById( 'toolbar-button' ).append( toolbarButton.element );
 A toolbar automatically wraps if you add more items and the space is limited.
 
 ```js
-import { ButtonView, ToolbarView } from '@ckeditor/ckeditor5-ui';
-import { Locale } from '@ckeditor/ckeditor5-utils';
+import { ButtonView, ToolbarView, Locale } from 'ckeditor5';
 
 const locale = new Locale();
 
@@ -842,8 +1107,7 @@ document.getElementById( 'toolbar-wrap' ).append( toolbarWrap.element );
 You can divide toolbar elements with a separator to create logically connected groups. To instantiate a separator, use the {@link module:ui/toolbar/toolbarseparatorview~ToolbarSeparatorView `ToolbarSeparatorView`} class. Adding the created instance between desired components will separate them visually.
 
 ```js
-import { ButtonView, ToolbarSeparatorView, ToolbarView,  } from '@ckeditor/ckeditor5-ui';
-import { Locale } from '@ckeditor/ckeditor5-utils';
+import { ButtonView, ToolbarSeparatorView, ToolbarView,	Locale } from 'ckeditor5';
 
 const locale = new Locale();
 
@@ -871,9 +1135,7 @@ document.getElementById( 'toolbar-separator' ).append( toolbarSeparator.element 
 By default, a toolbar has one row. However, it can span into multiple rows. You can instantiate a line break with the {@link module:ui/toolbar/toolbarlinebreakview~ToolbarLineBreakView `ToolbarLineBreakView`} class. Adding the created instance after a desired component will place the following UI elements into the next row.
 
 ```js
-import { ButtonView, ToolbarView } from '@ckeditor/ckeditor5-ui';
-import ToolbarLineBreakView from '@ckeditor/ckeditor5-ui/src/toolbar/toolbarlinebreakview';
-import { Locale } from '@ckeditor/ckeditor5-utils';
+import { ButtonView, ToolbarLineBreakView, ToolbarView, Locale } from 'ckeditor5';
 
 const locale = new Locale();
 
@@ -901,8 +1163,7 @@ document.getElementById( 'toolbar-multirow' ).append( toolbarMultiRow.element );
 There is also a smaller version of a toolbar. To get a compact toolbar, set the {@link module:ui/toolbar/toolbarview~ToolbarView#isCompact `isCompact`} property to `true`.
 
 ```js
-import { ButtonView, ToolbarView } from '@ckeditor/ckeditor5-ui';
-import { Locale } from '@ckeditor/ckeditor5-utils';
+import { ButtonView, ToolbarView, Locale } from 'ckeditor5';
 
 const locale = new Locale();
 

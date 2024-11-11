@@ -1,32 +1,33 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 /* globals document, console */
 
-import MultiRootEditor from '../src/multirooteditor';
-import MultiRootEditorUI from '../src/multirooteditorui';
-import MultiRootEditorUIView from '../src/multirooteditoruiview';
+import MultiRootEditor from '../src/multirooteditor.js';
+import MultiRootEditorUI from '../src/multirooteditorui.js';
+import MultiRootEditorUIView from '../src/multirooteditoruiview.js';
 
-import HtmlDataProcessor from '@ckeditor/ckeditor5-engine/src/dataprocessor/htmldataprocessor';
+import HtmlDataProcessor from '@ckeditor/ckeditor5-engine/src/dataprocessor/htmldataprocessor.js';
 
-import Context from '@ckeditor/ckeditor5-core/src/context';
-import EditorWatchdog from '@ckeditor/ckeditor5-watchdog/src/editorwatchdog';
-import ContextWatchdog from '@ckeditor/ckeditor5-watchdog/src/contextwatchdog';
-import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
-import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold';
-import Undo from '@ckeditor/ckeditor5-undo/src/undo';
-import Table from '@ckeditor/ckeditor5-table/src/table';
-import RootElement from '@ckeditor/ckeditor5-engine/src/model/rootelement';
-import CKEditorError from '@ckeditor/ckeditor5-utils/src/ckeditorerror';
+import Context from '@ckeditor/ckeditor5-core/src/context.js';
+import EditorWatchdog from '@ckeditor/ckeditor5-watchdog/src/editorwatchdog.js';
+import ContextWatchdog from '@ckeditor/ckeditor5-watchdog/src/contextwatchdog.js';
+import Plugin from '@ckeditor/ckeditor5-core/src/plugin.js';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
+import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold.js';
+import Undo from '@ckeditor/ckeditor5-undo/src/undo.js';
+import Table from '@ckeditor/ckeditor5-table/src/table.js';
+import RootElement from '@ckeditor/ckeditor5-engine/src/model/rootelement.js';
+import ClipboardPipeline from '@ckeditor/ckeditor5-clipboard/src/clipboardpipeline.js';
+import CKEditorError from '@ckeditor/ckeditor5-utils/src/ckeditorerror.js';
 
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
 
-import { describeMemoryUsage, testMemoryUsage } from '@ckeditor/ckeditor5-core/tests/_utils/memory';
-import ArticlePluginSet from '@ckeditor/ckeditor5-core/tests/_utils/articlepluginset';
-import { assertCKEditorError } from '@ckeditor/ckeditor5-utils/tests/_utils/utils';
+import { describeMemoryUsage, testMemoryUsage } from '@ckeditor/ckeditor5-core/tests/_utils/memory.js';
+import ArticlePluginSet from '@ckeditor/ckeditor5-core/tests/_utils/articlepluginset.js';
+import { assertCKEditorError } from '@ckeditor/ckeditor5-utils/tests/_utils/utils.js';
 
 const editorData = { foo: '<p>Foo</p>', bar: '<p>Bar</p>' };
 
@@ -173,7 +174,7 @@ describe( 'MultiRootEditor', () => {
 				expect( editor.getData( { rootName: 'foo' } ) ).to.equal( editorData.foo );
 				expect( editor.getData( { rootName: 'bar' } ) ).to.equal( editorData.bar );
 
-				editor.destroy();
+				return editor.destroy();
 			} );
 		} );
 
@@ -188,15 +189,12 @@ describe( 'MultiRootEditor', () => {
 				expect( editor.getData( { rootName: 'foo' } ) ).to.equal( '' );
 				expect( editor.getData( { rootName: 'bar' } ) ).to.equal( '' );
 
-				editor.destroy();
+				return editor.destroy();
 			} );
 		} );
 
 		it( 'initializes the editor if no roots are specified', done => {
-			MultiRootEditor.create( {} ).then( editor => {
-				editor.destroy();
-				done();
-			} );
+			MultiRootEditor.create( {} ).then( editor => editor.destroy() ).then( done );
 		} );
 
 		it( 'should throw when trying to create the editor using the same source element more than once', done => {
@@ -322,6 +320,188 @@ describe( 'MultiRootEditor', () => {
 					// Cleanup. This is difficult as we don't have editor instance to destroy.
 					document.querySelector( '.ck-body-wrapper' ).remove();
 				} );
+		} );
+
+		describe( 'configurable editor label (aria-label)', () => {
+			it( 'should be set to the defaut value if not configured', async () => {
+				const editor = await MultiRootEditor.create( {
+					foo: document.createElement( 'div' ),
+					bar: document.createElement( 'div' )
+				}, {
+					plugins: [ Paragraph, Bold ]
+				} );
+
+				expect( editor.editing.view.getDomRoot( 'foo' ).getAttribute( 'aria-label' ) ).to.equal(
+					'Rich Text Editor. Editing area: foo'
+				);
+
+				expect( editor.editing.view.getDomRoot( 'bar' ).getAttribute( 'aria-label' ) ).to.equal(
+					'Rich Text Editor. Editing area: bar'
+				);
+
+				await editor.destroy();
+			} );
+
+			it( 'should support string format', async () => {
+				const editor = await MultiRootEditor.create( {
+					foo: document.createElement( 'div' ),
+					bar: document.createElement( 'div' )
+				}, {
+					plugins: [ Paragraph, Bold ],
+					label: 'Custom label'
+				} );
+
+				expect( editor.editing.view.getDomRoot( 'foo' ).getAttribute( 'aria-label' ) ).to.equal(
+					'Custom label'
+				);
+
+				expect( editor.editing.view.getDomRoot( 'bar' ).getAttribute( 'aria-label' ) ).to.equal(
+					'Custom label'
+				);
+
+				await editor.destroy();
+			} );
+
+			it( 'should support object format', async () => {
+				const editor = await MultiRootEditor.create( {
+					foo: document.createElement( 'div' ),
+					bar: document.createElement( 'div' )
+				}, {
+					plugins: [ Paragraph, Bold ],
+					label: {
+						foo: 'Foo custom label',
+						bar: 'Bar custom label'
+					}
+				} );
+
+				expect( editor.editing.view.getDomRoot( 'foo' ).getAttribute( 'aria-label' ) ).to.equal(
+					'Foo custom label'
+				);
+
+				expect( editor.editing.view.getDomRoot( 'bar' ).getAttribute( 'aria-label' ) ).to.equal(
+					'Bar custom label'
+				);
+
+				await editor.destroy();
+			} );
+
+			it( 'should support object format (mix default and custom label)', async () => {
+				const editor = await MultiRootEditor.create( {
+					foo: document.createElement( 'div' ),
+					bar: document.createElement( 'div' )
+				}, {
+					plugins: [ Paragraph, Bold ],
+					label: {
+						bar: 'Bar custom label'
+					}
+				} );
+
+				expect( editor.editing.view.getDomRoot( 'foo' ).getAttribute( 'aria-label' ) ).to.equal(
+					'Rich Text Editor. Editing area: foo'
+				);
+
+				expect( editor.editing.view.getDomRoot( 'bar' ).getAttribute( 'aria-label' ) ).to.equal(
+					'Bar custom label'
+				);
+
+				await editor.destroy();
+			} );
+
+			it( 'should keep an existing value from the source DOM element', async () => {
+				const fooElement = document.createElement( 'div' );
+				fooElement.setAttribute( 'aria-label', 'Foo pre-existing value' );
+
+				const barElement = document.createElement( 'div' );
+				barElement.setAttribute( 'aria-label', 'Bar pre-existing value' );
+
+				const editor = await MultiRootEditor.create( {
+					foo: fooElement,
+					bar: barElement
+				}, {
+					plugins: [ Paragraph, Bold ]
+				} );
+
+				expect( editor.editing.view.getDomRoot( 'foo' ).getAttribute( 'aria-label' ) ).to.equal(
+					'Foo pre-existing value'
+				);
+
+				expect( editor.editing.view.getDomRoot( 'bar' ).getAttribute( 'aria-label' ) ).to.equal(
+					'Bar pre-existing value'
+				);
+
+				await editor.destroy();
+			} );
+
+			it( 'should override the existing value from the source DOM element', async () => {
+				const fooElement = document.createElement( 'div' );
+				fooElement.setAttribute( 'aria-label', 'Foo pre-existing value' );
+
+				const barElement = document.createElement( 'div' );
+				barElement.setAttribute( 'aria-label', 'Bar pre-existing value' );
+
+				const editor = await MultiRootEditor.create( {
+					foo: fooElement,
+					bar: barElement
+				}, {
+					plugins: [ Paragraph, Bold ],
+					label: {
+						foo: 'Foo override',
+						bar: 'Bar override'
+					}
+				} );
+
+				expect( editor.editing.view.getDomRoot( 'foo' ).getAttribute( 'aria-label' ) ).to.equal(
+					'Foo override'
+				);
+
+				expect( editor.editing.view.getDomRoot( 'bar' ).getAttribute( 'aria-label' ) ).to.equal(
+					'Bar override'
+				);
+
+				await editor.destroy();
+			} );
+
+			it( 'should use default label when creating an editor from initial data rather than a DOM element', async () => {
+				const editor = await MultiRootEditor.create( {
+					foo: 'Foo content',
+					bar: 'Bar content'
+				}, {
+					plugins: [ Paragraph, Bold ]
+				} );
+
+				expect( editor.editing.view.getDomRoot( 'foo' ).getAttribute( 'aria-label' ), 'Override value' ).to.equal(
+					'Rich Text Editor. Editing area: foo'
+				);
+
+				expect( editor.editing.view.getDomRoot( 'bar' ).getAttribute( 'aria-label' ), 'Override value' ).to.equal(
+					'Rich Text Editor. Editing area: bar'
+				);
+
+				await editor.destroy();
+			} );
+
+			it( 'should set custom label when creating an editor from initial data rather than a DOM element', async () => {
+				const editor = await MultiRootEditor.create( {
+					foo: 'Foo content',
+					bar: 'Bar content'
+				}, {
+					plugins: [ Paragraph, Bold ],
+					label: {
+						foo: 'Foo override',
+						bar: 'Bar override'
+					}
+				} );
+
+				expect( editor.editing.view.getDomRoot( 'foo' ).getAttribute( 'aria-label' ) ).to.equal(
+					'Foo override'
+				);
+
+				expect( editor.editing.view.getDomRoot( 'bar' ).getAttribute( 'aria-label' ) ).to.equal(
+					'Bar override'
+				);
+
+				await editor.destroy();
+			} );
 		} );
 
 		function test( getElementOrData ) {
@@ -756,7 +936,7 @@ describe( 'MultiRootEditor', () => {
 		beforeEach( async () => {
 			editor = await MultiRootEditor.create(
 				{ main: '<p>Main.</p>', second: '<table><tr><td>Foo.</td></tr></table>' },
-				{ plugins: [ Paragraph, Table, Undo ] }
+				{ plugins: [ Paragraph, Table, Undo, ClipboardPipeline ] }
 			);
 		} );
 
@@ -933,6 +1113,16 @@ describe( 'MultiRootEditor', () => {
 			const editableElement = editor.ui.view.editables.new.element;
 
 			expect( editableElement.children[ 0 ].dataset.placeholder ).to.equal( 'new' );
+		} );
+
+		it( 'should alow for setting a custom label to the editable', () => {
+			editor.addRoot( 'new' );
+
+			editor.createEditable( editor.model.document.getRoot( 'new' ), undefined, 'Custom label' );
+
+			const editableElement = editor.ui.view.editables.new.element;
+
+			expect( editableElement.getAttribute( 'aria-label' ) ).to.equal( 'Custom label' );
 		} );
 	} );
 
@@ -1423,7 +1613,7 @@ describe( 'MultiRootEditor', () => {
 					plugins: [ ArticlePluginSet ],
 					toolbar: [ 'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote' ],
 					image: {
-						toolbar: [ 'imageStyle:block', 'imageStyle:side', '|', 'imageTextAlternative' ]
+						toolbar: [ 'imageStyle:block', 'imageStyle:wrapText', '|', 'imageTextAlternative' ]
 					}
 				} ) );
 	} );

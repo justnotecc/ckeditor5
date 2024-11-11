@@ -1,13 +1,13 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-import Widget from '@ckeditor/ckeditor5-widget/src/widget';
+import Widget from '@ckeditor/ckeditor5-widget/src/widget.js';
 
-import PageBreak from '../src/pagebreak';
-import PageBreakEditing from '../src/pagebreakediting';
-import PageBreakUI from '../src/pagebreakui';
+import PageBreak from '../src/pagebreak.js';
+import PageBreakEditing from '../src/pagebreakediting.js';
+import PageBreakUI from '../src/pagebreakui.js';
 
 describe( 'PageBreak', () => {
 	it( 'should require PageBreakEditing, PageBreakUI and Widget', () => {
@@ -16,5 +16,13 @@ describe( 'PageBreak', () => {
 
 	it( 'should be named', () => {
 		expect( PageBreak.pluginName ).to.equal( 'PageBreak' );
+	} );
+
+	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+		expect( PageBreak.isOfficialPlugin ).to.be.true;
+	} );
+
+	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+		expect( PageBreak.isPremiumPlugin ).to.be.false;
 	} );
 } );

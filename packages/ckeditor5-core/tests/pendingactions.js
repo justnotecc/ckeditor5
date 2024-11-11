@@ -1,11 +1,11 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-import VirtualTestEditor from './_utils/virtualtesteditor';
-import PendingActions from '../src/pendingactions';
-import { expectToThrowCKEditorError } from '@ckeditor/ckeditor5-utils/tests/_utils/utils';
+import VirtualTestEditor from './_utils/virtualtesteditor.js';
+import PendingActions from '../src/pendingactions.js';
+import { expectToThrowCKEditorError } from '@ckeditor/ckeditor5-utils/tests/_utils/utils.js';
 
 let editor, pendingActions;
 
@@ -29,6 +29,14 @@ describe( 'PendingActions', () => {
 
 	it( 'should be marked as a context plugin', () => {
 		expect( PendingActions.isContextPlugin ).to.true;
+	} );
+
+	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+		expect( PendingActions.isOfficialPlugin ).to.be.true;
+	} );
+
+	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+		expect( PendingActions.isPremiumPlugin ).to.be.false;
 	} );
 
 	describe( 'init()', () => {

@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -15,9 +15,9 @@ import {
 	type PositionOptions,
 	type Locale
 } from '@ckeditor/ckeditor5-utils';
-import BalloonPanelView from '../panel/balloon/balloonpanelview';
-import IconView from '../icon/iconview';
-import View from '../view';
+import BalloonPanelView from '../panel/balloon/balloonpanelview.js';
+import IconView from '../icon/iconview.js';
+import View from '../view.js';
 import { throttle, type DebouncedFunc } from 'lodash-es';
 
 import poweredByIcon from '../../theme/icons/project-logo.svg';
@@ -38,7 +38,7 @@ type PoweredByConfig = Required<UiConfig>[ 'poweredBy' ];
  *
  * @private
  */
-export default class PoweredBy extends DomEmitterMixin() {
+export default class PoweredBy extends /* #__PURE__ */ DomEmitterMixin() {
 	/**
 	 * Editor instance the helper was created for.
 	 */
@@ -151,7 +151,6 @@ export default class PoweredBy extends DomEmitterMixin() {
 		} );
 
 		editor.ui.view.body.add( balloon );
-		editor.ui.focusTracker.add( balloon.element! );
 
 		this._balloonView = balloon;
 	}
@@ -252,7 +251,7 @@ class PoweredByView extends View<HTMLDivElement> {
 				{
 					tag: 'a',
 					attributes: {
-						href: 'https://ckeditor.com/?utm_source=ckeditor&' +
+						href: 'https://ckeditor.com/powered-by-ckeditor/?utm_source=ckeditor&' +
 							'utm_medium=referral&utm_campaign=701Dn000000hVgmIAE_powered_by_ckeditor_logo',
 						target: '_blank',
 						tabindex: '-1'

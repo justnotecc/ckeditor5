@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -7,9 +7,9 @@
  * @module image/image/insertimagecommand
  */
 
-import { Command, type Editor } from 'ckeditor5/src/core';
-import { logWarning, toArray, type ArrayOrItem } from 'ckeditor5/src/utils';
-import type ImageUtils from '../imageutils';
+import { Command, type Editor } from 'ckeditor5/src/core.js';
+import { logWarning, toArray, type ArrayOrItem } from 'ckeditor5/src/utils.js';
+import type ImageUtils from '../imageutils.js';
 
 /**
  * Insert image command.
@@ -95,10 +95,16 @@ export default class InsertImageCommand extends Command {
 	 *
 	 * @fires execute
 	 * @param options Options for the executed command.
+	 * @param options.imageType The type of the image to insert. If not specified, the type will be determined automatically.
 	 * @param options.source The image source or an array of image sources to insert.
 	 * See the documentation of the command to learn more about accepted formats.
 	 */
-	public override execute( options: { source: ArrayOrItem<string | Record<string, unknown>> } ): void {
+	public override execute(
+		options: {
+			source: ArrayOrItem<string | Record<string, unknown>>;
+			imageType?: 'imageBlock' | 'imageInline' | null;
+		}
+	): void {
 		const sourceDefinitions = toArray<string | Record<string, unknown>>( options.source );
 		const selection = this.editor.model.document.selection;
 		const imageUtils: ImageUtils = this.editor.plugins.get( 'ImageUtils' );
@@ -125,9 +131,9 @@ export default class InsertImageCommand extends Command {
 			if ( index && selectedElement && imageUtils.isImage( selectedElement ) ) {
 				const position = this.editor.model.createPositionAfter( selectedElement );
 
-				imageUtils.insertImage( { ...sourceDefinition, ...selectionAttributes }, position );
+				imageUtils.insertImage( { ...sourceDefinition, ...selectionAttributes }, position, options.imageType );
 			} else {
-				imageUtils.insertImage( { ...sourceDefinition, ...selectionAttributes } );
+				imageUtils.insertImage( { ...sourceDefinition, ...selectionAttributes }, null, options.imageType );
 			}
 		} );
 	}

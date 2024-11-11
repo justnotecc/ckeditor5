@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -27,11 +27,12 @@ import ClipboardObserver, {
 	type ViewDocumentCopyEvent,
 	type ViewDocumentCutEvent,
 	type ViewDocumentClipboardInputEvent
-} from './clipboardobserver';
+} from './clipboardobserver.js';
 
-import plainTextToHtml from './utils/plaintexttohtml';
-import normalizeClipboardHtml from './utils/normalizeclipboarddata';
-import viewToPlainText from './utils/viewtoplaintext';
+import plainTextToHtml from './utils/plaintexttohtml.js';
+import normalizeClipboardHtml from './utils/normalizeclipboarddata.js';
+import viewToPlainText from './utils/viewtoplaintext.js';
+import ClipboardMarkersUtils from './clipboardmarkersutils.js';
 
 // Input pipeline events overview:
 //
@@ -150,6 +151,20 @@ export default class ClipboardPipeline extends Plugin {
 	/**
 	 * @inheritDoc
 	 */
+	public static override get isOfficialPlugin(): true {
+		return true;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public static get requires() {
+		return [ ClipboardMarkersUtils ] as const;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
 	public init(): void {
 		const editor = this.editor;
 		const view = editor.editing.view;
@@ -170,12 +185,16 @@ export default class ClipboardPipeline extends Plugin {
 		selection: Selection | DocumentSelection,
 		method: 'copy' | 'cut' | 'dragstart'
 	): void {
-		const content = this.editor.model.getSelectedContent( selection );
+		const clipboardMarkersUtils: ClipboardMarkersUtils = this.editor.plugins.get( 'ClipboardMarkersUtils' );
 
-		this.fire<ClipboardOutputTransformationEvent>( 'outputTransformation', {
-			dataTransfer,
-			content,
-			method
+		this.editor.model.enqueueChange( { isUndoable: method === 'cut' }, () => {
+			const documentFragment = clipboardMarkersUtils._copySelectedFragmentWithMarkers( method, selection );
+
+			this.fire<ClipboardOutputTransformationEvent>( 'outputTransformation', {
+				dataTransfer,
+				content: documentFragment,
+				method
+			} );
 		} );
 	}
 
@@ -187,6 +206,7 @@ export default class ClipboardPipeline extends Plugin {
 		const model = editor.model;
 		const view = editor.editing.view;
 		const viewDocument = view.document;
+		const clipboardMarkersUtils: ClipboardMarkersUtils = this.editor.plugins.get( 'ClipboardMarkersUtils' );
 
 		// Pasting is disabled when selection is in non-editable place.
 		// Dropping is disabled in drag and drop handler.
@@ -265,7 +285,7 @@ export default class ClipboardPipeline extends Plugin {
 		}, { priority: 'low' } );
 
 		this.listenTo<ClipboardContentInsertionEvent>( this, 'contentInsertion', ( evt, data ) => {
-			data.resultRange = model.insertContent( data.content );
+			data.resultRange = clipboardMarkersUtils._pasteFragmentWithMarkers( data.content );
 		}, { priority: 'low' } );
 	}
 

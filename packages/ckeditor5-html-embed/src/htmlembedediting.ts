@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -7,13 +7,13 @@
  * @module html-embed/htmlembedediting
  */
 
-import { Plugin, icons, type Editor } from 'ckeditor5/src/core';
-import { ButtonView } from 'ckeditor5/src/ui';
-import { toWidget } from 'ckeditor5/src/widget';
-import { logWarning, createElement } from 'ckeditor5/src/utils';
+import { Plugin, icons, type Editor } from 'ckeditor5/src/core.js';
+import { ButtonView } from 'ckeditor5/src/ui.js';
+import { toWidget } from 'ckeditor5/src/widget.js';
+import { logWarning, createElement } from 'ckeditor5/src/utils.js';
 
-import type { HtmlEmbedConfig } from './htmlembedconfig';
-import HtmlEmbedCommand from './htmlembedcommand';
+import type { HtmlEmbedConfig } from './htmlembedconfig.js';
+import HtmlEmbedCommand from './htmlembedcommand.js';
 
 import '../theme/htmlembed.css';
 
@@ -37,6 +37,13 @@ export default class HtmlEmbedEditing extends Plugin {
 	/**
 	 * @inheritDoc
 	 */
+	public static override get isOfficialPlugin(): true {
+		return true;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
 	constructor( editor: Editor ) {
 		super( editor );
 
@@ -44,7 +51,7 @@ export default class HtmlEmbedEditing extends Plugin {
 			showPreviews: false,
 			sanitizeHtml: rawHtml => {
 				/**
-				 * When using the HTML embed feature with the `htmlEmbed.showPreviews=true` option, it is strongly recommended to
+				 * When using the HTML embed feature with the `config.htmlEmbed.showPreviews` set to `true`, it is strongly recommended to
 				 * define a sanitize function that will clean up the input HTML in order to avoid XSS vulnerability.
 				 *
 				 * For a detailed overview, check the {@glink features/html/html-embed HTML embed feature} documentation.

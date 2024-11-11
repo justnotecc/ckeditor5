@@ -1,15 +1,15 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 /* global document, Event */
 
-import clickOutsideHandler from '../../src/bindings/clickoutsidehandler';
+import clickOutsideHandler from '../../src/bindings/clickoutsidehandler.js';
 
-import DomEmitterMixin from '@ckeditor/ckeditor5-utils/src/dom/emittermixin';
+import DomEmitterMixin from '@ckeditor/ckeditor5-utils/src/dom/emittermixin.js';
 
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
 
 describe( 'clickOutsideHandler', () => {
 	let activator, actionSpy, contextElement1, contextElement2, contextElementsCallback;
@@ -38,6 +38,40 @@ describe( 'clickOutsideHandler', () => {
 		document.body.removeChild( contextElement1 );
 		document.body.removeChild( contextElement2 );
 		document.body.removeChild( shadowRootContainer );
+	} );
+
+	describe( 'listenerOptions', () => {
+		it( 'should forward listenerOptions parameter', () => {
+			const listenerOptions = { passive: true };
+			const emitter = Object.create( DomEmitterMixin );
+
+			const listenToSpy = sinon.spy( emitter, 'listenTo' );
+
+			clickOutsideHandler( {
+				emitter,
+				activator,
+				contextElements: [ contextElement1 ],
+				callback: actionSpy,
+				listenerOptions
+			} );
+
+			sinon.assert.calledWithMatch( listenToSpy.firstCall, document, 'mousedown', sinon.match.func, listenerOptions );
+		} );
+
+		it( 'should not forward listenerOptions parameter if not provided', () => {
+			const emitter = Object.create( DomEmitterMixin );
+
+			const listenToSpy = sinon.spy( emitter, 'listenTo' );
+
+			clickOutsideHandler( {
+				emitter,
+				activator,
+				contextElements: [ contextElement1 ],
+				callback: actionSpy
+			} );
+
+			sinon.assert.calledWithMatch( listenToSpy.firstCall, document, 'mousedown', sinon.match.func );
+		} );
 	} );
 
 	describe( 'static list of context elements', () => {

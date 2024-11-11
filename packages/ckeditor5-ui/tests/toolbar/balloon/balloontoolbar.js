@@ -1,35 +1,37 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor';
-import EditorUI from '../../../src/editorui/editorui';
-import BalloonToolbar from '../../../src/toolbar/balloon/balloontoolbar';
-import ContextualBalloon from '../../../src/panel/balloon/contextualballoon';
-import BalloonPanelView from '../../../src/panel/balloon/balloonpanelview';
-import ToolbarView from '../../../src/toolbar/toolbarview';
-import FocusTracker from '@ckeditor/ckeditor5-utils/src/focustracker';
-import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
-import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold';
-import Italic from '@ckeditor/ckeditor5-basic-styles/src/italic';
-import Underline from '@ckeditor/ckeditor5-basic-styles/src/underline';
+import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor.js';
+import EditorUI from '../../../src/editorui/editorui.js';
+import BalloonToolbar from '../../../src/toolbar/balloon/balloontoolbar.js';
+import ContextualBalloon from '../../../src/panel/balloon/contextualballoon.js';
+import BalloonPanelView from '../../../src/panel/balloon/balloonpanelview.js';
+import ToolbarView from '../../../src/toolbar/toolbarview.js';
+import ButtonView from '../../../src/button/buttonview.js';
+import FocusTracker from '@ckeditor/ckeditor5-utils/src/focustracker.js';
+import Plugin from '@ckeditor/ckeditor5-core/src/plugin.js';
+import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold.js';
+import Italic from '@ckeditor/ckeditor5-basic-styles/src/italic.js';
+import Underline from '@ckeditor/ckeditor5-basic-styles/src/underline.js';
 import { Paragraph } from '@ckeditor/ckeditor5-paragraph';
-import HorizontalLine from '@ckeditor/ckeditor5-horizontal-line/src/horizontalline';
-import TableEditing from '@ckeditor/ckeditor5-table/src/tableediting';
-import global from '@ckeditor/ckeditor5-utils/src/dom/global';
-import ResizeObserver from '@ckeditor/ckeditor5-utils/src/dom/resizeobserver';
-import env from '@ckeditor/ckeditor5-utils/src/env';
+import HorizontalLine from '@ckeditor/ckeditor5-horizontal-line/src/horizontalline.js';
+import TableEditing from '@ckeditor/ckeditor5-table/src/tableediting.js';
+import global from '@ckeditor/ckeditor5-utils/src/dom/global.js';
+import ResizeObserver from '@ckeditor/ckeditor5-utils/src/dom/resizeobserver.js';
+import env from '@ckeditor/ckeditor5-utils/src/env.js';
+import { MultiRootEditor } from '@ckeditor/ckeditor5-editor-multi-root';
 
-import { setData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
-import { stringify as viewStringify } from '@ckeditor/ckeditor5-engine/src/dev-utils/view';
+import { setData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model.js';
+import { stringify as viewStringify } from '@ckeditor/ckeditor5-engine/src/dev-utils/view.js';
 
-import Rect from '@ckeditor/ckeditor5-utils/src/dom/rect';
-import toUnit from '@ckeditor/ckeditor5-utils/src/dom/tounit';
+import Rect from '@ckeditor/ckeditor5-utils/src/dom/rect.js';
+import toUnit from '@ckeditor/ckeditor5-utils/src/dom/tounit.js';
 
 const toPx = toUnit( 'px' );
 
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
 
 /* global document, window, Event */
 
@@ -87,10 +89,12 @@ describe( 'BalloonToolbar', () => {
 			} );
 	} );
 
-	afterEach( () => {
+	afterEach( async () => {
 		editorElement.remove();
 
-		return editor.destroy();
+		if ( editor ) {
+			await editor.destroy();
+		}
 	} );
 
 	after( () => {
@@ -98,6 +102,14 @@ describe( 'BalloonToolbar', () => {
 		// stub is restored, the ResizeObserver class (CKE5 module) keeps the reference to the single native
 		// observer. Resetting it will allow fresh start for any other test using ResizeObserver.
 		ResizeObserver._observerInstance = null;
+	} );
+
+	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+		expect( BalloonToolbar.isOfficialPlugin ).to.be.true;
+	} );
+
+	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+		expect( BalloonToolbar.isPremiumPlugin ).to.be.false;
 	} );
 
 	it( 'should create a plugin instance', () => {
@@ -233,6 +245,13 @@ describe( 'BalloonToolbar', () => {
 			editor.ui.getEditableElement().dispatchEvent( new Event( 'focus' ) );
 
 			expect( balloonToolbar.focusTracker.isFocused ).to.true;
+		} );
+
+		// https://github.com/cksource/ckeditor5-commercial/issues/6633
+		it( 'should track the ToolbarView instance (not just its element) to allow using complex toolbar items scattered across DOM ' +
+			'sub-trees and keep track of the focus',
+		() => {
+			expect( balloonToolbar.focusTracker.externalViews ).to.include( balloonToolbar.toolbarView );
 		} );
 
 		it( 'it should track the focus of the toolbarView#element', () => {
@@ -791,6 +810,216 @@ describe( 'BalloonToolbar', () => {
 			balloonToolbar.show();
 			sinon.assert.notCalled( balloonAddSpy );
 		} );
+	} );
+
+	describe( 'BalloonToolbar plugin load order', () => {
+		it( 'should add a button registered in the afterInit of Foo when BalloonToolbar is loaded before Foo', () => {
+			class Foo extends Plugin {
+				afterInit() {
+					this.editor.ui.componentFactory.add( 'foo', () => {
+						const button = new ButtonView();
+
+						button.set( { label: 'Foo' } );
+
+						return button;
+					} );
+				}
+			}
+
+			return ClassicTestEditor
+				.create( editorElement, {
+					plugins: [ BalloonToolbar, Foo ],
+					balloonToolbar: [ 'foo' ]
+				} )
+				.then( editor => {
+					const items = editor.plugins.get( BalloonToolbar ).toolbarView.items;
+
+					expect( items.length ).to.equal( 1 );
+					expect( items.first.label ).to.equal( 'Foo' );
+
+					return editor.destroy();
+				} );
+		} );
+	} );
+
+	describe( 'MultiRoot editor integration', () => {
+		let rootsElements, addEditableOnRootAdd, focusHolder;
+
+		beforeEach( async () => {
+			addEditableOnRootAdd = true;
+			rootsElements = [ ...Array( 3 ) ].reduce( ( acc, _, index ) => {
+				const rootElement = global.document.createElement( 'div' );
+
+				global.document.body.appendChild( rootElement );
+
+				return {
+					...acc,
+					[ `root-${ index }` ]: rootElement
+				};
+			}, {} );
+
+			if ( editor ) {
+				await editor.destroy();
+			}
+
+			editor = await createMultiRootEditor();
+			balloonToolbar = editor.plugins.get( BalloonToolbar );
+
+			focusHolder = document.createElement( 'input' );
+			document.body.appendChild( focusHolder );
+		} );
+
+		afterEach( async () => {
+			Object
+				.values( rootsElements )
+				.forEach( rootElement => rootElement.remove() );
+
+			await editor.destroy();
+			editor = null;
+
+			focusHolder.remove();
+		} );
+
+		it( 'should create plugin instance', () => {
+			expect( balloonToolbar ).to.instanceOf( Plugin );
+			expect( balloonToolbar ).to.instanceOf( BalloonToolbar );
+			expect( balloonToolbar.toolbarView ).to.instanceof( ToolbarView );
+			expect( balloonToolbar.toolbarView.element.classList.contains( 'ck-toolbar_floating' ) ).to.be.true;
+		} );
+
+		it( '#focusTracker should include all roots created alongside with editor', () => {
+			const clock = sinon.useFakeTimers();
+			const editables = [ ...editor.ui.getEditableElementsNames() ];
+
+			expect( editables ).to.be.length( 3 );
+			expect( balloonToolbar.focusTracker.isFocused ).to.false;
+
+			for ( const editableName of editables ) {
+				const editableElement = editor.ui.getEditableElement( editableName );
+
+				editableElement.focus();
+				clock.tick( 50 );
+				expect( balloonToolbar.focusTracker.isFocused ).to.true;
+
+				focusHolder.focus();
+				clock.tick( 50 );
+				expect( balloonToolbar.focusTracker.isFocused ).to.false;
+			}
+
+			clock.restore();
+		} );
+
+		it( '#focusTracker should track focus on dynamically added roots', async () => {
+			const clock = sinon.useFakeTimers();
+
+			expect( balloonToolbar.focusTracker.isFocused ).to.false;
+			expect( balloonToolbar.focusTracker.elements.length ).to.be.equal( 4 );
+
+			editor.addRoot( 'dynamicRoot' );
+
+			// Check if newly added editable is tracked in focus tracker.
+			expect( balloonToolbar.focusTracker.elements.length ).to.be.equal( 5 );
+
+			// Check if element is added to focus tracker.
+			const editableElement = editor.ui.getEditableElement( 'dynamicRoot' );
+			expect( balloonToolbar.focusTracker._elements ).contain( editableElement );
+
+			// Watch focus and blur events.
+			editableElement.focus();
+			clock.tick( 50 );
+
+			expect( balloonToolbar.focusTracker.isFocused ).to.true;
+
+			focusHolder.focus();
+			clock.tick( 50 );
+			expect( balloonToolbar.focusTracker.isFocused ).to.false;
+
+			editableElement.remove();
+			clock.restore();
+		} );
+
+		it( 'dynamically removed roots should be removed from #focusTracker', () => {
+			const clock = sinon.useFakeTimers();
+
+			expect( balloonToolbar.focusTracker.isFocused ).to.false;
+			expect( balloonToolbar.focusTracker.elements.length ).to.be.equal( 4 );
+
+			editor.addRoot( 'dynamicRoot' );
+			const editableElement = editor.ui.getEditableElement( 'dynamicRoot' );
+
+			// Check if newly added editable is tracked in focus tracker.
+			expect( balloonToolbar.focusTracker.elements.length ).to.be.equal( 5 );
+
+			editor.detachRoot( 'dynamicRoot' );
+
+			// Check if element is removed from focus tracker.
+			expect( balloonToolbar.focusTracker.elements.length ).to.be.equal( 4 );
+
+			// Focus is no longer tracked.
+			editableElement.focus();
+			clock.tick( 50 );
+
+			expect( balloonToolbar.focusTracker.isFocused ).to.false;
+
+			clock.restore();
+		} );
+
+		it( 'should track lazy attached and detached editables', () => {
+			const clock = sinon.useFakeTimers();
+
+			addEditableOnRootAdd = false;
+
+			expect( balloonToolbar.focusTracker.isFocused ).to.false;
+			expect( balloonToolbar.focusTracker.elements.length ).to.be.equal( 4 );
+
+			editor.addRoot( 'dynamicRoot' );
+			const root = editor.model.document.getRoot( 'dynamicRoot' );
+
+			// Editable is not yet attached
+			expect( balloonToolbar.focusTracker.elements.length ).to.be.equal( 4 );
+
+			// Focus is no longer tracked.
+			const editableElement = editor.createEditable( root );
+
+			global.document.body.appendChild( editableElement );
+			expect( balloonToolbar.focusTracker.elements.length ).to.be.equal( 5 );
+
+			// Lets test focus
+			editableElement.focus();
+			clock.tick( 50 );
+
+			expect( balloonToolbar.focusTracker.isFocused ).to.true;
+
+			// Detach editable element
+			editor.detachEditable( root );
+			expect( balloonToolbar.focusTracker.elements.length ).to.be.equal( 4 );
+
+			editableElement.remove();
+			clock.restore();
+		} );
+
+		async function createMultiRootEditor() {
+			const multiRootEditor = await MultiRootEditor.create( rootsElements, {
+				plugins: [ Paragraph, Bold, Italic, BalloonToolbar ],
+				balloonToolbar: [ 'bold', 'italic' ]
+			} );
+
+			multiRootEditor.on( 'addRoot', ( evt, root ) => {
+				if ( addEditableOnRootAdd ) {
+					const domElement = multiRootEditor.createEditable( root );
+					global.document.body.appendChild( domElement );
+				}
+			} );
+
+			multiRootEditor.on( 'detachRoot', ( evt, root ) => {
+				if ( addEditableOnRootAdd ) {
+					const domElement = multiRootEditor.detachEditable( root );
+					domElement.remove();
+				}
+			} );
+
+			return multiRootEditor;
+		}
 	} );
 
 	function stubSelectionRects( rects ) {

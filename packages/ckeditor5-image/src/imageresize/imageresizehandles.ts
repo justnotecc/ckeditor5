@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -7,13 +7,13 @@
  * @module image/imageresize/imageresizehandles
  */
 
-import type { Element, ViewElement } from 'ckeditor5/src/engine';
-import { Plugin } from 'ckeditor5/src/core';
-import { WidgetResize } from 'ckeditor5/src/widget';
-import ImageUtils from '../imageutils';
+import type { Element, ViewElement } from 'ckeditor5/src/engine.js';
+import { Plugin } from 'ckeditor5/src/core.js';
+import { WidgetResize } from 'ckeditor5/src/widget.js';
+import ImageUtils from '../imageutils.js';
 
-import ImageLoadObserver, { type ImageLoadedEvent } from '../image/imageloadobserver';
-import type ResizeImageCommand from './resizeimagecommand';
+import ImageLoadObserver, { type ImageLoadedEvent } from '../image/imageloadobserver.js';
+import type ResizeImageCommand from './resizeimagecommand.js';
 
 const RESIZABLE_IMAGES_CSS_SELECTOR =
 	'figure.image.ck-widget > img,' +
@@ -44,6 +44,13 @@ export default class ImageResizeHandles extends Plugin {
 	 */
 	public static get pluginName() {
 		return 'ImageResizeHandles' as const;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public static override get isOfficialPlugin(): true {
+		return true;
 	}
 
 	/**
@@ -101,14 +108,13 @@ export default class ImageResizeHandles extends Plugin {
 						return domWidgetElement.querySelector( 'img' )!;
 					},
 					getResizeHost() {
-						// Return the model image element parent to avoid setting an inline element (<a>/<span>) as a resize host.
-						return domConverter.mapViewToDom( mapper.toViewElement( imageModel.parent as Element )! ) as HTMLElement;
+						return domConverter.mapViewToDom( mapper.toViewElement( imageModel as Element )! ) as HTMLElement;
 					},
-					// TODO consider other positions.
+
 					isCentered() {
 						const imageStyle = imageModel.getAttribute( 'imageStyle' );
 
-						return !imageStyle || imageStyle == 'block' || imageStyle == 'alignCenter';
+						return imageStyle == 'alignCenter';
 					},
 
 					onCommit( newValue ) {

@@ -1,13 +1,14 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor';
-import ImageInsertUI from '../src/imageinsert/imageinsertui';
-import ImageInsertViaUrl from '../src/imageinsertviaurl';
+import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor.js';
+import ImageInsertUI from '../src/imageinsert/imageinsertui.js';
+import ImageInsertViaUrl from '../src/imageinsertviaurl.js';
+import ImageInsertViaUrlUI from '../src/imageinsert/imageinsertviaurlui.js';
 
-import global from '@ckeditor/ckeditor5-utils/src/dom/global';
+import global from '@ckeditor/ckeditor5-utils/src/dom/global.js';
 
 describe( 'ImageInsertViaUrl', () => {
 	let editorElement, editor;
@@ -23,7 +24,6 @@ describe( 'ImageInsertViaUrl', () => {
 
 	afterEach( async () => {
 		editorElement.remove();
-
 		await editor.destroy();
 	} );
 
@@ -35,7 +35,19 @@ describe( 'ImageInsertViaUrl', () => {
 		expect( editor.plugins.get( 'ImageInsertUI' ) ).to.instanceOf( ImageInsertUI );
 	} );
 
+	it( 'should load ImageInsertViaUrlUI plugin', () => {
+		expect( editor.plugins.get( 'ImageInsertViaUrlUI' ) ).to.instanceOf( ImageInsertViaUrlUI );
+	} );
+
 	it( 'should not load ImageUpload plugin', () => {
 		expect( editor.plugins.has( 'ImageUpload' ) ).to.be.false;
+	} );
+
+	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+		expect( ImageInsertViaUrl.isOfficialPlugin ).to.be.true;
+	} );
+
+	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+		expect( ImageInsertViaUrl.isPremiumPlugin ).to.be.false;
 	} );
 } );

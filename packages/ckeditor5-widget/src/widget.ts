@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -18,25 +18,31 @@ import {
 	type Element,
 	type Node,
 	type ViewDocumentArrowKeyEvent,
-	type ViewDocumentFragment,
 	type ViewDocumentMouseDownEvent,
 	type ViewElement,
 	type Schema,
-	type Position
+	type Position,
+	type EditingView,
+	type ViewDocumentTabEvent,
+	type ViewDocumentKeyDownEvent,
+	type ViewNode,
+	type ViewRange
 } from '@ckeditor/ckeditor5-engine';
 
 import { Delete, type ViewDocumentDeleteEvent } from '@ckeditor/ckeditor5-typing';
 
 import {
 	env,
+	keyCodes,
 	getLocalizedArrowKeyCodeDirection,
+	getRangeFromMouseEvent,
 	type EventInfo,
 	type KeystrokeInfo
 } from '@ckeditor/ckeditor5-utils';
 
-import WidgetTypeAround from './widgettypearound/widgettypearound';
-import verticalNavigationHandler from './verticalnavigation';
-import { getLabel, isWidget, WIDGET_SELECTED_CLASS_NAME } from './utils';
+import WidgetTypeAround from './widgettypearound/widgettypearound.js';
+import verticalNavigationHandler from './verticalnavigation.js';
+import { getLabel, isWidget, WIDGET_SELECTED_CLASS_NAME } from './utils.js';
 
 import '../theme/widget.css';
 
@@ -69,6 +75,13 @@ export default class Widget extends Plugin {
 	/**
 	 * @inheritDoc
 	 */
+	public static override get isOfficialPlugin(): true {
+		return true;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
 	public static get requires() {
 		return [ WidgetTypeAround, Delete ] as const;
 	}
@@ -80,6 +93,7 @@ export default class Widget extends Plugin {
 		const editor = this.editor;
 		const view = editor.editing.view;
 		const viewDocument = view.document;
+		const t = editor.t;
 
 		// Model to view selection converter.
 		// Converts selection placed over widget element to fake selection.
@@ -194,6 +208,76 @@ export default class Widget extends Plugin {
 				evt.stop();
 			}
 		}, { context: '$root' } );
+
+		// Handle Tab key while a widget is selected.
+		this.listenTo<ViewDocumentTabEvent>( viewDocument, 'tab', ( evt, data ) => {
+			// This event could be triggered from inside the widget, but we are interested
+			// only when the widget is selected itself.
+			if ( evt.eventPhase != 'atTarget' ) {
+				return;
+			}
+
+			if ( data.shiftKey ) {
+				return;
+			}
+
+			if ( this._selectFirstNestedEditable() ) {
+				data.preventDefault();
+				evt.stop();
+			}
+		}, { context: isWidget, priority: 'low' } );
+
+		// Handle Shift+Tab key while caret inside a widget editable.
+		this.listenTo<ViewDocumentTabEvent>( viewDocument, 'tab', ( evt, data ) => {
+			if ( !data.shiftKey ) {
+				return;
+			}
+
+			if ( this._selectAncestorWidget() ) {
+				data.preventDefault();
+				evt.stop();
+			}
+		}, { priority: 'low' } );
+
+		// Handle Esc key while inside a nested editable.
+		this.listenTo<ViewDocumentKeyDownEvent>( viewDocument, 'keydown', ( evt, data ) => {
+			if ( data.keystroke != keyCodes.esc ) {
+				return;
+			}
+
+			if ( this._selectAncestorWidget() ) {
+				data.preventDefault();
+				evt.stop();
+			}
+		}, { priority: 'low' } );
+
+		// Add the information about the keystrokes to the accessibility database.
+		editor.accessibility.addKeystrokeInfoGroup( {
+			id: 'widget',
+			label: t( 'Keystrokes that can be used when a widget is selected (for example: image, table, etc.)' ),
+			keystrokes: [
+				{
+					label: t( 'Move focus from an editable area back to the parent widget' ),
+					keystroke: 'Esc'
+				},
+				{
+					label: t( 'Insert a new paragraph directly after a widget' ),
+					keystroke: 'Enter'
+				},
+				{
+					label: t( 'Insert a new paragraph directly before a widget' ),
+					keystroke: 'Shift+Enter'
+				},
+				{
+					label: t( 'Move the caret to allow typing directly before a widget' ),
+					keystroke: [ [ 'arrowup' ], [ 'arrowleft' ] ]
+				},
+				{
+					label: t( 'Move the caret to allow typing directly after a widget' ),
+					keystroke: [ [ 'arrowdown' ], [ 'arrowright' ] ]
+				}
+			]
+		} );
 	}
 
 	/**
@@ -205,6 +289,11 @@ export default class Widget extends Plugin {
 		const viewDocument = view.document;
 		let element: ViewElement | null = domEventData.target;
 
+		// Some of DOM elements have no view element representation so it may be null.
+		if ( !element ) {
+			return;
+		}
+
 		// If triple click should select entire paragraph.
 		if ( domEventData.domEvent.detail >= 3 ) {
 			if ( this._selectBlockContent( element ) ) {
@@ -214,17 +303,25 @@ export default class Widget extends Plugin {
 			return;
 		}
 
-		// Do nothing for single or double click inside nested editable.
-		if ( isInsideNestedEditable( element ) ) {
-			return;
-		}
-
 		// If target is not a widget element - check if one of the ancestors is.
 		if ( !isWidget( element ) ) {
-			element = element.findAncestor( isWidget );
+			const editableOrWidgetElement = findClosestEditableOrWidgetAncestor( element );
 
-			if ( !element ) {
+			if ( !editableOrWidgetElement ) {
 				return;
+			}
+
+			if ( isWidget( editableOrWidgetElement ) ) {
+				element = editableOrWidgetElement;
+			} else {
+				// Pick view range from the point where the mouse was clicked.
+				const clickTargetFromPoint = getElementFromMouseEvent( view, domEventData );
+
+				if ( clickTargetFromPoint && isWidget( clickTargetFromPoint ) ) {
+					element = clickTargetFromPoint;
+				} else {
+					return;
+				}
 			}
 		}
 
@@ -470,28 +567,142 @@ export default class Widget extends Plugin {
 
 		this._previouslySelected.clear();
 	}
-}
 
-/**
- * Returns `true` when element is a nested editable or is placed inside one.
- */
-function isInsideNestedEditable( element: ViewElement ) {
-	let currentElement: ViewElement | ViewDocumentFragment | null = element;
+	/**
+	 * Moves the document selection into the first nested editable.
+	 */
+	private _selectFirstNestedEditable(): boolean {
+		const editor = this.editor;
+		const view = this.editor.editing.view;
+		const viewDocument = view.document;
 
-	while ( currentElement ) {
-		if ( currentElement.is( 'editableElement' ) && !currentElement.is( 'rootElement' ) ) {
-			return true;
+		for ( const item of viewDocument.selection.getFirstRange()!.getItems() ) {
+			if ( item.is( 'editableElement' ) ) {
+				const modelElement = editor.editing.mapper.toModelElement( item );
+
+				/* istanbul ignore next -- @preserve */
+				if ( !modelElement ) {
+					continue;
+				}
+
+				const position = editor.model.createPositionAt( modelElement, 0 );
+				const newRange = editor.model.schema.getNearestSelectionRange( position, 'forward' );
+
+				editor.model.change( writer => {
+					writer.setSelection( newRange );
+				} );
+
+				return true;
+			}
 		}
 
-		// Click on nested widget should select it.
-		if ( isWidget( currentElement ) ) {
+		return false;
+	}
+
+	/**
+	 * Updates the document selection so that it selects first ancestor widget.
+	 */
+	private _selectAncestorWidget(): boolean {
+		const editor = this.editor;
+		const mapper = editor.editing.mapper;
+		const selection = editor.editing.view.document.selection;
+
+		const positionParent = selection.getFirstPosition()!.parent;
+
+		const positionParentElement = positionParent.is( '$text' ) ?
+			positionParent.parent as ViewElement :
+			positionParent as ViewElement;
+
+		const viewElement = positionParentElement.findAncestor( isWidget );
+
+		if ( !viewElement ) {
 			return false;
 		}
 
-		currentElement = currentElement.parent;
+		const modelElement = mapper.toModelElement( viewElement );
+
+		/* istanbul ignore next -- @preserve */
+		if ( !modelElement ) {
+			return false;
+		}
+
+		editor.model.change( writer => {
+			writer.setSelection( modelElement, 'on' );
+		} );
+
+		return true;
+	}
+}
+
+/**
+ * Finds the closest ancestor element that is either an editable element or a widget.
+ *
+ * @param element The element from which to start searching.
+ * @returns The closest ancestor element that is either an editable element or a widget, or null if none is found.
+ */
+function findClosestEditableOrWidgetAncestor( element: ViewElement ): ViewElement | null {
+	let currentElement: ViewElement | null = element;
+
+	while ( currentElement ) {
+		if ( currentElement.is( 'editableElement' ) || isWidget( currentElement ) ) {
+			return currentElement;
+		}
+
+		currentElement = currentElement.parent as ViewElement | null;
 	}
 
-	return false;
+	return null;
+}
+
+/**
+ * Retrieves the ViewElement associated with a mouse event in the editing view.
+ *
+ * @param view The editing view.
+ * @param domEventData The DOM event data containing the mouse event.
+ * @returns The ViewElement associated with the mouse event, or null if not found.
+ */
+function getElementFromMouseEvent( view: EditingView, domEventData: DomEventData<MouseEvent> ): ViewElement | null {
+	const domRange = getRangeFromMouseEvent( domEventData.domEvent );
+	let viewRange: ViewRange | null = null;
+
+	if ( domRange ) {
+		viewRange = view.domConverter.domRangeToView( domRange );
+	} else {
+		// Fallback to create range in target element. It happens frequently on Safari browser.
+		// See more: https://github.com/ckeditor/ckeditor5/issues/16978
+		viewRange = view.createRange( view.createPositionAt( domEventData.target, 0 ) );
+	}
+
+	if ( !viewRange ) {
+		return null;
+	}
+
+	const viewPosition = viewRange.start;
+
+	if ( !viewPosition.parent ) {
+		return null;
+	}
+
+	let viewNode = viewPosition.parent;
+
+	if ( viewPosition.parent.is( 'editableElement' ) ) {
+		if ( viewPosition.isAtEnd && viewPosition.nodeBefore ) {
+			// Click after a widget tend to return position at the end of the editable element
+			// so use the node before it if range is at the end of a parent.
+			viewNode = viewPosition.nodeBefore as ViewNode;
+		} else if ( viewPosition.isAtStart && viewPosition.nodeAfter ) {
+			// Click before a widget tend to return position at the start of the editable element
+			// so use the node after it if range is at the start of a parent.
+			// See more: https://github.com/ckeditor/ckeditor5/issues/16992
+			viewNode = viewPosition.nodeAfter as ViewNode;
+		}
+	}
+
+	if ( viewNode.is( '$text' ) ) {
+		return viewNode.parent as ViewElement;
+	}
+
+	return viewNode as ViewElement;
 }
 
 /**

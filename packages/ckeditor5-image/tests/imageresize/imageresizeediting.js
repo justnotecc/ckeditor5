@@ -1,27 +1,27 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 /* global document */
 
 // ClassicTestEditor can't be used, as it doesn't handle the focus, which is needed to test resizer visual cues.
-import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor';
+import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor.js';
 
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
 
-import Image from '../../src/image';
-import ImageResizeEditing from '../../src/imageresize/imageresizeediting';
-import ResizeImageCommand from '../../src/imageresize/resizeimagecommand';
-import ImageStyle from '../../src/imagestyle';
-import ImageBlockEditing from '../../src/image/imageblockediting';
-import ImageInlineEditing from '../../src/image/imageinlineediting';
+import Image from '../../src/image.js';
+import ImageResizeEditing from '../../src/imageresize/imageresizeediting.js';
+import ResizeImageCommand from '../../src/imageresize/resizeimagecommand.js';
+import ImageStyle from '../../src/imagestyle.js';
+import ImageBlockEditing from '../../src/image/imageblockediting.js';
+import ImageInlineEditing from '../../src/image/imageinlineediting.js';
 
-import { setData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
-import { getData as getViewData } from '@ckeditor/ckeditor5-engine/src/dev-utils/view';
+import { setData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model.js';
+import { getData as getViewData } from '@ckeditor/ckeditor5-engine/src/dev-utils/view.js';
 
-import { focusEditor } from '@ckeditor/ckeditor5-widget/tests/widgetresize/_utils/utils';
-import { IMAGE_SRC_FIXTURE } from './_utils/utils';
+import { focusEditor } from '@ckeditor/ckeditor5-widget/tests/widgetresize/_utils/utils.js';
+import { IMAGE_SRC_FIXTURE } from './_utils/utils.js';
 
 describe( 'ImageResizeEditing', () => {
 	let editor, editorElement;
@@ -45,6 +45,14 @@ describe( 'ImageResizeEditing', () => {
 		expect( ImageResizeEditing.pluginName ).to.equal( 'ImageResizeEditing' );
 	} );
 
+	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+		expect( ImageResizeEditing.isOfficialPlugin ).to.be.true;
+	} );
+
+	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+		expect( ImageResizeEditing.isPremiumPlugin ).to.be.false;
+	} );
+
 	describe( 'constructor()', () => {
 		beforeEach( async () => {
 			editor = await createEditor( {
@@ -61,6 +69,11 @@ describe( 'ImageResizeEditing', () => {
 				name: 'resizeImage:original',
 				value: null,
 				icon: 'original'
+			},
+			{
+				name: 'resizeImage:custom',
+				value: 'custom',
+				icon: 'custom'
 			},
 			{
 				name: 'resizeImage:25',
@@ -488,6 +501,30 @@ describe( 'ImageResizeEditing', () => {
 
 		it( 'allows the resizedHeight attribute when ImageInline plugin is enabled', async () => {
 			const newEditor = await ClassicEditor.create( editorElement, { plugins: [ ImageInlineEditing, ImageResizeEditing ] } );
+			expect( newEditor.model.schema.checkAttribute( [ '$root', 'imageInline' ], 'resizedHeight' ) ).to.be.true;
+			await newEditor.destroy();
+		} );
+
+		it( 'allows the resizedWidth attribute when ImageBlock plugin is enabled (reverse order in plugins array)', async () => {
+			const newEditor = await ClassicEditor.create( editorElement, { plugins: [ ImageResizeEditing, ImageBlockEditing ] } );
+			expect( newEditor.model.schema.checkAttribute( [ '$root', 'imageBlock' ], 'resizedWidth' ) ).to.be.true;
+			await newEditor.destroy();
+		} );
+
+		it( 'allows the resizedHeight attribute when ImageBlock plugin is enabled (reverse order in plugins array)', async () => {
+			const newEditor = await ClassicEditor.create( editorElement, { plugins: [ ImageResizeEditing, ImageBlockEditing ] } );
+			expect( newEditor.model.schema.checkAttribute( [ '$root', 'imageBlock' ], 'resizedHeight' ) ).to.be.true;
+			await newEditor.destroy();
+		} );
+
+		it( 'allows the resizedWidth attribute when ImageInline plugin is enabled (reverse order in plugins array)', async () => {
+			const newEditor = await ClassicEditor.create( editorElement, { plugins: [ ImageResizeEditing, ImageInlineEditing ] } );
+			expect( newEditor.model.schema.checkAttribute( [ '$root', 'imageInline' ], 'resizedWidth' ) ).to.be.true;
+			await newEditor.destroy();
+		} );
+
+		it( 'allows the resizedHeight attribute when ImageInline plugin is enabled (reverse order in plugins array)', async () => {
+			const newEditor = await ClassicEditor.create( editorElement, { plugins: [ ImageResizeEditing, ImageInlineEditing ] } );
 			expect( newEditor.model.schema.checkAttribute( [ '$root', 'imageInline' ], 'resizedHeight' ) ).to.be.true;
 			await newEditor.destroy();
 		} );

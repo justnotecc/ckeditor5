@@ -1,37 +1,39 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 /* global document, window, Event */
 
-import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor';
-import MultiRootEditor from '@ckeditor/ckeditor5-editor-multi-root/src/multirooteditor';
+import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor.js';
+import MultiRootEditor from '@ckeditor/ckeditor5-editor-multi-root/src/multirooteditor.js';
 
-import EditorUI from '../../../src/editorui/editorui';
-import BlockToolbar from '../../../src/toolbar/block/blocktoolbar';
-import ToolbarView from '../../../src/toolbar/toolbarview';
-import BalloonPanelView from '../../../src/panel/balloon/balloonpanelview';
-import BlockButtonView from '../../../src/toolbar/block/blockbuttonview';
+import EditorUI from '../../../src/editorui/editorui.js';
+import BlockToolbar from '../../../src/toolbar/block/blocktoolbar.js';
+import ToolbarView from '../../../src/toolbar/toolbarview.js';
+import BalloonPanelView from '../../../src/panel/balloon/balloonpanelview.js';
+import BlockButtonView from '../../../src/toolbar/block/blockbuttonview.js';
+import ButtonView from '../../../src/button/buttonview.js';
 
-import Heading from '@ckeditor/ckeditor5-heading/src/heading';
-import HeadingButtonsUI from '@ckeditor/ckeditor5-heading/src/headingbuttonsui';
+import Heading from '@ckeditor/ckeditor5-heading/src/heading.js';
+import HeadingButtonsUI from '@ckeditor/ckeditor5-heading/src/headingbuttonsui.js';
 import { Paragraph, ParagraphButtonUI } from '@ckeditor/ckeditor5-paragraph';
-import BlockQuote from '@ckeditor/ckeditor5-block-quote/src/blockquote';
-import Image from '@ckeditor/ckeditor5-image/src/image';
-import ImageCaption from '@ckeditor/ckeditor5-image/src/imagecaption';
-import global from '@ckeditor/ckeditor5-utils/src/dom/global';
-import ResizeObserver from '@ckeditor/ckeditor5-utils/src/dom/resizeobserver';
-import DragDropBlockToolbar from '@ckeditor/ckeditor5-clipboard/src/dragdropblocktoolbar';
+import BlockQuote from '@ckeditor/ckeditor5-block-quote/src/blockquote.js';
+import Image from '@ckeditor/ckeditor5-image/src/image.js';
+import ImageCaption from '@ckeditor/ckeditor5-image/src/imagecaption.js';
+import global from '@ckeditor/ckeditor5-utils/src/dom/global.js';
+import ResizeObserver from '@ckeditor/ckeditor5-utils/src/dom/resizeobserver.js';
+import DragDropBlockToolbar from '@ckeditor/ckeditor5-clipboard/src/dragdropblocktoolbar.js';
+import Plugin from '@ckeditor/ckeditor5-core/src/plugin.js';
 
-import { setData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
-import { keyCodes } from '@ckeditor/ckeditor5-utils/src/keyboard';
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
+import { setData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model.js';
+import { keyCodes } from '@ckeditor/ckeditor5-utils/src/keyboard.js';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
 
 import { icons } from '@ckeditor/ckeditor5-core';
 
-import Rect from '@ckeditor/ckeditor5-utils/src/dom/rect';
-import env from '@ckeditor/ckeditor5-utils/src/env';
+import Rect from '@ckeditor/ckeditor5-utils/src/dom/rect.js';
+import env from '@ckeditor/ckeditor5-utils/src/env.js';
 
 const { dragIndicator, pilcrow } = icons;
 
@@ -88,6 +90,14 @@ describe( 'BlockToolbar', () => {
 
 	it( 'should have pluginName property', () => {
 		expect( BlockToolbar.pluginName ).to.equal( 'BlockToolbar' );
+	} );
+
+	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+		expect( BlockToolbar.isOfficialPlugin ).to.be.true;
+	} );
+
+	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+		expect( BlockToolbar.isPremiumPlugin ).to.be.false;
 	} );
 
 	it( 'should not throw when empty config is provided', async () => {
@@ -389,6 +399,16 @@ describe( 'BlockToolbar', () => {
 					limiter: editor.ui.getEditableElement()
 				} );
 				sinon.assert.calledOnce( focusSpy );
+			} );
+
+			it( 'should hide the #panelView and do not focus the editable when isEnabled became false', () => {
+				blockToolbar.panelView.isVisible = true;
+				const spy = testUtils.sinon.spy( editor.editing.view, 'focus' );
+
+				blockToolbar.buttonView.isEnabled = false;
+
+				expect( blockToolbar.panelView.isVisible ).to.be.false;
+				sinon.assert.notCalled( spy );
 			} );
 
 			it( 'should hide the #panelView and focus the editable on #execute event when panel was visible', () => {
@@ -848,6 +868,159 @@ describe( 'BlockToolbar', () => {
 		} );
 	} );
 
+	describe( '_repositionButtonOnScroll()', () => {
+		let buttonView, clock;
+
+		beforeEach( () => {
+			clock = sinon.useFakeTimers();
+			buttonView = blockToolbar.buttonView;
+		} );
+
+		afterEach( () => {
+			clock.restore();
+		} );
+
+		it( 'should bind scroll listener when button is visible', () => {
+			const spy = sinon.spy( blockToolbar, '_updateButton' );
+
+			buttonView.isVisible = false;
+			document.dispatchEvent( new Event( 'scroll' ) );
+			clock.tick( 100 );
+			expect( spy ).not.to.be.called;
+
+			buttonView.isVisible = true;
+			document.dispatchEvent( new Event( 'scroll' ) );
+			clock.tick( 100 );
+			expect( spy ).to.be.calledOnce;
+
+			spy.resetHistory();
+
+			buttonView.isVisible = false;
+			document.dispatchEvent( new Event( 'scroll' ) );
+			clock.tick( 100 );
+			expect( spy ).not.to.be.called;
+		} );
+
+		it( 'should batch update button events on scroll to increase performance', () => {
+			const spy = sinon.spy( blockToolbar, '_updateButton' );
+
+			buttonView.isVisible = true;
+			document.dispatchEvent( new Event( 'scroll' ) );
+			document.dispatchEvent( new Event( 'scroll' ) );
+			document.dispatchEvent( new Event( 'scroll' ) );
+			clock.tick( 100 );
+
+			expect( spy ).to.be.calledOnce;
+		} );
+
+		it( 'should call _clipButtonToViewport on scroll', () => {
+			const spy = sinon.spy( blockToolbar, '_clipButtonToViewport' );
+
+			buttonView.isVisible = true;
+			document.dispatchEvent( new Event( 'scroll' ) );
+			clock.tick( 100 );
+
+			expect( spy ).to.be.calledOnce;
+		} );
+
+		it( 'should not _call _clipButtonToViewport when event target is not editable ancestor', () => {
+			const spy = sinon.spy( blockToolbar, '_clipButtonToViewport' );
+
+			buttonView.isVisible = true;
+
+			document.body.dispatchEvent( new Event( 'scroll' ) );
+			clock.tick( 100 );
+			expect( spy ).to.be.called;
+
+			spy.resetHistory();
+
+			// Create a fake parent element and dispatch scroll event on it.
+			// It's not a button ancestor so _clipButtonToViewport should not be called.
+			const evt = new Event( 'scroll' );
+			const fakeParent = document.createElement( 'div' );
+
+			sinon.stub( evt, 'target' ).value( fakeParent );
+			document.body.dispatchEvent( evt );
+			clock.tick( 100 );
+			fakeParent.remove();
+			expect( spy ).not.to.be.called;
+		} );
+	} );
+
+	describe( '_clipButtonToViewport()', () => {
+		let buttonView, editableElement, editableRectStub, buttonRectStub, clock;
+
+		beforeEach( () => {
+			clock = sinon.useFakeTimers();
+			buttonView = blockToolbar.buttonView;
+			editableElement = editor.ui.getEditableElement();
+
+			editableRectStub = sinon.stub( editableElement, 'getBoundingClientRect' );
+			buttonRectStub = sinon.stub( buttonView.element, 'getBoundingClientRect' );
+		} );
+
+		afterEach( () => {
+			clock.restore();
+		} );
+
+		it( 'should clip the button to the viewport when it is out of the viewport (after end of editable)', () => {
+			editableRectStub.returns( { bottom: 450 } );
+			buttonRectStub.returns( { bottom: 462, height: 32 } );
+			blockToolbar._clipButtonToViewport( buttonView, editableElement );
+
+			expect( buttonView.isEnabled ).to.be.true;
+			expect( buttonView.element.style.pointerEvents ).to.be.equal( '' );
+			expect( buttonView.element.style.clipPath ).to.be.equal(
+				'polygon(0px 0px, 100% 0px, 100% calc(100% - 12px), 0px calc(100% - 12px))'
+			);
+
+			buttonRectStub.returns( { bottom: 662, height: 32 } );
+			blockToolbar._clipButtonToViewport( buttonView, editableElement );
+
+			expect( buttonView.isEnabled ).to.be.false;
+			expect( buttonView.element.style.pointerEvents ).to.be.equal( 'none' );
+			expect( buttonView.element.style.clipPath ).to.be.equal(
+				'polygon(0px 0px, 100% 0px, 100% calc(100% - 32px), 0px calc(100% - 32px))'
+			);
+		} );
+
+		it( 'should clip the button to the viewport when it is out of the viewport (before start of editable)', () => {
+			editableRectStub.returns( { top: 50 } );
+			buttonRectStub.returns( { top: 38, height: 32 } );
+			blockToolbar._clipButtonToViewport( buttonView, editableElement );
+
+			expect( buttonView.isEnabled ).to.be.true;
+			expect( buttonView.element.style.pointerEvents ).to.be.equal( '' );
+			expect( buttonView.element.style.clipPath ).to.be.equal(
+				'polygon(0px 12px, 100% 12px, 100% 100%, 0px 100%)'
+			);
+
+			buttonRectStub.returns( { top: 0, height: 32 } );
+			blockToolbar._clipButtonToViewport( buttonView, editableElement );
+
+			expect( buttonView.isEnabled ).to.be.false;
+			expect( buttonView.element.style.pointerEvents ).to.be.equal( 'none' );
+			expect( buttonView.element.style.clipPath ).to.be.equal(
+				'polygon(0px 32px, 100% 32px, 100% 100%, 0px 100%)'
+			);
+		} );
+
+		it( 'should reset pointer events and clip path when the button is in the viewport', () => {
+			editableRectStub.returns( { top: 50 } );
+			buttonRectStub.returns( { top: 38, height: 32 } );
+
+			blockToolbar._clipButtonToViewport( buttonView, editableElement );
+
+			editableRectStub.returns( { top: 20, bottom: 600 } );
+			buttonRectStub.returns( { top: 38, bottom: 50, height: 32 } );
+			blockToolbar._clipButtonToViewport( buttonView, editableElement );
+
+			expect( buttonView.isEnabled ).to.be.true;
+			expect( buttonView.element.style.pointerEvents ).to.be.equal( '' );
+			expect( buttonView.element.style.clipPath ).to.be.equal( '' );
+		} );
+	} );
+
 	describe( 'destroy()', () => {
 		it( 'should destroy #resizeObserver if is available', () => {
 			const editable = editor.ui.getEditableElement();
@@ -949,6 +1122,36 @@ describe( 'BlockToolbar', () => {
 			elBar.remove();
 
 			return multiRootEditor.destroy();
+		} );
+	} );
+
+	describe( 'BlockToolbar plugin load order', () => {
+		it( 'should add a button registered in the afterInit of Foo when BlockToolbar is loaded before Foo', () => {
+			class Foo extends Plugin {
+				afterInit() {
+					this.editor.ui.componentFactory.add( 'foo', () => {
+						const button = new ButtonView();
+
+						button.set( { label: 'Foo' } );
+
+						return button;
+					} );
+				}
+			}
+
+			return ClassicTestEditor
+				.create( element, {
+					plugins: [ BlockToolbar, Foo ],
+					blockToolbar: [ 'foo' ]
+				} )
+				.then( editor => {
+					const items = editor.plugins.get( BlockToolbar ).toolbarView.items;
+
+					expect( items.length ).to.equal( 1 );
+					expect( items.first.label ).to.equal( 'Foo' );
+
+					return editor.destroy();
+				} );
 		} );
 	} );
 } );

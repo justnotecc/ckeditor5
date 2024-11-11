@@ -1,15 +1,23 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-import ContextPlugin from '../src/contextplugin';
+import ContextPlugin from '../src/contextplugin.js';
 
 describe( 'ContextPlugin', () => {
 	const contextMock = {};
 
 	it( 'should be marked as a context plugin', () => {
 		expect( ContextPlugin.isContextPlugin ).to.true;
+	} );
+
+	it( 'should have `isOfficialPlugin` static flag set to `false`', () => {
+		expect( ContextPlugin.isOfficialPlugin ).to.be.false;
+	} );
+
+	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+		expect( ContextPlugin.isPremiumPlugin ).to.be.false;
 	} );
 
 	describe( 'constructor()', () => {

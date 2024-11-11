@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -7,13 +7,14 @@
  * @module ui/dropdown/dropdownview
  */
 
-import View from '../view';
+import View from '../view.js';
 
-import type { default as DropdownButton, DropdownButtonOpenEvent } from './button/dropdownbutton';
-import type { default as DropdownPanelView, PanelPosition } from './dropdownpanelview';
-import type { FocusableView } from '../focuscycler';
-import type ListView from '../list/listview';
-import type ToolbarView from '../toolbar/toolbarview';
+import type { default as DropdownButton, DropdownButtonOpenEvent } from './button/dropdownbutton.js';
+import type { default as DropdownPanelView, PanelPosition } from './dropdownpanelview.js';
+import type { FocusableView } from '../focuscycler.js';
+import type ListView from '../list/listview.js';
+import type ToolbarView from '../toolbar/toolbarview.js';
+import type DropdownMenuRootListView from './menu/dropdownmenurootlistview.js';
 
 import {
 	KeystrokeHandler,
@@ -125,9 +126,17 @@ export default class DropdownView extends View<HTMLDivElement> {
 	 * A child toolbar of the dropdown located in the
 	 * {@link module:ui/dropdown/dropdownview~DropdownView#panelView panel}.
 	 *
-	 * **Note**: Only supported when dropdown has list view added using {@link module:ui/dropdown/utils~addToolbarToDropdown}.
+	 * **Note**: Only supported when dropdown has a toolbar added using {@link module:ui/dropdown/utils~addToolbarToDropdown}.
 	 */
 	public toolbarView?: ToolbarView;
+
+	/**
+	 * A child menu component of the dropdown located
+	 * in its {@link module:ui/dropdown/dropdownview~DropdownView#panelView panel}.
+	 *
+	 * **Note**: Only supported when dropdown has a menu added using {@link module:ui/dropdown/utils~addMenuToDropdown}.
+	 */
+	public menuView?: DropdownMenuRootListView;
 
 	/**
 	 * Controls whether the dropdown view is open, i.e. shows or hides the {@link #panelView panel}.
@@ -451,7 +460,7 @@ export default class DropdownView extends View<HTMLDivElement> {
 	 *		       [ Button ]
 	 * ```
 	 *
-	 * Positioning functions are compatible with {@link module:utils/dom/position~Position}.
+	 * Positioning functions are compatible with {@link module:utils/dom/position~DomPoint}.
 	 *
 	 * The name that position function returns will be reflected in dropdown panel's class that
 	 * controls its placement. See {@link module:ui/dropdown/dropdownview~DropdownView#panelPosition}
@@ -537,16 +546,21 @@ export default class DropdownView extends View<HTMLDivElement> {
 }
 
 /**
- * Fired when the toolbar button or list item is executed.
+ * Fired when an item inside the dropdown is executed.
  *
- * For {@link ~DropdownView#listView} It fires when a child of some {@link module:ui/list/listitemview~ListItemView}
- * fired `execute`.
+ * **Note**: Only supported when dropdown was integrated with its child view using one of the helper functions:
+ * {@link module:ui/dropdown/utils~addListToDropdown}, {@link module:ui/dropdown/utils~addToolbarToDropdown}, or
+ * {@link module:ui/dropdown/utils~addMenuToDropdown}.
  *
- * For {@link ~DropdownView#toolbarView} It fires when one of the buttons has been
- * {@link module:ui/button/button~Button#event:execute executed}.
+ * When integrated with a list, it fires when a child of one of {@link module:ui/list/listitemview~ListItemView}s
+ * fired `execute` event.
  *
- * **Note**: Only supported when dropdown has list view added using {@link module:ui/dropdown/utils~addListToDropdown}
- * or {@link module:ui/dropdown/utils~addToolbarToDropdown}.
+ * When integrated with a toolbar, it fires when one of the buttons has been {@link module:ui/button/button~Button#event:execute executed}.
+ *
+ * When integrated with a nested menu, it fires when one of the menu buttons has been executed.
+ *
+ * In each case, the event is delegated from the component which fired it. It does not have additional parameters and `event.source` is the
+ * original component.
  *
  * @eventName ~DropdownView#execute
  */

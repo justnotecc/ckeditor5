@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -7,9 +7,9 @@
  * @module ui/editableui/editableuiview
  */
 
-import View from '../view';
+import View from '../view.js';
 
-import type { View as EditingView } from '@ckeditor/ckeditor5-engine';
+import type { EditingView } from '@ckeditor/ckeditor5-engine';
 import type { Locale, ObservableChangeEvent } from '@ckeditor/ckeditor5-utils';
 
 /**
@@ -41,7 +41,7 @@ export default class EditableUIView extends View {
 	/**
 	 * The element which is the main editable element (usually the one with `contentEditable="true"`).
 	 */
-	private _editableElement: HTMLElement | null | undefined;
+	protected _editableElement: HTMLElement | null | undefined;
 
 	/**
 	 * Whether an external {@link #_editableElement} was passed into the constructor, which also means

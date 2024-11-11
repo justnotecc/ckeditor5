@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -9,9 +9,9 @@
  * @module utils/observablemixin
  */
 
-import EmitterMixin, { type Emitter } from './emittermixin';
-import CKEditorError from './ckeditorerror';
-import type { Constructor, Mixed } from './mix';
+import EmitterMixin, { type Emitter } from './emittermixin.js';
+import CKEditorError from './ckeditorerror.js';
+import type { Constructor, Mixed } from './mix.js';
 
 import { isObject } from 'lodash-es';
 
@@ -22,7 +22,7 @@ const boundPropertiesSymbol = Symbol( 'boundProperties' );
 const decoratedMethods = Symbol( 'decoratedMethods' );
 const decoratedOriginal = Symbol( 'decoratedOriginal' );
 
-const defaultObservableClass = ObservableMixin( EmitterMixin() );
+const defaultObservableClass = /* #__PURE__ */ ObservableMixin( /* #__PURE__ */ EmitterMixin() );
 
 /**
  * A mixin that injects the "observable properties" and data binding functionality described in the
@@ -319,7 +319,7 @@ export default function ObservableMixin( base?: Constructor<Emitter> ): unknown 
 
 		public [ boundPropertiesSymbol ]?: Map<string, Binding>;
 
-		public [ boundObservablesSymbol]?: Map<Observable, Record<string, Set<Binding>>>;
+		public [ boundObservablesSymbol ]?: Map<Observable, Record<string, Set<Binding>>>;
 	}
 
 	return Mixin;

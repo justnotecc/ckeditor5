@@ -19,16 +19,16 @@ Use the {@link features/source-editing source editing feature} toolbar button {@
 
 ## Installation
 
-To add this feature to your rich-text editor, install the [`@ckeditor/ckeditor5-html-support`](https://www.npmjs.com/package/@ckeditor/ckeditor5-html-support) package:
+<info-box info>
+	⚠️ **New import paths**
 
-```bash
-npm install --save @ckeditor/ckeditor5-html-support
-```
+	Starting with {@link updating/update-to-42 version 42.0.0}, we changed the format of import paths. This guide uses the new, shorter format. Refer to the {@link getting-started/legacy-getting-started/legacy-imports Packages in the legacy setup} guide if you use an older version of CKEditor&nbsp;5.
+</info-box>
 
-And add it to your plugin list configuration:
+After {@link getting-started/quick-start installing the editor}, add the feature to your plugin list and toolbar configuration:
 
 ```js
-import { FullPage } from '@ckeditor/ckeditor5-html-support';
+import { ClassicEditor, FullPage } from 'ckeditor5';
 
 ClassicEditor
 	.create( document.querySelector( '#editor' ), {
@@ -38,15 +38,11 @@ ClassicEditor
 	.catch( /* ... */ );
 ```
 
-<info-box info>
-	Read more about {@link installation/plugins/installing-plugins installing plugins}.
-</info-box>
-
 ## Additional feature information
 
 Here are some examples of the HTML elements you can enable with this plugin:
 
-* The HTML doctype preamble: `<!DOCTYPE html>`
+* The HTML DOCTYPE preamble: `<!DOCTYPE html>`
 * The HTML root element: `<html>`
 * The head element: `<head>`
 * The document's title: `<title>`

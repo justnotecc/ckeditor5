@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -9,7 +9,7 @@ const http = require( 'http' );
 const fs = require( 'fs' );
 const querystring = require( 'querystring' );
 const url = require( 'url' );
-const { upperFirst } = require( 'lodash' );
+const { upperFirst } = require( 'lodash-es' );
 
 const hostname = '127.0.0.1';
 const port = 3000;

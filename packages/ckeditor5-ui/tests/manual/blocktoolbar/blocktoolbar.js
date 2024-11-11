@@ -1,25 +1,29 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 /* globals window, document, console:false, setTimeout */
 
-import BalloonEditor from '@ckeditor/ckeditor5-editor-balloon/src/ballooneditor';
-import Essentials from '@ckeditor/ckeditor5-essentials/src/essentials';
-import List from '@ckeditor/ckeditor5-list/src/list';
-import Image from '@ckeditor/ckeditor5-image/src/image';
-import ImageCaption from '@ckeditor/ckeditor5-image/src/imagecaption';
+import BalloonEditor from '@ckeditor/ckeditor5-editor-balloon/src/ballooneditor.js';
+import Essentials from '@ckeditor/ckeditor5-essentials/src/essentials.js';
+import List from '@ckeditor/ckeditor5-list/src/list.js';
+import CodeBlock from '@ckeditor/ckeditor5-code-block/src/codeblock.js';
+import Image from '@ckeditor/ckeditor5-image/src/image.js';
+import ImageCaption from '@ckeditor/ckeditor5-image/src/imagecaption.js';
 import { Paragraph, ParagraphButtonUI } from '@ckeditor/ckeditor5-paragraph';
-import Heading from '@ckeditor/ckeditor5-heading/src/heading';
-import HeadingButtonsUI from '@ckeditor/ckeditor5-heading/src/headingbuttonsui';
-import BlockToolbar from '../../../src/toolbar/block/blocktoolbar';
+import Heading from '@ckeditor/ckeditor5-heading/src/heading.js';
+import HeadingButtonsUI from '@ckeditor/ckeditor5-heading/src/headingbuttonsui.js';
+import BlockToolbar from '../../../src/toolbar/block/blocktoolbar.js';
 
 BalloonEditor
 	.create( document.querySelector( '#editor' ), {
-		plugins: [ Essentials, List, Paragraph, Heading, Image, ImageCaption, HeadingButtonsUI, ParagraphButtonUI, BlockToolbar ],
+		plugins: [
+			Essentials, List, Paragraph, Heading, Image, ImageCaption,
+			HeadingButtonsUI, ParagraphButtonUI, BlockToolbar, CodeBlock
+		],
 		blockToolbar: [
-			'paragraph', 'heading1', 'heading2', 'heading3', 'bulletedList', 'numberedList', 'paragraph',
+			'paragraph', 'heading1', 'heading2', 'heading3', 'bulletedList', 'numberedList', 'paragraph', 'codeBlock',
 			'heading1', 'heading2', 'heading3', 'bulletedList', 'numberedList', 'paragraph', 'heading1', 'heading2', 'heading3',
 			'bulletedList', 'numberedList'
 		]

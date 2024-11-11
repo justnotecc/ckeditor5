@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -7,11 +7,11 @@
  * @module image/imageresize/imageresizeediting
  */
 
-import type { ViewElement } from 'ckeditor5/src/engine';
-import { type Editor, Plugin } from 'ckeditor5/src/core';
-import ImageUtils from '../imageutils';
-import ResizeImageCommand from './resizeimagecommand';
-import { widthAndHeightStylesAreBothSet } from '../image/utils';
+import type { ViewElement } from 'ckeditor5/src/engine.js';
+import { type Editor, Plugin } from 'ckeditor5/src/core.js';
+import ImageUtils from '../imageutils.js';
+import ResizeImageCommand from './resizeimagecommand.js';
+import { widthAndHeightStylesAreBothSet } from '../image/utils.js';
 
 /**
  * The image resize editing feature.
@@ -37,31 +37,45 @@ export default class ImageResizeEditing extends Plugin {
 	/**
 	 * @inheritDoc
 	 */
+	public static override get isOfficialPlugin(): true {
+		return true;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
 	constructor( editor: Editor ) {
 		super( editor );
 
 		editor.config.define( 'image', {
 			resizeUnit: '%',
-			resizeOptions: [ {
-				name: 'resizeImage:original',
-				value: null,
-				icon: 'original'
-			},
-			{
-				name: 'resizeImage:25',
-				value: '25',
-				icon: 'small'
-			},
-			{
-				name: 'resizeImage:50',
-				value: '50',
-				icon: 'medium'
-			},
-			{
-				name: 'resizeImage:75',
-				value: '75',
-				icon: 'large'
-			} ]
+			resizeOptions: [
+				{
+					name: 'resizeImage:original',
+					value: null,
+					icon: 'original'
+				},
+				{
+					name: 'resizeImage:custom',
+					value: 'custom',
+					icon: 'custom'
+				},
+				{
+					name: 'resizeImage:25',
+					value: '25',
+					icon: 'small'
+				},
+				{
+					name: 'resizeImage:50',
+					value: '50',
+					icon: 'medium'
+				},
+				{
+					name: 'resizeImage:75',
+					value: '75',
+					icon: 'large'
+				}
+			]
 		} );
 	}
 
@@ -72,13 +86,19 @@ export default class ImageResizeEditing extends Plugin {
 		const editor = this.editor;
 		const resizeImageCommand = new ResizeImageCommand( editor );
 
-		this._registerSchema();
 		this._registerConverters( 'imageBlock' );
 		this._registerConverters( 'imageInline' );
 
 		// Register `resizeImage` command and add `imageResize` command as an alias for backward compatibility.
 		editor.commands.add( 'resizeImage', resizeImageCommand );
 		editor.commands.add( 'imageResize', resizeImageCommand );
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public afterInit(): void {
+		this._registerSchema();
 	}
 
 	private _registerSchema(): void {

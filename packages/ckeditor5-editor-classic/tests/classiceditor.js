@@ -1,29 +1,29 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 /* globals document, Event, console */
 
-import ClassicEditor from '../src/classiceditor';
-import ClassicEditorUI from '../src/classiceditorui';
-import ClassicEditorUIView from '../src/classiceditoruiview';
+import ClassicEditor from '../src/classiceditor.js';
+import ClassicEditorUI from '../src/classiceditorui.js';
+import ClassicEditorUIView from '../src/classiceditoruiview.js';
 
-import HtmlDataProcessor from '@ckeditor/ckeditor5-engine/src/dataprocessor/htmldataprocessor';
+import HtmlDataProcessor from '@ckeditor/ckeditor5-engine/src/dataprocessor/htmldataprocessor.js';
 
-import Context from '@ckeditor/ckeditor5-core/src/context';
-import EditorWatchdog from '@ckeditor/ckeditor5-watchdog/src/editorwatchdog';
-import ContextWatchdog from '@ckeditor/ckeditor5-watchdog/src/contextwatchdog';
-import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
-import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold';
-import RootElement from '@ckeditor/ckeditor5-engine/src/model/rootelement';
-import CKEditorError from '@ckeditor/ckeditor5-utils/src/ckeditorerror';
+import Context from '@ckeditor/ckeditor5-core/src/context.js';
+import EditorWatchdog from '@ckeditor/ckeditor5-watchdog/src/editorwatchdog.js';
+import ContextWatchdog from '@ckeditor/ckeditor5-watchdog/src/contextwatchdog.js';
+import Plugin from '@ckeditor/ckeditor5-core/src/plugin.js';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
+import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold.js';
+import RootElement from '@ckeditor/ckeditor5-engine/src/model/rootelement.js';
+import CKEditorError from '@ckeditor/ckeditor5-utils/src/ckeditorerror.js';
 
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
 
-import ArticlePluginSet from '@ckeditor/ckeditor5-core/tests/_utils/articlepluginset';
-import { describeMemoryUsage, testMemoryUsage } from '@ckeditor/ckeditor5-core/tests/_utils/memory';
+import ArticlePluginSet from '@ckeditor/ckeditor5-core/tests/_utils/articlepluginset.js';
+import { describeMemoryUsage, testMemoryUsage } from '@ckeditor/ckeditor5-core/tests/_utils/memory.js';
 
 describe( 'ClassicEditor', () => {
 	let editor, editorElement;
@@ -48,13 +48,15 @@ describe( 'ClassicEditor', () => {
 			editor = new ClassicEditor( editorElement );
 		} );
 
-		it( 'uses HTMLDataProcessor', () => {
-			expect( editor.data.processor ).to.be.instanceof( HtmlDataProcessor );
+		afterEach( async () => {
+			if ( editor.state !== 'destroyed' ) {
+				editor.fire( 'ready' );
+				await editor.destroy();
+			}
 		} );
 
-		it( 'mixes DataApiMixin', () => {
-			expect( ClassicEditor.prototype ).have.property( 'setData' ).to.be.a( 'function' );
-			expect( ClassicEditor.prototype ).have.property( 'getData' ).to.be.a( 'function' );
+		it( 'uses HTMLDataProcessor', () => {
+			expect( editor.data.processor ).to.be.instanceof( HtmlDataProcessor );
 		} );
 
 		it( 'mixes ElementApiMixin', () => {
@@ -107,16 +109,19 @@ describe( 'ClassicEditor', () => {
 			} );
 
 			describe( 'automatic toolbar items groupping', () => {
-				it( 'should be on by default', () => {
+				it( 'should be on by default', async () => {
 					const editorElement = document.createElement( 'div' );
 					const editor = new ClassicEditor( editorElement );
 
 					expect( editor.ui.view.toolbar.options.shouldGroupWhenFull ).to.be.true;
 
+					editor.fire( 'ready' );
+					await editor.destroy();
+
 					editorElement.remove();
 				} );
 
-				it( 'can be disabled using config.toolbar.shouldNotGroupWhenFull', () => {
+				it( 'can be disabled using config.toolbar.shouldNotGroupWhenFull', async () => {
 					const editorElement = document.createElement( 'div' );
 					const editor = new ClassicEditor( editorElement, {
 						toolbar: {
@@ -126,34 +131,48 @@ describe( 'ClassicEditor', () => {
 
 					expect( editor.ui.view.toolbar.options.shouldGroupWhenFull ).to.be.false;
 
+					editor.fire( 'ready' );
+					await editor.destroy();
+
 					editorElement.remove();
 				} );
 			} );
 		} );
 
 		describe( 'config.initialData', () => {
-			it( 'if not set, is set using DOM element data', () => {
+			it( 'if not set, is set using DOM element data', async () => {
 				const editorElement = document.createElement( 'div' );
 				editorElement.innerHTML = '<p>Foo</p>';
 
 				const editor = new ClassicEditor( editorElement );
 
 				expect( editor.config.get( 'initialData' ) ).to.equal( '<p>Foo</p>' );
+
+				editor.fire( 'ready' );
+				await editor.destroy();
+
+				editorElement.remove();
 			} );
 
-			it( 'if not set, is set using data passed in constructor', () => {
+			it( 'if not set, is set using data passed in constructor', async () => {
 				const editor = new ClassicEditor( '<p>Foo</p>' );
 
 				expect( editor.config.get( 'initialData' ) ).to.equal( '<p>Foo</p>' );
+
+				editor.fire( 'ready' );
+				await editor.destroy();
 			} );
 
-			it( 'if set, is not overwritten with DOM element data', () => {
+			it( 'if set, is not overwritten with DOM element data', async () => {
 				const editorElement = document.createElement( 'div' );
 				editorElement.innerHTML = '<p>Foo</p>';
 
 				const editor = new ClassicEditor( editorElement, { initialData: '<p>Bar</p>' } );
 
 				expect( editor.config.get( 'initialData' ) ).to.equal( '<p>Bar</p>' );
+
+				editor.fire( 'ready' );
+				await editor.destroy();
 			} );
 
 			it( 'it should throw if config.initialData is set and initial data is passed in constructor', () => {
@@ -176,8 +195,10 @@ describe( 'ClassicEditor', () => {
 				} );
 		} );
 
-		afterEach( () => {
-			return editor.destroy();
+		afterEach( async () => {
+			if ( editor.state !== 'destroyed' ) {
+				await editor.destroy();
+			}
 		} );
 
 		it( 'creates an instance which inherits from the ClassicEditor', () => {
@@ -225,7 +246,7 @@ describe( 'ClassicEditor', () => {
 			} ).then( editor => {
 				expect( editor.getData() ).to.equal( '<p>Hello world!</p>' );
 
-				editor.destroy();
+				return editor.destroy();
 			} );
 		} );
 
@@ -236,7 +257,7 @@ describe( 'ClassicEditor', () => {
 			} ).then( editor => {
 				expect( editor.getData() ).to.equal( '<p>Hello world!</p>' );
 
-				editor.destroy();
+				return editor.destroy();
 			} );
 		} );
 
@@ -248,7 +269,7 @@ describe( 'ClassicEditor', () => {
 			} ).then( editor => {
 				expect( editor.getData() ).to.equal( '' );
 
-				editor.destroy();
+				return editor.destroy();
 			} );
 		} );
 
@@ -271,6 +292,71 @@ describe( 'ClassicEditor', () => {
 
 			it( 'attaches editable UI as view\'s DOM root', () => {
 				expect( editor.editing.view.getDomRoot() ).to.equal( editor.ui.view.editable.element );
+			} );
+
+			describe( 'configurable editor label (aria-label)', () => {
+				it( 'should be set to the defaut value if not configured', () => {
+					expect( editor.editing.view.getDomRoot().getAttribute( 'aria-label' ) ).to.equal(
+						'Rich Text Editor. Editing area: main'
+					);
+				} );
+
+				it( 'should support the string format', async () => {
+					await editor.destroy();
+
+					editor = await ClassicEditor.create( editorElement, {
+						plugins: [ Paragraph, Bold ],
+						label: 'Custom label'
+					} );
+
+					expect( editor.editing.view.getDomRoot().getAttribute( 'aria-label' ) ).to.equal(
+						'Custom label'
+					);
+				} );
+
+				it( 'should support object format', async () => {
+					await editor.destroy();
+
+					editor = await ClassicEditor.create( editorElement, {
+						plugins: [ Paragraph, Bold ],
+						label: {
+							main: 'Custom label'
+						}
+					} );
+
+					expect( editor.editing.view.getDomRoot().getAttribute( 'aria-label' ) ).to.equal(
+						'Custom label'
+					);
+				} );
+
+				it( 'should use default label when creating an editor from initial data rather than a DOM element', async () => {
+					await editor.destroy();
+
+					editor = await ClassicEditor.create( '<p>Initial data</p>', {
+						plugins: [ Paragraph, Bold ]
+					} );
+
+					expect( editor.editing.view.getDomRoot().getAttribute( 'aria-label' ), 'Override value' ).to.equal(
+						'Rich Text Editor. Editing area: main'
+					);
+
+					await editor.destroy();
+				} );
+
+				it( 'should set custom label when creating an editor from initial data rather than a DOM element', async () => {
+					await editor.destroy();
+
+					editor = await ClassicEditor.create( '<p>Initial data</p>', {
+						plugins: [ Paragraph, Bold ],
+						label: 'Custom label'
+					} );
+
+					expect( editor.editing.view.getDomRoot().getAttribute( 'aria-label' ), 'Override value' ).to.equal(
+						'Custom label'
+					);
+
+					await editor.destroy();
+				} );
 			} );
 		} );
 	} );
@@ -411,7 +497,7 @@ describe( 'ClassicEditor', () => {
 					plugins: [ ArticlePluginSet ],
 					toolbar: [ 'heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote' ],
 					image: {
-						toolbar: [ 'imageStyle:block', 'imageStyle:side', '|', 'imageTextAlternative' ]
+						toolbar: [ 'imageStyle:block', 'imageStyle:wrapText', '|', 'imageTextAlternative' ]
 					}
 				} ) );
 	} );

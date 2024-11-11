@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -10,19 +10,19 @@
 import {
 	Plugin,
 	type Editor
-} from 'ckeditor5/src/core';
+} from 'ckeditor5/src/core.js';
 
 import type {
 	ViewDocumentKeyDownEvent,
 	Marker,
 	Position
-} from 'ckeditor5/src/engine';
+} from 'ckeditor5/src/engine.js';
 
 import {
 	ButtonView,
 	ContextualBalloon,
 	clickOutsideHandler
-} from 'ckeditor5/src/ui';
+} from 'ckeditor5/src/ui.js';
 
 import {
 	CKEditorError,
@@ -32,15 +32,15 @@ import {
 	keyCodes,
 	logWarning,
 	type PositionOptions
-} from 'ckeditor5/src/utils';
+} from 'ckeditor5/src/utils.js';
 
-import { TextWatcher, type TextWatcherMatchedEvent } from 'ckeditor5/src/typing';
+import { TextWatcher, type TextWatcherMatchedEvent } from 'ckeditor5/src/typing.js';
 
 import { debounce } from 'lodash-es';
 
-import MentionsView from './ui/mentionsview';
-import DomWrapperView from './ui/domwrapperview';
-import MentionListItemView from './ui/mentionlistitemview';
+import MentionsView from './ui/mentionsview.js';
+import DomWrapperView from './ui/domwrapperview.js';
+import MentionListItemView from './ui/mentionlistitemview.js';
 
 import type {
 	FeedCallback,
@@ -48,7 +48,7 @@ import type {
 	MentionFeedItem,
 	ItemRenderer,
 	MentionFeedObjectItem
-} from './mentionconfig';
+} from './mentionconfig.js';
 
 const VERTICAL_SPACING = 3;
 
@@ -98,6 +98,13 @@ export default class MentionUI extends Plugin {
 	 */
 	public static get pluginName() {
 		return 'MentionUI' as const;
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public static override get isOfficialPlugin(): true {
+		return true;
 	}
 
 	/**
@@ -703,11 +710,17 @@ function getLastValidMarkerInText(
  */
 export function createRegExp( marker: string, minimumCharacters: number ): RegExp {
 	const numberOfCharacters = minimumCharacters == 0 ? '*' : `{${ minimumCharacters },}`;
-
 	const openAfterCharacters = env.features.isRegExpUnicodePropertySupported ? '\\p{Ps}\\p{Pi}"\'' : '\\(\\[{"\'';
 	const mentionCharacters = '.';
 
+	// I wanted to make an util out of it, but since this regexp uses "u" flag, it became difficult.
+	// When "u" flag is used, the regexp has "strict" escaping rules, i.e. if you try to escape a character that does not need
+	// to be escaped, RegExp() will throw. It made it difficult to write a generic util, because different characters are
+	// allowed in different context. For example, escaping "-" sometimes was correct, but sometimes it threw an error.
+	marker = marker.replace( /[.*+?^${}()\-|[\]\\]/g, '\\$&' );
+
 	// The pattern consists of 3 groups:
+	//
 	// - 0 (non-capturing): Opening sequence - start of the line, space or an opening punctuation character like "(" or "\"",
 	// - 1: The marker character,
 	// - 2: Mention input (taking the minimal length into consideration to trigger the UI),
@@ -715,6 +728,7 @@ export function createRegExp( marker: string, minimumCharacters: number ): RegEx
 	// The pattern matches up to the caret (end of string switch - $).
 	//               (0:      opening sequence       )(1:   marker  )(2:                typed mention              )$
 	const pattern = `(?:^|[ ${ openAfterCharacters }])([${ marker }])(${ mentionCharacters }${ numberOfCharacters })$`;
+
 	return new RegExp( pattern, 'u' );
 }
 

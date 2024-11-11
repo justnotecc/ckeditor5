@@ -1,25 +1,26 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 /* globals window, document, Event, console */
 
-import View from '@ckeditor/ckeditor5-ui/src/view';
+import View from '@ckeditor/ckeditor5-ui/src/view.js';
 
-import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor';
-import ClassicEditor from '../src/classiceditor';
-import ClassicEditorUI from '../src/classiceditorui';
-import EditorUI from '@ckeditor/ckeditor5-ui/src/editorui/editorui';
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
-import ClassicEditorUIView from '../src/classiceditoruiview';
+import VirtualTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/virtualtesteditor.js';
+import ClassicEditor from '../src/classiceditor.js';
+import ClassicEditorUI from '../src/classiceditorui.js';
+import EditorUI from '@ckeditor/ckeditor5-ui/src/editorui/editorui.js';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
+import ClassicEditorUIView from '../src/classiceditoruiview.js';
 import { Image, ImageCaption, ImageToolbar } from '@ckeditor/ckeditor5-image';
-import { setData as setModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
+import { setData as setModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model.js';
 
-import { keyCodes } from '@ckeditor/ckeditor5-utils/src/keyboard';
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
-import { assertBinding } from '@ckeditor/ckeditor5-utils/tests/_utils/utils';
+import { keyCodes } from '@ckeditor/ckeditor5-utils/src/keyboard.js';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
+import { assertBinding } from '@ckeditor/ckeditor5-utils/tests/_utils/utils.js';
 import { isElement } from 'lodash-es';
+import { ContextualBalloon, Dialog, DialogViewPosition } from '@ckeditor/ckeditor5-ui';
 
 describe( 'ClassicEditorUI', () => {
 	let editor, view, ui, viewElement;
@@ -40,8 +41,8 @@ describe( 'ClassicEditorUI', () => {
 			} );
 	} );
 
-	afterEach( () => {
-		editor.destroy();
+	afterEach( async () => {
+		await editor.destroy();
 	} );
 
 	describe( 'constructor()', () => {
@@ -269,6 +270,349 @@ describe( 'ClassicEditorUI', () => {
 							return editor.destroy();
 						} );
 				} );
+			} );
+		} );
+
+		describe( 'integration with the Contextual Balloon plugin', () => {
+			let editorWithUi, editorElement, contextualBalloon;
+
+			beforeEach( async () => {
+				editorElement = document.body.appendChild(
+					document.createElement( 'div' )
+				);
+
+				editorWithUi = await ClassicEditor.create( editorElement, {
+					plugins: [
+						ContextualBalloon,
+						Paragraph
+					]
+				} );
+
+				contextualBalloon = editorWithUi.plugins.get( 'ContextualBalloon' );
+
+				sinon.stub( editorWithUi.ui.view.stickyPanel.element, 'getBoundingClientRect' ).returns( {
+					height: 50,
+					bottom: 50
+				} );
+
+				sinon.stub( editorWithUi.ui.view.editable.element, 'getBoundingClientRect' ).returns( {
+					top: 0,
+					right: 300,
+					bottom: 100,
+					left: 0,
+					width: 300,
+					height: 100
+				} );
+			} );
+
+			afterEach( async () => {
+				await editorWithUi.destroy();
+				editorElement.remove();
+			} );
+
+			it( 'should handle BalloonPlugin#getPositionOptions returning undefined value', () => {
+				sinon.stub( contextualBalloon, '_visibleStack' ).get( () => ( { values: () => [ { position: undefined } ] } ) );
+
+				expect( contextualBalloon.getPositionOptions() ).to.be.undefined;
+			} );
+
+			it( 'should set proper viewportOffsetConfig top offset when sticky panel is visible', () => {
+				editorWithUi.ui.view.stickyPanel.isSticky = true;
+
+				setModelData( editorWithUi.model, '<paragraph>foo[]</paragraph>' );
+
+				const pinSpy = sinon.spy( contextualBalloon.view, 'pin' );
+				const contentView = new View( editorWithUi.locale );
+
+				contentView.setTemplate( {
+					tag: 'div',
+					children: [ 'Hello World' ]
+				} );
+
+				contextualBalloon.add( {
+					view: contentView,
+					position: getBalloonPositionData()
+				} );
+
+				expect( pinSpy ).to.be.calledOnce;
+				expect( pinSpy.getCall( 0 ).args[ 0 ].viewportOffsetConfig ).to.be.deep.equal( {
+					top: 50
+				} );
+			} );
+
+			it( 'should summarize ui viewportOffset and sticky panel height in the viewportOffset option', () => {
+				editorWithUi.ui.view.stickyPanel.isSticky = true;
+				editorWithUi.ui.viewportOffset = {
+					top: 100
+				};
+
+				setModelData( editorWithUi.model, '<paragraph>foo[]</paragraph>' );
+
+				const pinSpy = sinon.spy( contextualBalloon.view, 'pin' );
+				const contentView = new View( editorWithUi.locale );
+
+				contentView.setTemplate( {
+					tag: 'div',
+					children: [ 'Hello World' ]
+				} );
+
+				contextualBalloon.add( {
+					view: contentView,
+					position: getBalloonPositionData()
+				} );
+
+				expect( pinSpy ).to.be.calledOnce;
+				expect( pinSpy.getCall( 0 ).args[ 0 ].viewportOffsetConfig ).to.be.deep.equal( {
+					top: 150
+				} );
+
+				// Handle change of viewport offset.
+				editorWithUi.ui.viewportOffset = {
+					top: 200
+				};
+
+				expect( pinSpy ).to.be.calledTwice;
+				expect( pinSpy.getCall( 1 ).args[ 0 ].viewportOffsetConfig ).to.be.deep.equal( {
+					top: 250
+				} );
+			} );
+
+			it( 'should set proper viewportOffsetConfig top offset when sticky panel is not visible', () => {
+				editorWithUi.ui.view.stickyPanel.isSticky = false;
+
+				setModelData( editorWithUi.model, '<paragraph>foo[]</paragraph>' );
+
+				const pinSpy = sinon.spy( contextualBalloon.view, 'pin' );
+				const contentView = new View( editorWithUi.locale );
+
+				contentView.setTemplate( {
+					tag: 'div',
+					children: [ 'Hello World' ]
+				} );
+
+				contextualBalloon.add( {
+					view: contentView,
+					position: getBalloonPositionData()
+				} );
+
+				expect( pinSpy ).to.be.calledOnce;
+				expect( pinSpy.getCall( 0 ).args[ 0 ].viewportOffsetConfig ).to.be.deep.equal( {
+					top: 0
+				} );
+			} );
+
+			it( 'should update viewportOffsetConfig top offset when sticky panel becomes visible', () => {
+				setModelData( editorWithUi.model, '<paragraph>foo[]</paragraph>' );
+
+				const pinSpy = sinon.spy( contextualBalloon.view, 'pin' );
+				const contentView = new View( editorWithUi.locale );
+
+				editorWithUi.ui.view.stickyPanel.isSticky = false;
+
+				contentView.setTemplate( {
+					tag: 'div',
+					children: [ 'Hello World' ]
+				} );
+
+				contextualBalloon.add( {
+					view: contentView,
+					position: getBalloonPositionData()
+				} );
+
+				expect( pinSpy ).to.be.calledOnce;
+				expect( pinSpy.getCall( 0 ).args[ 0 ].viewportOffsetConfig ).to.be.deep.equal( {
+					top: 0
+				} );
+
+				editorWithUi.ui.view.stickyPanel.isSticky = true;
+
+				expect( pinSpy.getCall( 1 ).args[ 0 ].viewportOffsetConfig ).to.be.deep.equal( {
+					top: 50
+				} );
+			} );
+
+			it( 'should not update viewportOffsetConfig top offset when sticky panel becomes visible', () => {
+				setModelData( editorWithUi.model, '<paragraph>foo[]</paragraph>' );
+				editorWithUi.ui.view.stickyPanel.isSticky = true;
+
+				const pinSpy = sinon.spy( contextualBalloon.view, 'pin' );
+				const contentView = new View( editorWithUi.locale );
+
+				const targetElement = document.createElement( 'div' );
+				const limiterElement = document.createElement( 'div' );
+
+				targetElement.style.height = '400px';
+				limiterElement.style.height = '200px';
+
+				document.body.appendChild( targetElement );
+				document.body.appendChild( limiterElement );
+
+				contentView.setTemplate( {
+					tag: 'div',
+					children: [ 'Hello World' ]
+				} );
+
+				contextualBalloon.add( {
+					view: contentView,
+					position: {
+						target: targetElement,
+						limiter: limiterElement
+					}
+				} );
+
+				expect( pinSpy ).to.be.calledOnce;
+				expect( pinSpy.getCall( 0 ).args[ 0 ].viewportOffsetConfig ).to.be.deep.equal( {
+					top: 0
+				} );
+
+				targetElement.remove();
+				limiterElement.remove();
+			} );
+
+			function getBalloonPositionData() {
+				const view = editorWithUi.editing.view;
+
+				return {
+					target: () => view.domConverter.viewRangeToDom( view.document.selection.getFirstRange() )
+				};
+			}
+		} );
+
+		describe( 'integration with the Dialog plugin and sticky panel (toolbar)', () => {
+			let editorWithUi, editorElement, dialogPlugin, dialogContentView;
+
+			beforeEach( async () => {
+				editorElement = document.createElement( 'div' );
+
+				document.body.appendChild( editorElement );
+
+				editorWithUi = await ClassicEditor.create( editorElement, {
+					plugins: [
+						Dialog
+					]
+				} );
+
+				dialogPlugin = editorWithUi.plugins.get( Dialog );
+
+				dialogContentView = new View();
+
+				dialogContentView.setTemplate( {
+					tag: 'div',
+					attributes: {
+						style: {
+							width: '100px',
+							height: '50px'
+						}
+					}
+				} );
+
+				sinon.stub( editorWithUi.ui.view.stickyPanel.contentPanelElement, 'getBoundingClientRect' ).returns( {
+					height: 50,
+					bottom: 50
+				} );
+
+				sinon.stub( editorWithUi.ui.view.editable.element, 'getBoundingClientRect' ).returns( {
+					top: 0,
+					right: 300,
+					bottom: 100,
+					left: 0,
+					width: 300,
+					height: 100
+				} );
+			} );
+
+			afterEach( async () => {
+				await editorWithUi.destroy();
+				editorElement.remove();
+			} );
+
+			it( 'should move the dialog away from the sticky toolbar if there is a risk they will overlap', async () => {
+				editorWithUi.ui.view.stickyPanel.isSticky = true;
+
+				dialogPlugin.show( {
+					label: 'Foo',
+					content: dialogContentView,
+					position: DialogViewPosition.EDITOR_TOP_SIDE
+				} );
+
+				sinon.stub( dialogPlugin.view.element.firstChild, 'getBoundingClientRect' ).returns( {
+					top: 0,
+					right: 100,
+					bottom: 50,
+					left: 0,
+					width: 100,
+					height: 50
+				} );
+
+				// Automatic positioning of the dialog on first show takes a while.
+				await wait( 20 );
+
+				expect( dialogPlugin.view.element.firstChild.style.left ).to.equal( '185px' );
+				expect( dialogPlugin.view.element.firstChild.style.top ).to.equal( '65px' );
+			} );
+
+			it( 'should not move the dialog if the panel is not currently sticky', async () => {
+				editorWithUi.ui.view.stickyPanel.isSticky = false;
+
+				dialogPlugin.show( {
+					label: 'Foo',
+					content: dialogContentView,
+					position: DialogViewPosition.EDITOR_TOP_SIDE
+				} );
+
+				sinon.stub( dialogPlugin.view.element.firstChild, 'getBoundingClientRect' ).returns( {
+					top: 0,
+					right: 100,
+					bottom: 50,
+					left: 0,
+					width: 100,
+					height: 50
+				} );
+
+				// Automatic positioning of the dialog on first show takes a while.
+				await wait( 20 );
+
+				expect( dialogPlugin.view.element.firstChild.style.left ).to.equal( '185px' );
+				expect( dialogPlugin.view.element.firstChild.style.top ).to.equal( '15px' );
+			} );
+
+			it( 'should not move the dialog away from the sticky toolbar if the user has already moved the dialog', async () => {
+				editorWithUi.ui.view.stickyPanel.isSticky = true;
+
+				dialogPlugin.show( {
+					label: 'Foo',
+					content: dialogContentView,
+					position: DialogViewPosition.EDITOR_TOP_SIDE
+				} );
+
+				sinon.stub( dialogPlugin.view.element.firstChild, 'getBoundingClientRect' ).returns( {
+					top: 0,
+					right: 100,
+					bottom: 50,
+					left: 0,
+					width: 100,
+					height: 50
+				} );
+
+				// Automatic positioning of the dialog on first show takes a while.
+				await wait( 20 );
+
+				expect( dialogPlugin.view.element.firstChild.style.left ).to.equal( '185px' );
+				expect( dialogPlugin.view.element.firstChild.style.top ).to.equal( '65px' );
+
+				// Sticky panel could've unstuck in the meantime (document scroll). Let's make sure it stays sticky.
+				editorWithUi.ui.view.stickyPanel.isSticky = true;
+
+				// Simulate a user moving the dialog.
+				dialogPlugin.view.fire( 'drag', { deltaX: 0, deltaY: -10 } );
+				dialogPlugin.view.fire( 'drag', { deltaX: 0, deltaY: -10 } );
+				dialogPlugin.view.fire( 'drag', { deltaX: 0, deltaY: -10 } );
+				dialogPlugin.view.fire( 'drag', { deltaX: 0, deltaY: -10 } );
+				dialogPlugin.view.fire( 'drag', { deltaX: 0, deltaY: -10 } );
+				dialogPlugin.view.fire( 'drag', { deltaX: 0, deltaY: -10 } );
+
+				expect( dialogPlugin.view.element.firstChild.style.left ).to.equal( '185px' );
+				expect( dialogPlugin.view.element.firstChild.style.top ).to.equal( '5px' );
 			} );
 		} );
 	} );
@@ -515,6 +859,7 @@ describe( 'Focus handling and navigation between editing root and editor toolbar
 		editor = await ClassicEditor.create( editorElement, {
 			plugins: [ Paragraph, Image, ImageToolbar, ImageCaption ],
 			toolbar: [ 'imageTextAlternative' ],
+			menuBar: { isVisible: true },
 			image: {
 				toolbar: [ 'toggleImageCaption' ]
 			}
@@ -546,7 +891,7 @@ describe( 'Focus handling and navigation between editing root and editor toolbar
 			ui.focusTracker.isFocused = true;
 			ui.focusTracker.focusedElement = domRoot;
 
-			pressAltF10();
+			pressAltF10( editor );
 
 			sinon.assert.calledOnce( spy );
 		} );
@@ -558,11 +903,11 @@ describe( 'Focus handling and navigation between editing root and editor toolbar
 			setModelData( editor.model, '<paragraph>foo[]</paragraph>' );
 
 			// Focus the toolbar.
-			pressAltF10();
+			pressAltF10( editor );
 			ui.focusTracker.focusedElement = toolbarView.element;
 
 			// Try Alt+F10 again.
-			pressAltF10();
+			pressAltF10( editor );
 
 			sinon.assert.calledOnce( toolbarFocusSpy );
 			sinon.assert.notCalled( domRootFocusSpy );
@@ -582,7 +927,7 @@ describe( 'Focus handling and navigation between editing root and editor toolbar
 			);
 
 			// Focus the image balloon toolbar.
-			pressAltF10();
+			pressAltF10( editor );
 			ui.focusTracker.focusedElement = imageToolbar.element;
 
 			sinon.assert.calledOnce( imageToolbarSpy );
@@ -603,10 +948,10 @@ describe( 'Focus handling and navigation between editing root and editor toolbar
 			setModelData( editor.model, '<paragraph>foo[]</paragraph>' );
 
 			// Focus the toolbar.
-			pressAltF10();
+			pressAltF10( editor );
 			ui.focusTracker.focusedElement = toolbarView.element;
 
-			pressEsc();
+			pressEsc( editor );
 
 			sinon.assert.callOrder( toolbarFocusSpy, domRootFocusSpy );
 		} );
@@ -617,30 +962,30 @@ describe( 'Focus handling and navigation between editing root and editor toolbar
 
 			setModelData( editor.model, '<paragraph>foo[]</paragraph>' );
 
-			pressEsc();
+			pressEsc( editor );
 
 			sinon.assert.notCalled( domRootFocusSpy );
 			sinon.assert.notCalled( toolbarFocusSpy );
 		} );
 	} );
-
-	function pressAltF10() {
-		editor.keystrokes.press( {
-			keyCode: keyCodes.f10,
-			altKey: true,
-			preventDefault: sinon.spy(),
-			stopPropagation: sinon.spy()
-		} );
-	}
-
-	function pressEsc() {
-		editor.keystrokes.press( {
-			keyCode: keyCodes.esc,
-			preventDefault: sinon.spy(),
-			stopPropagation: sinon.spy()
-		} );
-	}
 } );
+
+function pressAltF10( editor ) {
+	editor.keystrokes.press( {
+		keyCode: keyCodes.f10,
+		altKey: true,
+		preventDefault: sinon.spy(),
+		stopPropagation: sinon.spy()
+	} );
+}
+
+function pressEsc( editor ) {
+	editor.keystrokes.press( {
+		keyCode: keyCodes.esc,
+		preventDefault: sinon.spy(),
+		stopPropagation: sinon.spy()
+	} );
+}
 
 function viewCreator( name ) {
 	return locale => {

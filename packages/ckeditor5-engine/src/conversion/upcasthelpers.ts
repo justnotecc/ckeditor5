@@ -1,21 +1,21 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-import Matcher, { type ClassPatterns, type MatcherPattern, type PropertyPatterns } from '../view/matcher';
-import ConversionHelpers from './conversionhelpers';
+import Matcher, { type ClassPatterns, type MatcherPattern, type PropertyPatterns } from '../view/matcher.js';
+import ConversionHelpers from './conversionhelpers.js';
 
-import type { default as UpcastDispatcher, UpcastElementEvent, UpcastConversionApi, UpcastConversionData } from './upcastdispatcher';
-import type ModelElement from '../model/element';
-import type ModelRange from '../model/range';
-import type ModelPosition from '../model/position';
-import type { ViewDocumentFragment, ViewElement, ViewText } from '../index';
-import type Mapper from './mapper';
-import type Model from '../model/model';
-import type ViewSelection from '../view/selection';
-import type ViewDocumentSelection from '../view/documentselection';
-import { isParagraphable, wrapInParagraph } from '../model/utils/autoparagraphing';
+import type { default as UpcastDispatcher, UpcastElementEvent, UpcastConversionApi, UpcastConversionData } from './upcastdispatcher.js';
+import type ModelElement from '../model/element.js';
+import type ModelRange from '../model/range.js';
+import type ModelPosition from '../model/position.js';
+import type { ViewDocumentFragment, ViewElement, ViewText } from '../index.js';
+import type Mapper from './mapper.js';
+import type Model from '../model/model.js';
+import type ViewSelection from '../view/selection.js';
+import type ViewDocumentSelection from '../view/documentselection.js';
+import { isParagraphable, wrapInParagraph } from '../model/utils/autoparagraphing.js';
 
 import { priorities, type EventInfo, type PriorityString } from '@ckeditor/ckeditor5-utils';
 
@@ -536,16 +536,7 @@ export function convertText() {
 				return;
 			}
 
-			// Wrap `$text` in paragraph and include any marker that is directly before `$text`. See #13053.
-			const nodeBefore = position.nodeBefore;
-
 			position = wrapInParagraph( position, writer );
-
-			if ( nodeBefore && nodeBefore.is( 'element', '$marker' ) ) {
-				// Move `$marker` to the paragraph.
-				writer.move( writer.createRangeOn( nodeBefore ), position );
-				position = writer.createPositionAfter( nodeBefore );
-			}
 		}
 
 		consumable.consume( data.viewItem );
@@ -977,17 +968,16 @@ function normalizeViewAttributeKeyValueConfig( config: any ) {
 	}
 
 	const key: string = config.view.key;
+	const value = typeof config.view.value == 'undefined' ? /[\s\S]*/ : config.view.value;
 	let normalized: MatcherPattern;
 
 	if ( key == 'class' || key == 'style' ) {
 		const keyName = key == 'class' ? 'classes' : 'styles';
 
 		normalized = {
-			[ keyName ]: config.view.value
+			[ keyName ]: value
 		};
 	} else {
-		const value = typeof config.view.value == 'undefined' ? /[\s\S]*/ : config.view.value;
-
 		normalized = {
 			attributes: {
 				[ key ]: value

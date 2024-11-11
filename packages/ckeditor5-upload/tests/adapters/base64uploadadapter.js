@@ -1,15 +1,15 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 /* globals window, setTimeout */
 
-import Base64UploadAdapter from '../../src/adapters/base64uploadadapter';
-import FileRepository from '../../src/filerepository';
-import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor';
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
-import { createNativeFileMock } from '../_utils/mocks';
+import Base64UploadAdapter from '../../src/adapters/base64uploadadapter.js';
+import FileRepository from '../../src/filerepository.js';
+import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor.js';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
+import { createNativeFileMock } from '../_utils/mocks.js';
 
 describe( 'Base64UploadAdapter', () => {
 	let div, stubs;
@@ -44,6 +44,14 @@ describe( 'Base64UploadAdapter', () => {
 
 	it( 'should be named', () => {
 		expect( Base64UploadAdapter.pluginName ).to.equal( 'Base64UploadAdapter' );
+	} );
+
+	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+		expect( Base64UploadAdapter.isOfficialPlugin ).to.be.true;
+	} );
+
+	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+		expect( Base64UploadAdapter.isPremiumPlugin ).to.be.false;
 	} );
 
 	describe( 'init()', () => {

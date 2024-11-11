@@ -1,15 +1,15 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 /* global document */
 
-import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils';
-import Locale from '@ckeditor/ckeditor5-utils/src/locale';
+import testUtils from '@ckeditor/ckeditor5-core/tests/_utils/utils.js';
+import Locale from '@ckeditor/ckeditor5-utils/src/locale.js';
 
-import BodyCollection from '../../src/editorui/bodycollection';
-import View from '../../src/view';
+import BodyCollection from '../../src/editorui/bodycollection.js';
+import View from '../../src/view.js';
 
 describe( 'BodyCollection', () => {
 	let locale;
@@ -63,6 +63,16 @@ describe( 'BodyCollection', () => {
 			expect( el.classList.contains( 'ck-body' ) ).to.be.true;
 			expect( el.classList.contains( 'ck-rounded-corners' ) ).to.be.true;
 			expect( el.classList.contains( 'ck-reset_all' ) ).to.be.true;
+		} );
+
+		it( 'sets the role attirbute', () => {
+			const body = new BodyCollection( locale );
+
+			body.attachToDom();
+
+			const el = body.bodyCollectionContainer;
+
+			expect( el.getAttribute( 'role' ) ).to.equal( 'application' );
 		} );
 
 		it( 'sets the right dir attribute to the body region (LTR)', () => {

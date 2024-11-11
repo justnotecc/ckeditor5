@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -10,7 +10,7 @@ import {
 	isColor,
 	isLength,
 	isLineStyle, isPercentage
-} from '../../../src/view/styles/utils';
+} from '../../../src/view/styles/utils.js';
 
 describe( 'Styles utils', () => {
 	describe( 'isColor()', () => {
@@ -297,6 +297,14 @@ describe( 'Styles utils', () => {
 	describe( 'getShorthandValues()', () => {
 		it( 'should split string to separate values', () => {
 			expect( getShorthandValues( 'foo bar' ) ).to.deep.equal( [ 'foo', 'bar' ] );
+		} );
+
+		it( 'should trim truncate analyzed content to 1500 characters', () => {
+			const attribute = 'abc(10, 1)'.repeat( 160 );
+
+			expect( getShorthandValues( '   ' + attribute ) ).to.be.deep.equal(
+				[ ...Array( 150 ) ].fill( 'abc(10, 1)' )
+			);
 		} );
 
 		it( 'should split string to separate values when value contain grouping parens', () => {

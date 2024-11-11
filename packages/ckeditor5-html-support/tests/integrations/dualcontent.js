@@ -1,17 +1,18 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor';
-import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
-import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold';
-import Italic from '@ckeditor/ckeditor5-basic-styles/src/italic';
-import ShiftEnter from '@ckeditor/ckeditor5-enter/src/shiftenter';
-import LinkEditing from '@ckeditor/ckeditor5-link/src/linkediting';
-import GeneralHtmlSupport from '../../src/generalhtmlsupport';
-import { getModelDataWithAttributes } from '../_utils/utils';
-import { getData as getModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model';
+import ClassicTestEditor from '@ckeditor/ckeditor5-core/tests/_utils/classictesteditor.js';
+import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph.js';
+import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold.js';
+import Italic from '@ckeditor/ckeditor5-basic-styles/src/italic.js';
+import ShiftEnter from '@ckeditor/ckeditor5-enter/src/shiftenter.js';
+import LinkEditing from '@ckeditor/ckeditor5-link/src/linkediting.js';
+import GeneralHtmlSupport from '../../src/generalhtmlsupport.js';
+import { getModelDataWithAttributes } from '../_utils/utils.js';
+import { getData as getModelData } from '@ckeditor/ckeditor5-engine/src/dev-utils/model.js';
+import DualContentModelElementSupport from '../../src/integrations/dualcontent.js';
 
 /* global document */
 
@@ -43,6 +44,14 @@ describe( 'DualContentModelElementSupport', () => {
 
 	it( 'should be named', () => {
 		expect( editor.plugins.has( 'DualContentModelElementSupport' ) ).to.be.true;
+	} );
+
+	it( 'should have `isOfficialPlugin` static flag set to `true`', () => {
+		expect( DualContentModelElementSupport.isOfficialPlugin ).to.be.true;
+	} );
+
+	it( 'should have `isPremiumPlugin` static flag set to `false`', () => {
+		expect( DualContentModelElementSupport.isPremiumPlugin ).to.be.false;
 	} );
 
 	it( 'should be only applied to newly enabled elements', () => {

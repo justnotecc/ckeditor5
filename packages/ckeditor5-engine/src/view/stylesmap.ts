@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -11,8 +11,6 @@ import { get, isObject, merge, set, unset } from 'lodash-es';
 
 /**
  * Styles map. Allows handling (adding, removing, retrieving) a set of style rules (usually, of an element).
- *
- * The styles map is capable of normalizing style names so e.g. the following operations are possible:
  */
 export default class StylesMap {
 	/**
@@ -303,7 +301,7 @@ export default class StylesMap {
 			return '';
 		}
 
-		return this._getStylesEntries()
+		return this.getStylesEntries()
 			.map( arr => arr.join( ':' ) )
 			.sort()
 			.join( ';' ) + ';';
@@ -411,7 +409,7 @@ export default class StylesMap {
 			return this._styleProcessor.getStyleNames( this._styles );
 		}
 
-		const entries = this._getStylesEntries();
+		const entries = this.getStylesEntries();
 
 		return entries.map( ( [ key ] ) => key );
 	}
@@ -426,7 +424,7 @@ export default class StylesMap {
 	/**
 	 * Returns normalized styles entries for further processing.
 	 */
-	private _getStylesEntries(): Array<PropertyDescriptor> {
+	public getStylesEntries(): Array<PropertyDescriptor> {
 		const parsed: Array<PropertyDescriptor> = [];
 
 		const keys = Object.keys( this._styles );
@@ -626,23 +624,22 @@ export class StylesProcessor {
 	 * @param styles Object holding normalized styles.
 	 */
 	public getStyleNames( styles: Styles ): Array<string> {
+		const styleNamesKeysSet = new Set<string>();
+
 		// Find all extractable styles that have a value.
-		const expandedStyleNames = Array.from( this._consumables.keys() ).filter( name => {
+		for ( const name of this._consumables.keys() ) {
 			const style = this.getNormalized( name, styles );
 
-			if ( style && typeof style == 'object' ) {
-				return Object.keys( style ).length;
+			if ( style && ( typeof style != 'object' || Object.keys( style ).length ) ) {
+				styleNamesKeysSet.add( name );
 			}
-
-			return style;
-		} );
+		}
 
 		// For simple styles (for example `color`) we don't have a map of those styles
 		// but they are 1 to 1 with normalized object keys.
-		const styleNamesKeysSet = new Set( [
-			...expandedStyleNames,
-			...Object.keys( styles )
-		] );
+		for ( const name of Object.keys( styles ) ) {
+			styleNamesKeysSet.add( name );
+		}
 
 		return Array.from( styleNamesKeysSet );
 	}

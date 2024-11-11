@@ -1,12 +1,12 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
-import View from '../../src/view';
-import ViewCollection from '../../src/viewcollection';
-import FormHeaderView from '../../src/formheader/formheaderview';
-import { IconView } from '../../src';
+import View from '../../src/view.js';
+import ViewCollection from '../../src/viewcollection.js';
+import FormHeaderView from '../../src/formheader/formheaderview.js';
+import { IconView } from '../../src/index.js';
 
 import checkIcon from '@ckeditor/ckeditor5-core/theme/icons/check.svg';
 
@@ -69,6 +69,7 @@ describe( 'FormHeaderView', () => {
 
 				expect( view.element.firstChild.classList.contains( 'ck' ) ).to.be.true;
 				expect( view.element.firstChild.classList.contains( 'ck-form__header__label' ) ).to.be.true;
+				expect( view.element.firstChild.role ).to.equal( 'presentation' );
 				expect( view.element.firstChild.textContent ).to.equal( 'foo' );
 
 				view.destroy();

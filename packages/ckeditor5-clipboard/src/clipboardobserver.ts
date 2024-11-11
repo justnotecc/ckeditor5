@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
@@ -7,13 +7,13 @@
  * @module clipboard/clipboardobserver
  */
 
-import { EventInfo } from '@ckeditor/ckeditor5-utils';
+import { EventInfo, getRangeFromMouseEvent } from '@ckeditor/ckeditor5-utils';
 
 import {
 	DataTransfer,
 	DomEventObserver,
 	type DomEventData,
-	type View,
+	type EditingView,
 	type ViewDocumentFragment,
 	type ViewElement,
 	type ViewRange
@@ -49,7 +49,7 @@ export default class ClipboardObserver extends DomEventObserver<
 		'paste', 'copy', 'cut', 'drop', 'dragover', 'dragstart', 'dragend', 'dragenter', 'dragleave'
 	] as const;
 
-	constructor( view: View ) {
+	constructor( view: EditingView ) {
 		super( view );
 
 		const viewDocument = this.document;
@@ -92,7 +92,9 @@ export default class ClipboardObserver extends DomEventObserver<
 		};
 
 		if ( domEvent.type == 'drop' || domEvent.type == 'dragover' ) {
-			evtData.dropRange = getDropViewRange( this.view, domEvent as DragEvent );
+			const domRange = getRangeFromMouseEvent( domEvent as DragEvent );
+
+			evtData.dropRange = domRange && this.view.domConverter.domRangeToView( domRange );
 		}
 
 		this.fire( domEvent.type, domEvent, evtData );
@@ -113,30 +115,6 @@ export interface ClipboardEventData {
 	 * The position into which the content is dropped.
 	 */
 	dropRange?: ViewRange | null;
-}
-
-function getDropViewRange( view: View, domEvent: DragEvent & { rangeParent?: Node; rangeOffset?: number } ) {
-	const domDoc = ( domEvent.target as Node ).ownerDocument!;
-	const x = domEvent.clientX;
-	const y = domEvent.clientY;
-	let domRange;
-
-	// Webkit & Blink.
-	if ( domDoc.caretRangeFromPoint && domDoc.caretRangeFromPoint( x, y ) ) {
-		domRange = domDoc.caretRangeFromPoint( x, y );
-	}
-	// FF.
-	else if ( domEvent.rangeParent ) {
-		domRange = domDoc.createRange();
-		domRange.setStart( domEvent.rangeParent, domEvent.rangeOffset! );
-		domRange.collapse( true );
-	}
-
-	if ( domRange ) {
-		return view.domConverter.domRangeToView( domRange );
-	}
-
-	return null;
 }
 
 /**

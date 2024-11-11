@@ -1,27 +1,27 @@
 /**
- * @license Copyright (c) 2003-2023, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2003-2024, CKSource Holding sp. z o.o. All rights reserved.
  * For licensing, see LICENSE.md or https://ckeditor.com/legal/ckeditor-oss-license
  */
 
 /* globals document */
 
-import { parse, stringify, getData, setData } from '../../src/dev-utils/view';
-import ViewDocument from '../../src/view/document';
-import DocumentFragment from '../../src/view/documentfragment';
-import Position from '../../src/view/position';
-import Element from '../../src/view/element';
-import AttributeElement from '../../src/view/attributeelement';
-import ContainerElement from '../../src/view/containerelement';
-import EmptyElement from '../../src/view/emptyelement';
-import UIElement from '../../src/view/uielement';
-import RawElement from '../../src/view/rawelement';
-import Text from '../../src/view/text';
-import DocumentSelection from '../../src/view/documentselection';
-import Range from '../../src/view/range';
-import View from '../../src/view/view';
-import XmlDataProcessor from '../../src/dataprocessor/xmldataprocessor';
-import createViewRoot from '../view/_utils/createroot';
-import { StylesProcessor } from '../../src/view/stylesmap';
+import { parse, stringify, getData, setData } from '../../src/dev-utils/view.js';
+import ViewDocument from '../../src/view/document.js';
+import DocumentFragment from '../../src/view/documentfragment.js';
+import Position from '../../src/view/position.js';
+import Element from '../../src/view/element.js';
+import AttributeElement from '../../src/view/attributeelement.js';
+import ContainerElement from '../../src/view/containerelement.js';
+import EmptyElement from '../../src/view/emptyelement.js';
+import UIElement from '../../src/view/uielement.js';
+import RawElement from '../../src/view/rawelement.js';
+import Text from '../../src/view/text.js';
+import DocumentSelection from '../../src/view/documentselection.js';
+import Range from '../../src/view/range.js';
+import View from '../../src/view/view.js';
+import XmlDataProcessor from '../../src/dataprocessor/xmldataprocessor.js';
+import createViewRoot from '../view/_utils/createroot.js';
+import { StylesProcessor } from '../../src/view/stylesmap.js';
 
 describe( 'view test utils', () => {
 	describe( 'getData, setData', () => {
@@ -569,6 +569,13 @@ describe( 'view test utils', () => {
 
 			const parsed2 = parse( '<container:div view-id="bar"></container:div>' );
 			expect( parsed2.id ).to.be.undefined;
+		} );
+
+		it( 'should correctly parse whitespaces around custom inline object elements', () => {
+			const parsed = parse( '<p>Foo <inlineObj></inlineObj> bar</p>', { inlineObjectElements: [ 'inlineObj' ] } );
+
+			expect( parsed.getChild( 0 ).data ).to.equal( 'Foo ' );
+			expect( parsed.getChild( 2 ).data ).to.equal( ' bar' );
 		} );
 
 		it( 'should paste nested elements and texts', () => {
