@@ -4,29 +4,45 @@
  */
 import { DecoupledEditor as DecoupledEditorBase } from '@ckeditor/ckeditor5-editor-decoupled';
 import { Essentials } from '@ckeditor/ckeditor5-essentials';
-import { Paragraph } from '@ckeditor/ckeditor5-paragraph';
-import { Bold, Italic, Underline, Strikethrough, Superscript, Subscript } from '@ckeditor/ckeditor5-basic-styles';
-import { List, TodoList } from '@ckeditor/ckeditor5-list';
-import { FontSize, FontColor, FontBackgroundColor } from '@ckeditor/ckeditor5-font';
-import { Autoformat } from '@ckeditor/ckeditor5-autoformat';
-import { TextTransformation } from '@ckeditor/ckeditor5-typing';
-import { RemoveFormat } from '@ckeditor/ckeditor5-remove-format';
-import { Indent, IndentBlock } from '@ckeditor/ckeditor5-indent';
 import { Alignment } from '@ckeditor/ckeditor5-alignment';
-import { Link, AutoLink } from '@ckeditor/ckeditor5-link';
-import { Image, ImageStyle, ImageResize, ImageToolbar, ImageUpload } from '@ckeditor/ckeditor5-image';
-import ImageUploadAdapter from './objecturluploadadapter';
-import { Table, TableToolbar } from '@ckeditor/ckeditor5-table';
+import { FontSize, FontFamily, FontColor, FontBackgroundColor } from '@ckeditor/ckeditor5-font';
+import { UploadAdapter } from '@ckeditor/ckeditor5-adapter-ckfinder';
+import { Autoformat } from '@ckeditor/ckeditor5-autoformat';
+import { Bold, Italic, Strikethrough, Underline } from '@ckeditor/ckeditor5-basic-styles';
+import { BlockQuote } from '@ckeditor/ckeditor5-block-quote';
+import { CKBox } from '@ckeditor/ckeditor5-ckbox';
+import { CKFinder } from '@ckeditor/ckeditor5-ckfinder';
+import { EasyImage } from '@ckeditor/ckeditor5-easy-image';
+import { Heading } from '@ckeditor/ckeditor5-heading';
+import { Image, ImageCaption, ImageResize, ImageStyle, ImageToolbar, ImageUpload, PictureEditing } from '@ckeditor/ckeditor5-image';
+import { Indent, IndentBlock } from '@ckeditor/ckeditor5-indent';
+import { Link } from '@ckeditor/ckeditor5-link';
+import { List, ListProperties } from '@ckeditor/ckeditor5-list';
 import { MediaEmbed } from '@ckeditor/ckeditor5-media-embed';
-import { FindAndReplace } from '@ckeditor/ckeditor5-find-and-replace';
+import { Paragraph } from '@ckeditor/ckeditor5-paragraph';
+import { PasteFromOffice } from '@ckeditor/ckeditor5-paste-from-office';
+import { Table, TableToolbar } from '@ckeditor/ckeditor5-table';
+import { TextTransformation } from '@ckeditor/ckeditor5-typing';
+import { CloudServices } from '@ckeditor/ckeditor5-cloud-services';
 export default class DecoupledEditor extends DecoupledEditorBase {
-    static builtinPlugins: (typeof ImageUploadAdapter | typeof Essentials | typeof Paragraph | typeof Bold | typeof Italic | typeof Underline | typeof Strikethrough | typeof Superscript | typeof Subscript | typeof List | typeof TodoList | typeof FontSize | typeof FontColor | typeof FontBackgroundColor | typeof Autoformat | typeof TextTransformation | typeof RemoveFormat | typeof Indent | typeof IndentBlock | typeof Alignment | typeof Link | typeof AutoLink | typeof Image | typeof ImageStyle | typeof ImageResize | typeof ImageToolbar | typeof ImageUpload | typeof Table | typeof TableToolbar | typeof MediaEmbed | typeof FindAndReplace)[];
+    static builtinPlugins: (typeof TextTransformation | typeof Essentials | typeof Alignment | typeof FontBackgroundColor | typeof FontColor | typeof FontFamily | typeof FontSize | typeof UploadAdapter | typeof Paragraph | typeof Heading | typeof Autoformat | typeof Bold | typeof Italic | typeof Strikethrough | typeof Underline | typeof BlockQuote | typeof CloudServices | typeof Image | typeof ImageCaption | typeof ImageResize | typeof ImageStyle | typeof ImageToolbar | typeof ImageUpload | typeof CKBox | typeof CKFinder | typeof EasyImage | typeof List | typeof ListProperties | typeof Indent | typeof IndentBlock | typeof Link | typeof MediaEmbed | typeof PasteFromOffice | typeof Table | typeof TableToolbar | typeof PictureEditing)[];
     static defaultConfig: {
         toolbar: {
             items: string[];
         };
         image: {
+            resizeUnit: "px";
             toolbar: string[];
+        };
+        table: {
+            contentToolbar: string[];
+        };
+        list: {
+            properties: {
+                styles: boolean;
+                startIndex: boolean;
+                reversed: boolean;
+            };
         };
         language: string;
     };
