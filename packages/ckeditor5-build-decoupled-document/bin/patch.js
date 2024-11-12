@@ -141,7 +141,39 @@ const patchViewToPlainText = () => {
   fs.writeFileSync(fpath, outs.join('\n'));
 };
 
+const patchPlainTextToHtml = () => {
+  const fpath = 'node_modules/@ckeditor/ckeditor5-clipboard/src/utils/plaintexttohtml.js';
+
+  const match1 = "        .replace(/\\r?\\n\\r?\\n/g, '</p><p>')";
+  const repmt1 = "        .replace(/\\r?\\n\\r?\\n/g, '</p><p><br></p><p>')";
+
+  const match2 = "        .replace(/\\r?\\n/g, '<br>')";
+  const repmt2 = "        .replace(/\\r?\\n/g, '</p><p>')";
+
+  const text = fs.readFileSync(fpath, 'utf-8');
+  const lines = text.split('\n');
+
+  const outs = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    if (line === match1) {
+      outs.push(repmt1);
+      continue;
+    }
+    if (line === match2) {
+      outs.push(repmt2);
+      continue;
+    }
+
+    outs.push(line);
+  }
+
+  fs.writeFileSync(fpath, outs.join('\n'));
+};
+
 patchButtonView();
 patchDropdownUtils();
 patchFontColorUi();
 patchViewToPlainText();
+patchPlainTextToHtml();
