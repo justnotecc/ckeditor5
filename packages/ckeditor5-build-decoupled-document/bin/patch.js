@@ -172,8 +172,33 @@ const patchPlainTextToHtml = () => {
   fs.writeFileSync(fpath, outs.join('\n'));
 };
 
+const patchImageUploadUi = () => {
+  const fpath = 'node_modules/@ckeditor/ckeditor5-image/src/imageupload/imageuploadui.js';
+
+  const match1 = "            icon: icons.imageUpload";
+  const repmt1 = "            icon: icons.image";
+
+  const text = fs.readFileSync(fpath, 'utf-8');
+  const lines = text.split('\n');
+
+  const outs = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    if (line === match1) {
+      outs.push(repmt1);
+      continue;
+    }
+
+    outs.push(line);
+  }
+
+  fs.writeFileSync(fpath, outs.join('\n'));
+};
+
 patchButtonView();
 patchDropdownUtils();
 patchFontColorUi();
 patchViewToPlainText();
 patchPlainTextToHtml();
+patchImageUploadUi();
