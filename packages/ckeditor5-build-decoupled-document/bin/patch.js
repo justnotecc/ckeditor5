@@ -173,6 +173,10 @@ const patchPlainTextToHtml = () => {
 };
 
 const patchImageUploadUi = () => {
+
+  // Need to copy old image.svg in testckeditor5/@ckeditor/core-theme-icons-image.svg
+  //   to ckeditor5/packages/ckeditor5-build-decoupled-document/node_modules/@ckeditor/ckeditor5-core/theme/icons/image.svg
+
   const fpath = 'node_modules/@ckeditor/ckeditor5-image/src/imageupload/imageuploadui.js';
 
   const match1 = "            icon: icons.imageUpload";
