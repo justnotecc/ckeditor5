@@ -4,108 +4,109 @@
  */
 
 // The editor creator to use.
-import { DecoupledEditor as DecoupledEditorBase } from '@ckeditor/ckeditor5-editor-decoupled';
+import {
+  DecoupledEditor as DecoupledEditorBase,
+} from '@ckeditor/ckeditor5-editor-decoupled';
 
 import { Essentials } from '@ckeditor/ckeditor5-essentials';
-import { Alignment } from '@ckeditor/ckeditor5-alignment';
-import { FontSize, FontFamily, FontColor, FontBackgroundColor } from '@ckeditor/ckeditor5-font';
-import { CKFinderUploadAdapter } from '@ckeditor/ckeditor5-adapter-ckfinder';
-import { Autoformat } from '@ckeditor/ckeditor5-autoformat';
-import { Bold, Italic, Strikethrough, Underline } from '@ckeditor/ckeditor5-basic-styles';
-import { BlockQuote } from '@ckeditor/ckeditor5-block-quote';
-import { CKBox } from '@ckeditor/ckeditor5-ckbox';
-import { CKFinder } from '@ckeditor/ckeditor5-ckfinder';
-import { EasyImage } from '@ckeditor/ckeditor5-easy-image';
-import { Heading } from '@ckeditor/ckeditor5-heading';
-import { Image, ImageCaption, ImageResize, ImageStyle, ImageToolbar, ImageUpload, PictureEditing } from '@ckeditor/ckeditor5-image';
-import { Indent, IndentBlock } from '@ckeditor/ckeditor5-indent';
-import { Link } from '@ckeditor/ckeditor5-link';
-import { List, ListProperties } from '@ckeditor/ckeditor5-list';
-import { MediaEmbed } from '@ckeditor/ckeditor5-media-embed';
 import { Paragraph } from '@ckeditor/ckeditor5-paragraph';
-import { PasteFromOffice } from '@ckeditor/ckeditor5-paste-from-office';
-import { Table, TableToolbar } from '@ckeditor/ckeditor5-table';
+
+import {
+  Bold, Italic, Underline, Strikethrough, Superscript, Subscript,
+} from '@ckeditor/ckeditor5-basic-styles';
+import { List, TodoList } from '@ckeditor/ckeditor5-list';
+import { FontSize, FontColor, FontBackgroundColor } from '@ckeditor/ckeditor5-font';
+
+import { Autoformat } from '@ckeditor/ckeditor5-autoformat';
 import { TextTransformation } from '@ckeditor/ckeditor5-typing';
-import { CloudServices } from '@ckeditor/ckeditor5-cloud-services';
+import { RemoveFormat } from '@ckeditor/ckeditor5-remove-format';
+
+import { Indent, IndentBlock } from '@ckeditor/ckeditor5-indent';
+import { Alignment } from '@ckeditor/ckeditor5-alignment';
+
+import { Link, AutoLink } from '@ckeditor/ckeditor5-link';
+
+import {
+  Image, ImageStyle, ImageResize, ImageToolbar, ImageUpload,
+} from '@ckeditor/ckeditor5-image';
+import ImageUploadAdapter from './objecturluploadadapter';
+
+import { Table, TableToolbar } from '@ckeditor/ckeditor5-table';
+
+import { MediaEmbed } from '@ckeditor/ckeditor5-media-embed';
+import { FindAndReplace } from '@ckeditor/ckeditor5-find-and-replace';
 
 export default class DecoupledEditor extends DecoupledEditorBase {
-	public static override builtinPlugins = [
-		Essentials,
-		Alignment,
-		FontSize,
-		FontFamily,
-		FontColor,
-		FontBackgroundColor,
-		CKFinderUploadAdapter,
-		Autoformat,
-		Bold,
-		Italic,
-		Strikethrough,
-		Underline,
-		BlockQuote,
-		CKBox,
-		CKFinder,
-		CloudServices,
-		EasyImage,
-		Heading,
-		Image,
-		ImageCaption,
-		ImageResize,
-		ImageStyle,
-		ImageToolbar,
-		ImageUpload,
-		Indent,
-		IndentBlock,
-		Link,
-		List,
-		ListProperties,
-		MediaEmbed,
-		Paragraph,
-		PasteFromOffice,
-		PictureEditing,
-		Table,
-		TableToolbar,
-		TextTransformation
-	];
 
-	public static override defaultConfig = {
-		toolbar: {
-			items: [
-				'undo', 'redo',
-				'|', 'heading',
-				'|', 'fontfamily', 'fontsize', 'fontColor', 'fontBackgroundColor',
-				'|', 'bold', 'italic', 'underline', 'strikethrough',
-				'|', 'link', 'uploadImage', 'insertTable', 'blockQuote', 'mediaEmbed',
-				'|', 'alignment',
-				'|', 'bulletedList', 'numberedList', 'outdent', 'indent'
-			]
-		},
-		image: {
-			resizeUnit: 'px' as const,
-			toolbar: [
-				'imageStyle:inline',
-				'imageStyle:wrapText',
-				'imageStyle:breakText',
-				'|',
-				'toggleImageCaption',
-				'imageTextAlternative'
-			]
-		},
-		table: {
-			contentToolbar: [
-				'tableColumn',
-				'tableRow',
-				'mergeTableCells'
-			]
-		},
-		list: {
-			properties: {
-				styles: true,
-				startIndex: true,
-				reversed: true
-			}
-		},
-		// This value must be kept in sync with the language defined in webpack.config.js.
-		language: 'en'
-	};
+  public static override builtinPlugins = [
+    Essentials,
+    Paragraph,
+    Bold,
+    Italic,
+    Underline,
+    Strikethrough,
+    Superscript,
+    Subscript,
+    List,
+    TodoList,
+    FontSize,
+    FontColor,
+    FontBackgroundColor,
+    Autoformat,
+    TextTransformation,
+    RemoveFormat,
+    Indent,
+    IndentBlock,
+    Alignment,
+    Link,
+    AutoLink,
+    Image,
+    ImageStyle,
+    ImageResize,
+    ImageToolbar,
+    ImageUpload,
+    ImageUploadAdapter,
+    Table,
+    TableToolbar,
+    MediaEmbed,
+    FindAndReplace,
+  ];
+
+  public static override defaultConfig = {
+    toolbar: {
+      items: [
+        'bold',
+        'underline',
+        'fontsize',
+        'fontColor',
+        'fontBackgroundColor',
+        'alignment',
+        'strikethrough',
+        'italic',
+        'RemoveFormat',
+        '|',
+        'uploadImage',
+        'link',
+        '|',
+        'bulletedList',
+        'numberedList',
+        'todoList',
+        '|',
+        'outdent',
+        'indent',
+        '|',
+        'undo',
+        'redo',
+      ]
+    },
+    image: {
+      toolbar: [
+	'imageStyle:inline',
+	'imageStyle:wrapText',
+	'imageStyle:breakText',
+      ]
+    },
+    // This value must be kept in sync with the language defined in webpack.config.js.
+    language: 'en'
+  };
 }
